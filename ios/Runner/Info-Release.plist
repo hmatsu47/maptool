@@ -20,8 +20,16 @@
 	<string>????</string>
 	<key>CFBundleVersion</key>
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
+	<key>LSApplicationCategoryType</key>
+	<string>/Users/hmatsu47/maptool/ios/Runner/Info-Debug.plist</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>MGLMapboxAccessToken</key>
+	<string>[Mapbox Access Token or Secret Token here]</string>
+	<key>NSLocationAlwaysUsageDescription</key>
+	<string>Your location is required for this app</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Your location is required for this app</string>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>
@@ -41,16 +49,7 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<false/>
-	<key>NSLocationAlwaysUsageDescription</key>
-	<string>Your location is required for this app</string>
-	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>Your location is required for this app</string>
-	<key>LSApplicationCategoryType</key>
-	<string>/Users/hmatsu47/maptool/ios/Runner/Info-Debug.plist</string>
 	<key>io.flutter.embedded_views_preview</key>
 	<true/>
-	<key>MGLMapboxAccessToken</key>
-	<string>[Mapbox Access Token or Secret Token here]</string>
-
 </dict>
 </plist>

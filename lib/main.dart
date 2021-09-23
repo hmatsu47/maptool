@@ -1,7 +1,9 @@
 import 'dart:async';
+import 'dart:io';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:gap/gap.dart';
 import 'package:location/location.dart';
 import 'package:mapbox_gl/mapbox_gl.dart';
 
@@ -36,6 +38,10 @@ class _MapPageState extends State<MapPage> {
   // Location で緯度経度が取れなかったときのデフォルト値
   final double _initialLat = 35.6895014;
   final double _initialLong = 139.6917337;
+  // ズームのデフォルト値
+  final double _initialZoom = 13.5;
+  // 方位のデフォルト値（北）
+  final double _initialBearing = 0.0;
   // 現在位置
   LocationData? _yourLocation;
   // GPS 追従？
@@ -75,10 +81,11 @@ class _MapPageState extends State<MapPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: _makeMapboxMap(),
-      floatingActionButton: _makeGpsIcon(),
+      floatingActionButton: _makeFloatingIcons(),
     );
   }
 
+  // 地図ウィジェット
   Widget _makeMapboxMap() {
     if (_yourLocation == null) {
       // 現在位置が取れるまではロード中画面を表示
@@ -87,13 +94,7 @@ class _MapPageState extends State<MapPage> {
       );
     }
     // GPS 追従が ON かつ地図がロードされている→地図の中心を移動
-    if (_gpsTracking) {
-      _controller.future.then((mapboxMap) {
-        mapboxMap.moveCamera(CameraUpdate.newLatLng(LatLng(
-            _yourLocation!.latitude ?? _initialLat,
-            _yourLocation!.longitude ?? _initialLong)));
-      });
-    }
+    _moveCameraToGpsPoint();
     // Mapbox ウィジェットを返す
     return MapboxMap(
       // 地図（スタイル）を指定
@@ -102,7 +103,7 @@ class _MapPageState extends State<MapPage> {
       initialCameraPosition: CameraPosition(
         target: LatLng(_yourLocation!.latitude ?? _initialLat,
             _yourLocation!.longitude ?? _initialLong),
-        zoom: 13.5,
+        zoom: _initialZoom,
       ),
       onMapCreated: (MapboxMapController controller) {
         _controller.complete(controller);
@@ -112,44 +113,141 @@ class _MapPageState extends State<MapPage> {
       myLocationEnabled: true,
       // 地図をタップしたとき
       onMapClick: (Point<double> point, LatLng tapPoint) {
-        _controller.future.then((mapboxMap) {
-          mapboxMap.moveCamera(CameraUpdate.newLatLng(tapPoint));
-        });
-        setState(() {
-          _gpsTracking = false;
-        });
+        _onTap(point, tapPoint);
+      },
+      // 地図を長押ししたとき
+      onMapLongClick: (Point<double> point, LatLng tapPoint) {
+        _addMark(tapPoint);
       },
     );
   }
 
-  Widget _makeGpsIcon() {
-    return FloatingActionButton(
-      backgroundColor: Colors.blue,
-      onPressed: () {
-        _gpsToggle();
-      },
-      child: Icon(
-        // GPS 追従の ON / OFF に合わせてアイコン表示する
-        _gpsTracking ? Icons.gps_fixed : Icons.gps_not_fixed,
+  // フローティングアイコンウィジェット
+  Widget _makeFloatingIcons() {
+    return Column(mainAxisSize: MainAxisSize.min, children: [
+      FloatingActionButton(
+        backgroundColor: Colors.blue,
+        onPressed: () {
+          // ズームを戻す
+          _resetZoom();
+        },
+        child: const Text('±', style: TextStyle(fontSize: 26)),
       ),
-    );
+      const Gap(16),
+      FloatingActionButton(
+        backgroundColor: Colors.blue,
+        onPressed: () {
+          // 北向きに戻す
+          _resetBearing();
+        },
+        child: const Text('N',
+            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+      ),
+      const Gap(16),
+      FloatingActionButton(
+        backgroundColor: Colors.blue,
+        onPressed: () {
+          _gpsToggle();
+        },
+        child: Icon(
+          // GPS 追従の ON / OFF に合わせてアイコン表示する
+          _gpsTracking ? Icons.gps_fixed : Icons.gps_not_fixed,
+        ),
+      ),
+    ]);
   }
 
+  // 現在位置を取得
+  void _getLocation() async {
+    _yourLocation = await _locationService.getLocation();
+  }
+
+  // GPS 追従を ON / OFF
   void _gpsToggle() {
     setState(() {
       _gpsTracking = !_gpsTracking;
     });
-    // ここは iOS では不要
+    // ここは本来 iOS では不要
+    _moveCameraToGpsPoint();
+  }
+
+  // GPS 追従が ON なら地図の中心を現在位置へ
+  void _moveCameraToGpsPoint() {
     if (_gpsTracking) {
       _controller.future.then((mapboxMap) {
-        mapboxMap.moveCamera(CameraUpdate.newLatLng(LatLng(
-            _yourLocation!.latitude ?? _initialLat,
-            _yourLocation!.longitude ?? _initialLong)));
+        if (Platform.isAndroid) {
+          mapboxMap.moveCamera(CameraUpdate.newLatLng(LatLng(
+              _yourLocation!.latitude ?? _initialLat,
+              _yourLocation!.longitude ?? _initialLong)));
+        } else if (Platform.isIOS) {
+          mapboxMap.animateCamera(CameraUpdate.newLatLng(LatLng(
+              _yourLocation!.latitude ?? _initialLat,
+              _yourLocation!.longitude ?? _initialLong)));
+        }
       });
     }
   }
 
-  void _getLocation() async {
-    _yourLocation = await _locationService.getLocation();
+  // 地図をタップしたときの処理
+  void _onTap(Point<double> point, LatLng tapPoint) {
+    _moveCameraToTapPoint(tapPoint);
+    setState(() {
+      _gpsTracking = false;
+    });
+  }
+
+  // 地図の中心をタップした場所へ
+  void _moveCameraToTapPoint(LatLng tapPoint) {
+    _controller.future.then((mapboxMap) {
+      if (Platform.isAndroid) {
+        mapboxMap.moveCamera(CameraUpdate.newLatLng(tapPoint));
+      } else if (Platform.isIOS) {
+        mapboxMap.animateCamera(CameraUpdate.newLatLng(tapPoint));
+      }
+    });
+  }
+
+  // マーク（ピン）を立てて時刻（hh:mm）のラベルを付ける
+  void _addMark(LatLng tapPoint) {
+    // 時刻を取得
+    DateTime _now = DateTime.now();
+    String _hhmm = _fillZero(_now.hour) + ':' + _fillZero(_now.minute);
+    // マーク（ピン）を立てる
+    _controller.future.then((mapboxMap) {
+      mapboxMap.addSymbol(SymbolOptions(
+        geometry: tapPoint,
+        textField: _hhmm,
+        textAnchor: "top",
+        textColor: "#000",
+        textHaloColor: "#FFF",
+        textHaloWidth: 3,
+        iconImage: "mapbox-marker-icon-blue",
+        iconSize: 1,
+      ));
+    });
+  }
+
+  // 2 桁 0 埋め（Intl が正しく動かなかったため仕方なく）
+  String _fillZero(int number) {
+    String _tmpNumber = ('0' + number.toString());
+    return _tmpNumber.substring(_tmpNumber.length - 2);
+  }
+
+  // 地図の上を北に
+  void _resetBearing() {
+    _controller.future.then((mapboxMap) {
+      if (Platform.isAndroid) {
+        mapboxMap.moveCamera(CameraUpdate.bearingTo(_initialBearing));
+      } else if (Platform.isIOS) {
+        mapboxMap.animateCamera(CameraUpdate.bearingTo(_initialBearing));
+      }
+    });
+  }
+
+  // 地図のズームを初期状態に
+  void _resetZoom() {
+    _controller.future.then((mapboxMap) {
+      mapboxMap.moveCamera(CameraUpdate.zoomTo(_initialZoom));
+    });
   }
 }

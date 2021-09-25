@@ -33,7 +33,7 @@ class MapPage extends StatefulWidget {
 class _MapPageState extends State<MapPage> {
   final Completer<MapboxMapController> _controller = Completer();
   final Location _locationService = Location();
-  // 地図スタイル用 Mapbox URL（Andriod で日本語表示ができないので地図スタイルを切り替え可能に）
+  // 地図スタイル用 Mapbox URL（Android で日本語表示ができないので地図スタイルを切り替え可能に）
   final String _style = (Platform.isAndroid
       ? '[Mapbox Style URL for Android]'
       : '[Mapbox Style URL for iOS]');

@@ -216,7 +216,9 @@ class _MapPageState extends State<MapPage> {
       if (!_symbolSet) {
         _symbol.then((symbol) {
           mapboxMap.onSymbolTapped.add(_onSymbolTap);
-          _symbolSet = true;
+          setState(() {
+            _symbolSet = true;
+          });
         });
       }
     });

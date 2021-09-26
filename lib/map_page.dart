@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 import 'package:location/location.dart';
 import 'package:mapbox_gl/mapbox_gl.dart';
+import 'package:maptool/main.dart';
 
 class MapPage extends StatefulWidget {
   const MapPage({Key? key}) : super(key: key);
@@ -32,8 +33,8 @@ class _MapPageState extends State<MapPage> {
   LocationData? _yourLocation;
   // GPS 追従？
   bool _gpsTracking = false;
-  // 地図の context
-  late BuildContext _context;
+  // onSymbolTapped 設定済み？
+  bool _symbolSet = false;
 
   // 現在位置の監視状況
   StreamSubscription? _locationChangedListen;
@@ -67,7 +68,6 @@ class _MapPageState extends State<MapPage> {
 
   @override
   Widget build(BuildContext context) {
-    _context = context;
     return Scaffold(
       body: _makeMapboxMap(),
       floatingActionButton: _makeFloatingIcons(),
@@ -213,21 +213,24 @@ class _MapPageState extends State<MapPage> {
         iconImage: "mapbox-marker-icon-blue",
         iconSize: 1,
       ));
-      _symbol.then((symbol) {
-        mapboxMap.onSymbolTapped.add(_onSymbolTap);
-      });
+      if (!_symbolSet) {
+        _symbol.then((symbol) {
+          mapboxMap.onSymbolTapped.add(_onSymbolTap);
+          _symbolSet = true;
+        });
+      }
     });
   }
 
   // マークをタップしたときに Symbol の情報を表示する
-  _onSymbolTap(Symbol symbol) {
+  void _onSymbolTap(Symbol symbol) {
     _dispSymbolInfo(symbol);
   }
 
   // Symbol の情報を表示する
   void _dispSymbolInfo(Symbol symbol) {
     showDialog(
-      context: _context,
+      context: navigatorKey.currentContext!,
       builder: (BuildContext context) => AlertDialog(
         title: Text('Symbol ID : ${symbol.id}'),
         actions: [

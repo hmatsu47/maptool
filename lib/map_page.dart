@@ -100,6 +100,8 @@ class _MapPageState extends State<MapPage> {
       compassEnabled: true,
       // 現在位置を表示する
       myLocationEnabled: true,
+      // カメラの位置を追跡する
+      trackCameraPosition: true,
       // 地図をタップしたとき
       onMapClick: (Point<double> point, LatLng tapPoint) {
         _onTap(point, tapPoint);
@@ -114,6 +116,15 @@ class _MapPageState extends State<MapPage> {
   // フローティングアイコンウィジェット
   Widget _makeFloatingIcons() {
     return Column(mainAxisSize: MainAxisSize.min, children: [
+      FloatingActionButton(
+        backgroundColor: Colors.blue,
+        onPressed: () {
+          // 画面の中心にマーク（ピン）を立てる
+          _addSymbolOnCameraPosition();
+        },
+        child: const Icon(Icons.add_location),
+      ),
+      const Gap(16),
       FloatingActionButton(
         backgroundColor: Colors.blue,
         onPressed: () {
@@ -196,6 +207,15 @@ class _MapPageState extends State<MapPage> {
     });
   }
 
+  // 画面の中心にマーク（ピン）を立てる
+  void _addSymbolOnCameraPosition() {
+    _controller.future.then((mapboxMap) {
+      CameraPosition? _camera = mapboxMap.cameraPosition;
+      LatLng _position = _camera!.target;
+      _addMark(_position);
+    });
+  }
+
   // マーク（ピン）を立てて時刻（hh:mm）のラベルを付ける
   void _addMark(LatLng tapPoint) {
     // 時刻を取得
@@ -237,6 +257,14 @@ class _MapPageState extends State<MapPage> {
         title: Text('Symbol ID : ${symbol.id}'),
         actions: [
           IconButton(
+            icon: const Icon(Icons.delete),
+            color: Colors.blue,
+            onPressed: () {
+              _removeMark(symbol);
+              Navigator.pop(context);
+            },
+          ),
+          IconButton(
             icon: const Icon(Icons.close),
             color: Colors.blue,
             onPressed: () {
@@ -246,6 +274,13 @@ class _MapPageState extends State<MapPage> {
         ],
       ),
     );
+  }
+
+  // マーク（ピン）を削除する
+  _removeMark(Symbol symbol) {
+    _controller.future.then((mapboxMap) {
+      mapboxMap.removeSymbol(symbol);
+    });
   }
 
   // 2 桁 0 埋め（Intl が正しく動かなかったため仕方なく）

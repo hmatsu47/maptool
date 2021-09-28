@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 import 'package:location/location.dart';
 import 'package:mapbox_gl/mapbox_gl.dart';
+import 'package:maptool/create_symbol_info_page.dart';
 import 'package:maptool/main.dart';
 
 class MapPage extends StatefulWidget {
@@ -13,6 +14,15 @@ class MapPage extends StatefulWidget {
 
   @override
   _MapPageState createState() => _MapPageState();
+}
+
+// マーク（ピン）の登録情報
+class SymbolInfo {
+  String title;
+  String describe;
+  DateTime dateTime;
+
+  SymbolInfo(this.title, this.describe, this.dateTime);
 }
 
 class _MapPageState extends State<MapPage> {
@@ -29,6 +39,8 @@ class _MapPageState extends State<MapPage> {
   final double _initialZoom = 13.5;
   // 方位のデフォルト値（北）
   final double _initialBearing = 0.0;
+  // 全 Symbol 情報
+  final Map<String, SymbolInfo> _symbolInfoMap = {};
   // 現在位置
   LocationData? _yourLocation;
   // GPS 追従？
@@ -117,6 +129,7 @@ class _MapPageState extends State<MapPage> {
   Widget _makeFloatingIcons() {
     return Column(mainAxisSize: MainAxisSize.min, children: [
       FloatingActionButton(
+        heroTag: 'addMark',
         backgroundColor: Colors.blue,
         onPressed: () {
           // 画面の中心にマーク（ピン）を立てる
@@ -126,6 +139,7 @@ class _MapPageState extends State<MapPage> {
       ),
       const Gap(16),
       FloatingActionButton(
+        heroTag: 'resetZoom',
         backgroundColor: Colors.blue,
         onPressed: () {
           // ズームを戻す
@@ -135,6 +149,7 @@ class _MapPageState extends State<MapPage> {
       ),
       const Gap(16),
       FloatingActionButton(
+        heroTag: 'resetBearing',
         backgroundColor: Colors.blue,
         onPressed: () {
           // 北向きに戻す
@@ -145,6 +160,7 @@ class _MapPageState extends State<MapPage> {
       ),
       const Gap(16),
       FloatingActionButton(
+        heroTag: 'gpsToggle',
         backgroundColor: Colors.blue,
         onPressed: () {
           _gpsToggle();
@@ -210,38 +226,44 @@ class _MapPageState extends State<MapPage> {
   // 画面の中心にマーク（ピン）を立てる
   void _addSymbolOnCameraPosition() {
     _controller.future.then((mapboxMap) {
-      CameraPosition? _camera = mapboxMap.cameraPosition;
-      LatLng _position = _camera!.target;
-      _addMark(_position);
+      CameraPosition? camera = mapboxMap.cameraPosition;
+      LatLng position = camera!.target;
+      _addMark(position);
     });
   }
 
-  // マーク（ピン）を立てて時刻（hh:mm）のラベルを付ける
-  void _addMark(LatLng tapPoint) {
-    // 時刻を取得
-    DateTime _now = DateTime.now();
-    String _hhmm = _fillZero(_now.hour) + ':' + _fillZero(_now.minute);
-    // マーク（ピン）を立てる
-    _controller.future.then((mapboxMap) {
-      Future<Symbol> _symbol = mapboxMap.addSymbol(SymbolOptions(
-        geometry: tapPoint,
-        textField: _hhmm,
-        textAnchor: "top",
-        textColor: "#000",
-        textHaloColor: "#FFF",
-        textHaloWidth: 3,
-        iconImage: "mapbox-marker-icon-blue",
-        iconSize: 1,
-      ));
-      if (!_symbolSet) {
-        _symbol.then((symbol) {
-          mapboxMap.onSymbolTapped.add(_onSymbolTap);
-          setState(() {
-            _symbolSet = true;
-          });
+  // マーク（ピン）を立ててラベルを付ける
+  Future<void> _addMark(LatLng tapPoint) async {
+    final SymbolInfo? symbolInfo = await Navigator.of(context).push(
+        MaterialPageRoute(builder: (context) => const CreateSymbolInfoPage()));
+    if (symbolInfo != null) {
+      // 詳細情報が入力されたらマーク（ピン）を立てる
+      _controller.future.then((mapboxMap) {
+        Future<Symbol> futureSymbol = mapboxMap.addSymbol(SymbolOptions(
+          geometry: tapPoint,
+          textField: _formatLabel(symbolInfo.title),
+          textAnchor: "top",
+          textColor: "#000",
+          textHaloColor: "#FFF",
+          textHaloWidth: 3,
+          textSize: 12.0,
+          iconImage: "mapbox-marker-icon-blue",
+          iconSize: 1,
+        ));
+        futureSymbol.then((symbol) {
+          // Map に詳細情報を追加
+          _symbolInfoMap[symbol.id] = SymbolInfo(
+              symbolInfo.title, symbolInfo.describe, symbolInfo.dateTime);
+          // onSymbolTapped の処理をセット（初回だけ）
+          if (!_symbolSet) {
+            mapboxMap.onSymbolTapped.add(_onSymbolTap);
+            setState(() {
+              _symbolSet = true;
+            });
+          }
         });
-      }
-    });
+      });
+    }
   }
 
   // マークをタップしたときに Symbol の情報を表示する
@@ -254,19 +276,28 @@ class _MapPageState extends State<MapPage> {
     showDialog(
       context: navigatorKey.currentContext!,
       builder: (BuildContext context) => AlertDialog(
-        title: Text('Symbol ID : ${symbol.id}'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.delete),
-            color: Colors.blue,
+        title: Text(_symbolInfoMap[symbol.id]!.title),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            Text(_symbolInfoMap[symbol.id]!
+                .dateTime
+                .toString()
+                .substring(0, 19)),
+            const Gap(16),
+            Text(_symbolInfoMap[symbol.id]!.describe),
+          ],
+        ),
+        actions: <Widget>[
+          TextButton(
+            child: const Text('削除'),
             onPressed: () {
               _removeMark(symbol);
               Navigator.pop(context);
             },
           ),
-          IconButton(
-            icon: const Icon(Icons.close),
-            color: Colors.blue,
+          TextButton(
+            child: const Text('閉じる'),
             onPressed: () {
               Navigator.pop(context);
             },
@@ -281,12 +312,12 @@ class _MapPageState extends State<MapPage> {
     _controller.future.then((mapboxMap) {
       mapboxMap.removeSymbol(symbol);
     });
+    _symbolInfoMap.remove(symbol.id);
   }
 
-  // 2 桁 0 埋め（Intl が正しく動かなかったため仕方なく）
-  String _fillZero(int number) {
-    String _tmpNumber = ('0' + number.toString());
-    return _tmpNumber.substring(_tmpNumber.length - 2);
+  // 先頭 5 文字を取得（5 文字以上なら先頭 4 文字＋「…」）
+  String _formatLabel(String label) {
+    return (label.length < 6 ? label : '${label.substring(0, 4)}…');
   }
 
   // 地図の上を北に

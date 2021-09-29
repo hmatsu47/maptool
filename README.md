@@ -8,9 +8,9 @@ https://zenn.dev/hmatsu47/articles/846c3186f5b4fe
 
 ## Settings etc. ( Before `flutter pub get` )
 
- - `pubspec.yaml` ( Relevant parts only )
+ - **`pubspec.yaml`** ( Relevant parts only )
 
-```yaml:
+```yaml:pubspec.yaml
 dependencies:
   flutter:
     sdk: flutter
@@ -32,15 +32,15 @@ dependency_overrides:
       path: mapbox_gl_web
 ```
 
- - `android/build.gradle` ( for Android / in `android` -> `defaultConfig` )
+ - **`android/build.gradle`** ( for Android / in `android` -> `defaultConfig` )
 
 ```json:build.gradle
         minSdkVersion 20
 ```
 
- - `android/app/src/AndroidManifest.xml` ( for Android / Relevant parts only )
+ - **`android/app/src/AndroidManifest.xml`** ( for Android / Relevant parts only )
 
-```xml:
+```xml:AndroidManifest.xml
         <meta-data
             android:name="com.mapbox.token"
             android:value="[Mapbox Access Token or Secret Token here]"
@@ -49,11 +49,11 @@ dependency_overrides:
 
  - Environment Variables ( for Android )
 
-```sh:
+```sh:.zshrc
 export SDK_REGISTRY_TOKEN="[Mapbox Access Token or Secret Token here]"
 ```
 
- - `ios/Runner/Info.plist` ( for iOS / Relevant parts only )
+ - **`ios/Runner/Info.plist`** ( for iOS / Relevant parts only )
 
 ```xml:
     <key>NSLocationAlwaysUsageDescription</key>
@@ -64,7 +64,7 @@ export SDK_REGISTRY_TOKEN="[Mapbox Access Token or Secret Token here]"
     <string>[Mapbox Access Token or Secret Token here]</string>
 ```
 
- - `ios/Runner/Info.plist` ( for iOS Debug Environments / Relevant parts only )
+ - **`ios/Runner/Info.plist`** ( for iOS Debug Environments / Relevant parts only )
 
 ```xml:
     <key>NSBonjourServices</key>
@@ -73,9 +73,9 @@ export SDK_REGISTRY_TOKEN="[Mapbox Access Token or Secret Token here]"
     </array>
 ```
 
- - `/Users/xxx/.netrc` ( Relevant parts only )
+ - **`/Users/xxx/.netrc`** ( Relevant parts only )
 
-```sh:
+```sh:.netrc
 machine api.mapbox.com
 login mapbox
 password [Mapbox Access Token or Secret Token here]

@@ -8,7 +8,9 @@ https://zenn.dev/hmatsu47/articles/846c3186f5b4fe
 
 ![画面例](map_image.png "画面例")
 
-## Settings etc. ( Before `flutter pub get` )
+## Settings etc.
+
+ - **`flutter create maptool`**
 
  - **`pubspec.yaml`** ( Relevant parts only )
 
@@ -82,3 +84,5 @@ machine api.mapbox.com
 login mapbox
 password [Mapbox Access Token or Secret Token here]
 ```
+
+ - **`flutter pub get`**

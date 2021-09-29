@@ -10,9 +10,9 @@ https://zenn.dev/hmatsu47/articles/846c3186f5b4fe
 
 ## Settings etc.
 
- - **`flutter create maptool`**
+ - **Run '`flutter create maptool`'**
 
- - **`pubspec.yaml`** ( Relevant parts only )
+ - **Edit '`pubspec.yaml`'** ( Relevant parts only )
 
 ```yaml:pubspec.yaml
 dependencies:
@@ -36,13 +36,13 @@ dependency_overrides:
       path: mapbox_gl_web
 ```
 
- - **`android/build.gradle`** ( for Android / in `android` -> `defaultConfig` )
+ - **Edit '`android/build.gradle`'** ( for Android / in `android` -> `defaultConfig` )
 
 ```json:build.gradle
         minSdkVersion 20
 ```
 
- - **`android/app/src/AndroidManifest.xml`** ( for Android / Relevant parts only )
+ - **Edit '`android/app/src/AndroidManifest.xml`'** ( for Android / Relevant parts only )
 
 ```xml:AndroidManifest.xml
         <meta-data
@@ -51,13 +51,13 @@ dependency_overrides:
             />
 ```
 
- - `Environment Variables` ( for Android )
+ - **Add `Environment Variable(s)`** ( for Android )
 
 ```sh:.zshrc
 export SDK_REGISTRY_TOKEN="[Mapbox Access Token or Secret Token here]"
 ```
 
- - **`ios/Runner/Info.plist`** ( for iOS / Relevant parts only )
+ - **Edit '`ios/Runner/Info.plist`'** ( for iOS / Relevant parts only )
 
 ```xml:
     <key>NSLocationAlwaysUsageDescription</key>
@@ -68,7 +68,7 @@ export SDK_REGISTRY_TOKEN="[Mapbox Access Token or Secret Token here]"
     <string>[Mapbox Access Token or Secret Token here]</string>
 ```
 
- - **`ios/Runner/Info.plist`** ( for iOS Debug Environments / Relevant parts only )
+ - **Edit '`ios/Runner/Info.plist`'** ( for iOS Debug Environments / Relevant parts only )
 
 ```xml:
     <key>NSBonjourServices</key>
@@ -77,7 +77,7 @@ export SDK_REGISTRY_TOKEN="[Mapbox Access Token or Secret Token here]"
     </array>
 ```
 
- - **`/Users/xxx/.netrc`** ( Relevant parts only )
+ - **Edit '`/Users/xxx/.netrc`'** ( Relevant parts only )
 
 ```sh:.netrc
 machine api.mapbox.com
@@ -85,4 +85,4 @@ login mapbox
 password [Mapbox Access Token or Secret Token here]
 ```
 
- - **`flutter pub get`**
+ - **Run '`flutter pub get`'**

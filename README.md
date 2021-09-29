@@ -47,7 +47,7 @@ dependency_overrides:
             />
 ```
 
- - Environment Variables ( for Android )
+ - `Environment Variables` ( for Android )
 
 ```sh:.zshrc
 export SDK_REGISTRY_TOKEN="[Mapbox Access Token or Secret Token here]"

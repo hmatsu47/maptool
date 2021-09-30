@@ -16,7 +16,7 @@ https://zenn.dev/hmatsu47/articles/846c3186f5b4fe
 
  - **Run '`flutter create maptool`'**
 
- - **Edit '`pubspec.yaml`'** ( Relevant parts only )
+ - **Edit '`pubspec.yaml`'** ( Relevant part only )
 
 ```yaml:pubspec.yaml
 dependencies:
@@ -46,7 +46,7 @@ dependency_overrides:
         minSdkVersion 20
 ```
 
- - **Edit '`android/app/src/AndroidManifest.xml`'** ( for Android / Relevant parts only )
+ - **Edit '`android/app/src/AndroidManifest.xml`'** ( for Android / Relevant part only )
 
 ```xml:AndroidManifest.xml
         <meta-data
@@ -61,7 +61,7 @@ dependency_overrides:
 export SDK_REGISTRY_TOKEN="[Mapbox Access Token or Secret Token here]"
 ```
 
- - **Edit '`ios/Runner/Info.plist`'** ( for iOS / Relevant parts only )
+ - **Edit '`ios/Runner/Info.plist`'** ( for iOS / Relevant part only )
 
 ```xml:
     <key>NSLocationAlwaysUsageDescription</key>
@@ -72,7 +72,7 @@ export SDK_REGISTRY_TOKEN="[Mapbox Access Token or Secret Token here]"
     <string>[Mapbox Access Token or Secret Token here]</string>
 ```
 
- - **Edit '`ios/Runner/Info.plist`'** ( for iOS Debug Environments / Relevant parts only )
+ - **Edit '`ios/Runner/Info.plist`'** ( for iOS Debug Environments / Relevant part only )
 
 ```xml:
     <key>NSBonjourServices</key>
@@ -81,7 +81,7 @@ export SDK_REGISTRY_TOKEN="[Mapbox Access Token or Secret Token here]"
     </array>
 ```
 
- - **Edit '`/Users/xxx/.netrc`'** ( Relevant parts only )
+ - **Edit '`/Users/xxx/.netrc`'** ( Relevant part only )
 
 ```sh:.netrc
 machine api.mapbox.com

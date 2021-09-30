@@ -10,6 +10,10 @@ https://zenn.dev/hmatsu47/articles/846c3186f5b4fe
 
 ## Settings etc.
 
+ - **Create Mapbox Style**
+
+   - https://studio.mapbox.com/
+
  - **Run '`flutter create maptool`'**
 
  - **Edit '`pubspec.yaml`'** ( Relevant parts only )
@@ -86,3 +90,9 @@ password [Mapbox Access Token or Secret Token here]
 ```
 
  - **Run '`flutter pub get`'**
+
+ - **Edit (Create) `.dart` Files**
+
+    - [lib/main.dart](lib/main.dart)
+    - [lib/map_page.dart](lib/map_page.dart)
+    - [lib/create_symbol_info_page.dart](lib/create_symbol_info_page.dart)

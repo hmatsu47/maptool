@@ -2,9 +2,10 @@
 
 ## Explanation
 
-https://qiita.com/hmatsu47/items/b98ef4c1a87cc0ec415d
-
-https://zenn.dev/hmatsu47/articles/846c3186f5b4fe
+ - https://qiita.com/hmatsu47/items/b98ef4c1a87cc0ec415d
+ - https://zenn.dev/hmatsu47/articles/846c3186f5b4fe
+ - https://zenn.dev/hmatsu47/articles/9102fb79a99a98
+ - https://zenn.dev/hmatsu47/articles/e81bf3c2bf00f8
 
 ![画面例](map_image.png "画面例")
 
@@ -25,6 +26,7 @@ dependencies:
   mapbox_gl: ^0.12.0
   location: ^4.3.0
   gap: ^2.0.0
+  sqflite: ^2.0.0
 
 dependency_overrides:
   mapbox_gl:

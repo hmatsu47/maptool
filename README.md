@@ -26,7 +26,11 @@ dependencies:
   mapbox_gl: ^0.12.0
   location: ^4.3.0
   gap: ^2.0.0
-  sqflite: ^2.0.0
+  sqflite: ^2.0.0+4
+  image_picker: ^0.8.4+2
+  cross_file: ^0.3.1+5
+  image_gallery_saver: '^1.7.0'
+  path_provider: ^2.0.5
 
 dependency_overrides:
   mapbox_gl:
@@ -51,6 +55,13 @@ dependency_overrides:
  - **Edit '`android/app/src/AndroidManifest.xml`'** ( for Android / Relevant part only )
 
 ```xml:AndroidManifest.xml
+   <application
+        android:label="maptool"
+        android:icon="@mipmap/ic_launcher"
+        android:requestLegacyExternalStorage="true">
+```
+
+```xml:AndroidManifest.xml
         <meta-data
             android:name="com.mapbox.token"
             android:value="[Mapbox Access Token or Secret Token here]"
@@ -72,6 +83,12 @@ export SDK_REGISTRY_TOKEN="[Mapbox Access Token or Secret Token here]"
     <string>Your location is required for this app</string>
     <key>MGLMapboxAccessToken</key>
     <string>[Mapbox Access Token or Secret Token here]</string>
+  	<key>NSPhotoLibraryUsageDescription</key>
+  	<string>This app requires to access your photo library</string>
+  	<key>NSCameraUsageDescription</key>
+  	<string>This app requires to add file to your camera</string>
+  	<key>NSMicrophoneUsageDescription</key>
+	  <string>This app requires to add file to your photo library your microphone</string>
 ```
 
  - **Edit '`ios/Runner/Info.plist`'** ( for iOS Debug Environments / Relevant part only )

@@ -77,27 +77,25 @@ export SDK_REGISTRY_TOKEN="[Mapbox Access Token or Secret Token here]"
  - **Edit '`ios/Runner/Info.plist`'** ( for iOS / Relevant part only )
 
 ```xml:
-    <key>NSLocationAlwaysUsageDescription</key>
-    <string>Your location is required for this app</string>
-    <key>NSLocationWhenInUseUsageDescription</key>
-    <string>Your location is required for this app</string>
-    <key>MGLMapboxAccessToken</key>
-    <string>[Mapbox Access Token or Secret Token here]</string>
-  	<key>NSPhotoLibraryUsageDescription</key>
-  	<string>This app requires to access your photo library</string>
-  	<key>NSCameraUsageDescription</key>
-  	<string>This app requires to add file to your camera</string>
-  	<key>NSMicrophoneUsageDescription</key>
-	  <string>This app requires to add file to your photo library your microphone</string>
+	<key>NSLocationAlwaysUsageDescription</key>
+	<string>Your location is required for this app</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Your location is required for this app</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>This app requires to access your photo library</string>
+	<key>NSCameraUsageDescription</key>
+	<string>This app requires to add file to your camera</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>This app requires to add file to your photo library your microphone</string>
 ```
 
  - **Edit '`ios/Runner/Info.plist`'** ( for iOS Debug Environments / Relevant part only )
 
 ```xml:
-    <key>NSBonjourServices</key>
-    <array>
-        <string>_dartobservatory._tcp.</string>
-    </array>
+	<key>NSBonjourServices</key>
+	<array>
+		<string>_dartobservatory._tcp.</string>
+	</array>
 ```
 
  - **Edit '`/Users/xxx/.netrc`'** ( Relevant part only )

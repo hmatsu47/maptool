@@ -1,18 +1,13 @@
 import 'dart:async';
 import 'dart:io';
 import 'dart:math';
-import 'dart:typed_data';
 
-import 'package:cross_file/cross_file.dart';
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
-import 'package:image_gallery_saver/image_gallery_saver.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:location/location.dart';
 import 'package:mapbox_gl/mapbox_gl.dart';
 import 'package:maptool/create_symbol_info_page.dart';
 import 'package:maptool/main.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';
 
 class MapPage extends StatefulWidget {
@@ -40,19 +35,6 @@ class SymbolInfoWithLatLng {
   SymbolInfoWithLatLng(this.id, this.symbolInfo, this.latLng);
 }
 
-// 画像の登録情報
-class Picture {
-  int id;
-  int symbolId;
-  String comment;
-  DateTime dateTime;
-  String filePath;
-  String cloudPath;
-
-  Picture(this.id, this.symbolId, this.comment, this.dateTime, this.filePath,
-      this.cloudPath);
-}
-
 class _MapPageState extends State<MapPage> {
   final Completer<MapboxMapController> _controller = Completer();
   final Location _locationService = Location();
@@ -77,8 +59,6 @@ class _MapPageState extends State<MapPage> {
   bool _symbolAllSet = false;
   // DB
   late Database _database;
-  // スマホカメラ
-  final ImagePicker _picker = ImagePicker();
 
   // 現在位置の監視状況
   StreamSubscription? _locationChangedListen;
@@ -142,7 +122,7 @@ class _MapPageState extends State<MapPage> {
       ),
       onMapCreated: (MapboxMapController controller) {
         _controller.complete(controller);
-        _createDatabase().then((value) => {_addSymbols(), _createIndex()});
+        _createDatabase().then((value) => {_addSymbols()});
         _controller.future.then((mapboxMap) {
           mapboxMap.onSymbolTapped.add(_onSymbolTap);
         });
@@ -168,17 +148,6 @@ class _MapPageState extends State<MapPage> {
   // フローティングアイコンウィジェット
   Widget _makeFloatingIcons() {
     return Column(mainAxisSize: MainAxisSize.min, children: [
-      // FloatingActionButton(
-      //     heroTag: 'recreateTables',
-      //     backgroundColor: Colors.blue,
-      //     onPressed: () {
-      //       // DB のテーブルを再作成する
-      //       _recreateTables();
-      //     },
-      //     child: const Icon(
-      //       Icons.delete,
-      //     )),
-      // const Gap(32),
       FloatingActionButton(
         heroTag: 'addMark',
         backgroundColor: Colors.blue,
@@ -272,73 +241,23 @@ class _MapPageState extends State<MapPage> {
   // DB 作成
   Future<void> _createDatabase() async {
     // DB テーブル作成
-    _database = await openDatabase('maptool.db', version: 2,
-        onCreate: (db, version) async {
-      await db.execute(
-        'CREATE TABLE symbol_info ('
-        '  id INTEGER PRIMARY KEY AUTOINCREMENT,'
-        '  title TEXT NOT NULL,'
-        '  describe TEXT NOT NULL,'
-        '  date_time INTEGER NOT NULL,'
-        '  latitude REAL NOT NULL,'
-        '  longtitude REAL NOT NULL'
-        ')',
-      );
-    }, onUpgrade: (db, oldVersion, newVersion) async {
-      await db.execute(
-        'CREATE TABLE IF NOT EXISTS pictures ('
-        '  id INTEGER PRIMARY KEY AUTOINCREMENT,'
-        '  symbol_id INTEGER NOT NULL,'
-        '  comment TEXT NOT NULL,'
-        '  date_time INTEGER NOT NULL,'
-        '  file_path TEXT NOT NULL,'
-        '  cloud_path TEXT NOT NULL'
-        ')',
-      );
-    });
+    _database = await openDatabase(
+      'maptool.db',
+      version: 1,
+      onCreate: (db, version) async {
+        await db.execute(
+          'CREATE TABLE symbol_info ('
+          '  id INTEGER PRIMARY KEY AUTOINCREMENT,'
+          '  title TEXT,'
+          '  describe TEXT,'
+          '  date_time INTEGER,'
+          '  latitude REAL,'
+          '  longtitude REAL'
+          ')',
+        );
+      },
+    );
   }
-
-  // INDEX 作成
-  Future<void> _createIndex() async {
-    await _database.execute('CREATE INDEX IF NOT EXISTS pictures_symbol_id'
-        '  ON pictures (symbol_id)');
-  }
-
-  // // TABLE 再作成
-  // _recreateTables() {
-  //   _dropTables().then((value) => {_createTables()});
-  //   // _dropTables();
-  // }
-
-  // // DROP TABLE
-  // Future<void> _dropTables() async {
-  //   await _database.execute('DROP TABLE IF EXISTS symbol_info');
-  //   await _database.execute('DROP TABLE IF EXISTS pictures');
-  // }
-
-  // // CREATE TABLE
-  // Future<void> _createTables() async {
-  //   await _database.execute(
-  //     'CREATE TABLE IF NOT EXISTS symbol_info ('
-  //     '  id INTEGER PRIMARY KEY AUTOINCREMENT,'
-  //     '  title TEXT NOT NULL,'
-  //     '  describe TEXT NOT NULL,'
-  //     '  date_time INTEGER NOT NULL,'
-  //     '  latitude REAL NOT NULL,'
-  //     '  longtitude REAL NOT NULL'
-  //     ')',
-  //   );
-  //   await _database.execute(
-  //     'CREATE TABLE IF NOT EXISTS pictures ('
-  //     '  id INTEGER PRIMARY KEY AUTOINCREMENT,'
-  //     '  symbol_id INTEGER NOT NULL,'
-  //     '  comment TEXT NOT NULL,'
-  //     '  date_time INTEGER NOT NULL,'
-  //     '  file_path TEXT NOT NULL,'
-  //     '  cloud_path TEXT NOT NULL'
-  //     ')',
-  //   );
-  // }
 
   // DB クローズ
   Future<void> _closeDatabase() async {
@@ -406,20 +325,6 @@ class _MapPageState extends State<MapPage> {
     int id = _symbolInfoMap[symbol.id]!;
     return await _database
         .delete('symbol_info', where: 'id = ?', whereArgs: [id]);
-  }
-
-  // DB 画像行追加
-  Future<int> _addPictureRecord(Picture picture) async {
-    return await _database.insert(
-      'pictures',
-      {
-        'symbol_id': picture.symbolId,
-        'comment': picture.comment,
-        'date_time': picture.dateTime.millisecondsSinceEpoch,
-        'file_path': picture.filePath,
-        'cloud_path': picture.cloudPath,
-      },
-    );
   }
 
   // 現在位置を取得
@@ -522,7 +427,6 @@ class _MapPageState extends State<MapPage> {
 
   // Symbol の情報を表示する
   void _dispSymbolInfo(Symbol symbol) {
-    int symbolId = _symbolInfoMap[symbol.id]!;
     Future<SymbolInfo> futureSymbolInfo = _fetchRecord(symbol);
     futureSymbolInfo.then((symbolInfo) => {
           showDialog(
@@ -538,12 +442,6 @@ class _MapPageState extends State<MapPage> {
                 ],
               ),
               actions: <Widget>[
-                TextButton(
-                  child: const Text('写真追加'),
-                  onPressed: () {
-                    _addPictureFromCamera(symbolId);
-                  },
-                ),
                 TextButton(
                   child: const Text('削除'),
                   onPressed: () {
@@ -570,44 +468,6 @@ class _MapPageState extends State<MapPage> {
     });
     _removeRecord(symbol);
     _symbolInfoMap.remove(symbol.id);
-  }
-
-  // 写真を撮影してマーク（ピン）に追加する
-  _addPictureFromCamera(int symbolId) async {
-    final XFile? photo = await _picker.pickImage(
-        source: ImageSource.camera,
-        maxWidth: 1600,
-        maxHeight: 1600,
-        imageQuality: 85);
-    if (photo != null) {
-      // 写真を保存する
-      _savePicture(photo, symbolId)
-          .then((filePath) => {_addPictureInfo(photo, symbolId, filePath)});
-    }
-  }
-
-  // 画像を保存する
-  Future<String> _savePicture(XFile photo, int symbolId) async {
-    Uint8List buffer = await photo.readAsBytes();
-    String imagePath = (await getApplicationDocumentsDirectory()).path;
-    String savePath = '$imagePath/${photo.name}';
-    File saveFile = File(savePath);
-    saveFile.writeAsBytesSync(buffer, flush: true, mode: FileMode.write);
-
-    int len = await saveFile.length().then((value) => value);
-    // ignore: avoid_print
-    print('Path: ${saveFile.path}, Length: $len');
-
-    // 画像ギャラリーにも保存
-    await ImageGallerySaver.saveImage(buffer, name: photo.name);
-
-    return saveFile.path;
-  }
-
-  // 画像情報を保存する
-  _addPictureInfo(XFile photo, int symbolId, String filePath) {
-    Picture picture = Picture(0, symbolId, '', DateTime.now(), filePath, '');
-    _addPictureRecord(picture);
   }
 
   // 先頭 5 文字を取得（5 文字以上なら先頭 4 文字＋「…」）

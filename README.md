@@ -87,6 +87,8 @@ export SDK_REGISTRY_TOKEN="[Mapbox Access Token or Secret Token here]"
 	<string>This app requires to add file to your camera</string>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>This app requires to add file to your photo library your microphone</string>
+	<key>MGLMapboxAccessToken</key>
+	<string>[Mapbox Access Token or Secret Token here]</string>
 ```
 
  - **Edit '`ios/Runner/Info.plist`'** ( for iOS Debug Environments / Relevant part only )

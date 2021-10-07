@@ -10,7 +10,6 @@ import 'package:image_gallery_saver/image_gallery_saver.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:location/location.dart';
 import 'package:mapbox_gl/mapbox_gl.dart';
-import 'package:maptool/create_symbol_info_page.dart';
 import 'package:maptool/main.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';
@@ -496,11 +495,10 @@ class _MapPageState extends State<MapPage> {
 
   // マーク（ピン）を立ててラベルを付ける
   Future<void> _addMark(LatLng tapPoint) async {
-    final SymbolInfo? symbolInfo = await Navigator.of(context).push(
-        MaterialPageRoute(builder: (context) => const CreateSymbolInfoPage()));
+    final symbolInfo = await Navigator.of(context).pushNamed('/createSymbol');
     if (symbolInfo != null) {
       // 詳細情報が入力されたらマーク（ピン）を立てる
-      _addMarkToMap(tapPoint, symbolInfo);
+      _addMarkToMap(tapPoint, symbolInfo as SymbolInfo);
     }
   }
 
@@ -549,7 +547,7 @@ class _MapPageState extends State<MapPage> {
             builder: (BuildContext context) => AlertDialog(
               title: Text(symbolInfo.title),
               content: Column(
-                mainAxisSize: MainAxisSize.min,
+                mainAxisSize: MainAxisSize.max,
                 children: <Widget>[
                   Text(symbolInfo.dateTime.toString().substring(0, 19)),
                   const Gap(16),

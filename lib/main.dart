@@ -1,21 +1,22 @@
 import 'package:flutter/material.dart';
 
-import 'map_page.dart';
+import 'package:maptool/edit_symbol_info_page.dart';
+import 'package:maptool/display_symbol_info_page.dart';
+import 'package:maptool/map_page.dart';
 
 final navigatorKey = GlobalKey<NavigatorState>();
 void main() {
-  runApp(const MyApp());
-}
-
-class MyApp extends StatelessWidget {
-  const MyApp({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
+  runApp(
+    MaterialApp(
       title: 'Flutter Mapbox',
-      home: const MapPage(),
+      initialRoute: '/',
+      routes: <String, WidgetBuilder>{
+        '/': (BuildContext context) => const MapPage(),
+        '/editSymbol': (BuildContext context) => const CreateSymbolInfoPage(),
+        '/displaySymbol': (BuildContext context) =>
+            const DisplaySymbolInfoPage(),
+      },
       navigatorKey: navigatorKey,
-    );
-  }
+    ),
+  );
 }

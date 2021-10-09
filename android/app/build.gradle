@@ -46,6 +46,7 @@ android {
         applicationId "com.example.maptool"
         minSdkVersion 20
         targetSdkVersion 30
+        multiDexEnabled true
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
     }

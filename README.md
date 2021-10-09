@@ -7,6 +7,11 @@
  - https://zenn.dev/hmatsu47/articles/9102fb79a99a98
  - https://zenn.dev/hmatsu47/articles/e81bf3c2bf00f8
 
+**In development:**
+
+ - Edit information about pin.
+ - Take photographs (related to pin).
+
 ![画面例](map_image.png "画面例")
 
 ## Settings etc.
@@ -50,6 +55,7 @@ dependency_overrides:
 
 ```json:build.gradle
         minSdkVersion 20
+        multiDexEnabled true
 ```
 
  - **Edit '`android/app/src/AndroidManifest.xml`'** ( for Android / Relevant part only )
@@ -89,6 +95,10 @@ export SDK_REGISTRY_TOKEN="[Mapbox Access Token or Secret Token here]"
 	<string>This app requires to add file to your photo library your microphone</string>
 	<key>MGLMapboxAccessToken</key>
 	<string>[Mapbox Access Token or Secret Token here]</string>
+	<key>UISupportsDocumentBrowser</key>
+	<true/>
+	<key>LSSupportsOpeningDocumentsInPlace</key>
+	<true/>
 ```
 
  - **Edit '`ios/Runner/Info.plist`'** ( for iOS Debug Environments / Relevant part only )
@@ -114,4 +124,5 @@ password [Mapbox Access Token or Secret Token here]
 
     - [lib/main.dart](lib/main.dart)
     - [lib/map_page.dart](lib/map_page.dart)
-    - [lib/create_symbol_info_page.dart](lib/create_symbol_info_page.dart)
+    - [lib/display_symbol_info_page.dart](lib/display_symbol_info_page.dart)
+    - [lib/edit_symbol_info_page.dart](lib/edit_symbol_info_page.dart)

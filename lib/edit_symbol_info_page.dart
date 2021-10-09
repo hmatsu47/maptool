@@ -14,14 +14,20 @@ class CreateSymbolInfoPage extends StatefulWidget {
 class _CreateSymbolInfoPageState extends State<CreateSymbolInfoPage> {
   String _title = "";
   String _describe = "";
+  DateTime _dateTime = DateTime.now();
 
   bool _isError = false;
 
   @override
   Widget build(BuildContext context) {
+    final args = ModalRoute.of(context)!.settings.arguments as SymbolInfo;
+    _title = args.title;
+    _describe = args.describe;
+    _dateTime = args.dateTime;
+    final titleBar = (_title == '' ? 'ピン情報登録' : 'ピン情報変更');
     return Scaffold(
       appBar: AppBar(
-        title: const Text('ピン情報登録'),
+        title: Text(titleBar),
       ),
       body: _makeInputForm(),
     );
@@ -37,7 +43,8 @@ class _CreateSymbolInfoPageState extends State<CreateSymbolInfoPage> {
           mainAxisSize: MainAxisSize.min,
           children: [
             const Gap(16),
-            TextField(
+            TextFormField(
+              initialValue: _title,
               autofocus: true,
               maxLength: 20,
               maxLengthEnforcement: MaxLengthEnforcement.none,
@@ -55,7 +62,8 @@ class _CreateSymbolInfoPageState extends State<CreateSymbolInfoPage> {
               ),
             ),
             const Gap(16),
-            TextField(
+            TextFormField(
+              initialValue: _describe,
               maxLength: 240,
               maxLengthEnforcement: MaxLengthEnforcement.none,
               decoration: const InputDecoration(
@@ -84,9 +92,8 @@ class _CreateSymbolInfoPageState extends State<CreateSymbolInfoPage> {
                       });
                       return;
                     }
-                    DateTime currentDateTime = DateTime.now();
-                    Navigator.pop(context,
-                        SymbolInfo(_title, _describe, currentDateTime));
+                    Navigator.pop(
+                        context, SymbolInfo(_title, _describe, _dateTime));
                   },
                 ),
               ],

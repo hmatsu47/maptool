@@ -10,9 +10,10 @@ import 'package:image_gallery_saver/image_gallery_saver.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:location/location.dart';
 import 'package:mapbox_gl/mapbox_gl.dart';
-import 'package:maptool/main.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';
+
+import 'main.dart';
 
 class MapPage extends StatefulWidget {
   const MapPage({Key? key}) : super(key: key);
@@ -52,6 +53,30 @@ class Picture {
       this.cloudPath);
 }
 
+// Symbol 情報表示画面に渡す内容一式
+class FullSymbolInfo {
+  int symbolId;
+  Symbol symbol;
+  SymbolInfo symbolInfo;
+  Function addPictureFromCamera;
+  Function removeMark;
+  Function modifyRecord;
+  Function formatLabel;
+  List<Picture> pictures;
+  String imagePath;
+
+  FullSymbolInfo(
+      this.symbolId,
+      this.symbol,
+      this.symbolInfo,
+      this.addPictureFromCamera,
+      this.removeMark,
+      this.modifyRecord,
+      this.formatLabel,
+      this.pictures,
+      this.imagePath);
+}
+
 class _MapPageState extends State<MapPage> {
   final Completer<MapboxMapController> _controller = Completer();
   final Location _locationService = Location();
@@ -78,6 +103,8 @@ class _MapPageState extends State<MapPage> {
   late Database _database;
   // スマホカメラ
   final ImagePicker _picker = ImagePicker();
+  // 画像保存パス
+  String _imagePath = '';
 
   // 現在位置の監視状況
   StreamSubscription? _locationChangedListen;
@@ -141,7 +168,8 @@ class _MapPageState extends State<MapPage> {
       ),
       onMapCreated: (MapboxMapController controller) {
         _controller.complete(controller);
-        _createDatabase().then((value) => {_addSymbols(), _createIndex()});
+        _createDatabase()
+            .then((value) => {_addSymbols(), _createIndex(), _setImagePath()});
         _controller.future.then((mapboxMap) {
           mapboxMap.onSymbolTapped.add(_onSymbolTap);
         });
@@ -235,27 +263,29 @@ class _MapPageState extends State<MapPage> {
     ]);
   }
 
+  // 画像パス
+  _setImagePath() async {
+    _imagePath = (await getApplicationDocumentsDirectory()).path;
+  }
+
   // DB から Symbol 情報を読み込んで地図に表示する
-  void _addSymbols() {
-    Future<List<SymbolInfoWithLatLng>> futureInfoList = _fetchRecords();
-    futureInfoList.then((infoList) => {
-          _controller.future.then((mapboxMap) {
-            Future<List<Symbol>> futureSymbolList =
-                mapboxMap.addSymbols(_convertToSymbolOptions(infoList));
-            // 全 Symbol 情報（DB 主キーへの変換マップ）を設定する
-            _symbolInfoMap.clear();
-            futureSymbolList.then((symbolList) => {
-                  for (int i = 0; i < symbolList.length; i++)
-                    {_symbolInfoMap[symbolList[i].id] = infoList[i].id}
-                });
-          })
+  _addSymbols() async {
+    final List<SymbolInfoWithLatLng> infoList = await _fetchRecords();
+    _controller.future.then((mapboxMap) async {
+      final List<Symbol> symbolList =
+          await mapboxMap.addSymbols(_convertToSymbolOptions(infoList));
+      // 全 Symbol 情報（DB 主キーへの変換マップ）を設定する
+      _symbolInfoMap.clear();
+      for (int i = 0; i < symbolList.length; i++) {
+        _symbolInfoMap[symbolList[i].id] = infoList[i].id;
+      }
+      // 全てのマーク（ピン）を立て終えた
+      if (!_symbolAllSet) {
+        setState(() {
+          _symbolAllSet = true;
         });
-    // 全てのマーク（ピン）を立て終えた
-    if (!_symbolAllSet) {
-      setState(() {
-        _symbolAllSet = true;
-      });
-    }
+      }
+    });
   }
 
   // SymbolInfoWithLatLngs のリストから SymbolOptions のリストに変換
@@ -263,9 +293,9 @@ class _MapPageState extends State<MapPage> {
       List<SymbolInfoWithLatLng> infoList) {
     List<SymbolOptions> optionsList = [];
     for (SymbolInfoWithLatLng info in infoList) {
-      SymbolOptions options = SymbolOptions(
+      final SymbolOptions options = SymbolOptions(
         geometry: LatLng(info.latLng.latitude, info.latLng.longitude),
-        textField: _formatLabel(info.symbolInfo.title),
+        textField: _formatLabel(info.symbolInfo.title, 5),
         textAnchor: "top",
         textColor: "#000",
         textHaloColor: "#FFF",
@@ -280,7 +310,7 @@ class _MapPageState extends State<MapPage> {
   }
 
   // DB 作成
-  Future<void> _createDatabase() async {
+  _createDatabase() async {
     // DB テーブル作成
     _database = await openDatabase('maptool.db', version: 2,
         onCreate: (db, version) async {
@@ -309,7 +339,7 @@ class _MapPageState extends State<MapPage> {
   }
 
   // INDEX 作成
-  Future<void> _createIndex() async {
+  _createIndex() async {
     await _database.execute('CREATE INDEX IF NOT EXISTS pictures_symbol_id'
         '  ON pictures (symbol_id)');
   }
@@ -321,13 +351,13 @@ class _MapPageState extends State<MapPage> {
   // }
 
   // // DROP TABLE
-  // Future<void> _dropTables() async {
+  // _dropTables() async {
   //   await _database.execute('DROP TABLE IF EXISTS symbol_info');
   //   await _database.execute('DROP TABLE IF EXISTS pictures');
   // }
 
   // // CREATE TABLE
-  // Future<void> _createTables() async {
+  // _createTables() async {
   //   await _database.execute(
   //     'CREATE TABLE IF NOT EXISTS symbol_info ('
   //     '  id INTEGER PRIMARY KEY AUTOINCREMENT,'
@@ -351,13 +381,13 @@ class _MapPageState extends State<MapPage> {
   // }
 
   // DB クローズ
-  Future<void> _closeDatabase() async {
+  _closeDatabase() async {
     _database.close();
   }
 
   // DB 全行取得
   Future<List<SymbolInfoWithLatLng>> _fetchRecords() async {
-    List<Map<String, Object?>> maps = await _database.query(
+    final List<Map<String, Object?>> maps = await _database.query(
       'symbol_info',
       columns: [
         'id',
@@ -383,8 +413,8 @@ class _MapPageState extends State<MapPage> {
 
   // DB 行取得（詳細情報のみ）
   Future<SymbolInfo> _fetchRecord(Symbol symbol) async {
-    int id = _symbolInfoMap[symbol.id]!;
-    List<Map<String, Object?>> maps = await _database.query(
+    final int id = _symbolInfoMap[symbol.id]!;
+    final List<Map<String, Object?>> maps = await _database.query(
       'symbol_info',
       columns: ['title', 'describe', 'date_time'],
       where: 'id = ?',
@@ -411,11 +441,55 @@ class _MapPageState extends State<MapPage> {
     );
   }
 
+  // DB 行更新
+  Future<int> _modifyRecord(Symbol symbol, SymbolInfo symbolInfo) async {
+    final int id = _symbolInfoMap[symbol.id]!;
+    return await _database.update(
+      'symbol_info',
+      {
+        'title': symbolInfo.title,
+        'describe': symbolInfo.describe,
+      },
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+  }
+
   // DB 行削除
   Future<int> _removeRecord(Symbol symbol) async {
-    int id = _symbolInfoMap[symbol.id]!;
+    final int id = _symbolInfoMap[symbol.id]!;
     return await _database
         .delete('symbol_info', where: 'id = ?', whereArgs: [id]);
+  }
+
+  // DB 画像行取得（対象 Symbol の）
+  Future<List<Picture>> _fetchPictureRecords(Symbol symbol) async {
+    final int id = _symbolInfoMap[symbol.id]!;
+    final List<Map<String, Object?>> maps = await _database.query(
+      'pictures',
+      columns: [
+        'id',
+        'symbol_id',
+        'comment',
+        'date_time',
+        'file_path',
+        'cloud_path'
+      ],
+      where: 'symbol_id = ?',
+      whereArgs: [id],
+    );
+    List<Picture> pictures = [];
+    for (Map map in maps) {
+      final Picture picture = Picture(
+          map['id'],
+          map['symbol_id'],
+          map['comment'],
+          DateTime.fromMillisecondsSinceEpoch(map['date_time'], isUtc: false),
+          map['file_path'],
+          map['cloud_path']);
+      pictures.add(picture);
+    }
+    return pictures;
   }
 
   // DB 画像行追加
@@ -433,12 +507,12 @@ class _MapPageState extends State<MapPage> {
   }
 
   // 現在位置を取得
-  void _getLocation() async {
+  _getLocation() async {
     _yourLocation = await _locationService.getLocation();
   }
 
   // GPS 追従を ON / OFF
-  void _gpsToggle() {
+  _gpsToggle() {
     setState(() {
       _gpsTracking = !_gpsTracking;
     });
@@ -447,7 +521,7 @@ class _MapPageState extends State<MapPage> {
   }
 
   // GPS 追従が ON なら地図の中心を現在位置へ
-  void _moveCameraToGpsPoint() {
+  _moveCameraToGpsPoint() {
     if (_gpsTracking) {
       _controller.future.then((mapboxMap) {
         if (Platform.isAndroid) {
@@ -464,7 +538,7 @@ class _MapPageState extends State<MapPage> {
   }
 
   // 地図をタップしたときの処理
-  void _onTap(Point<double> point, LatLng tapPoint) {
+  _onTap(Point<double> point, LatLng tapPoint) {
     _moveCameraToTapPoint(tapPoint);
     setState(() {
       _gpsTracking = false;
@@ -472,7 +546,7 @@ class _MapPageState extends State<MapPage> {
   }
 
   // 地図の中心をタップした場所へ
-  void _moveCameraToTapPoint(LatLng tapPoint) {
+  _moveCameraToTapPoint(LatLng tapPoint) {
     _controller.future.then((mapboxMap) {
       if (Platform.isAndroid) {
         mapboxMap.moveCamera(CameraUpdate.newLatLng(tapPoint));
@@ -483,7 +557,7 @@ class _MapPageState extends State<MapPage> {
   }
 
   // 画面の中心にマーク（ピン）を立てる
-  void _addSymbolOnCameraPosition() {
+  _addSymbolOnCameraPosition() {
     if (_symbolAllSet) {
       _controller.future.then((mapboxMap) {
         CameraPosition? camera = mapboxMap.cameraPosition;
@@ -494,8 +568,10 @@ class _MapPageState extends State<MapPage> {
   }
 
   // マーク（ピン）を立ててラベルを付ける
-  Future<void> _addMark(LatLng tapPoint) async {
-    final symbolInfo = await Navigator.of(context).pushNamed('/createSymbol');
+  _addMark(LatLng tapPoint) async {
+    final symbolInfo = await Navigator.of(navigatorKey.currentContext!)
+        .pushNamed('/editSymbol',
+            arguments: SymbolInfo('', '', DateTime.now()));
     if (symbolInfo != null) {
       // 詳細情報が入力されたらマーク（ピン）を立てる
       _addMarkToMap(tapPoint, symbolInfo as SymbolInfo);
@@ -503,12 +579,12 @@ class _MapPageState extends State<MapPage> {
   }
 
   // 指定された詳細情報を使ってマーク（ピン）を立てる
-  int _addMarkToMap(LatLng tapPoint, SymbolInfo symbolInfo) {
+  Future<int> _addMarkToMap(LatLng tapPoint, SymbolInfo symbolInfo) async {
     int symbolId = 0;
-    _controller.future.then((mapboxMap) {
-      Future<Symbol> futureSymbol = mapboxMap.addSymbol(SymbolOptions(
+    await _controller.future.then((mapboxMap) async {
+      final Symbol symbol = await mapboxMap.addSymbol(SymbolOptions(
         geometry: tapPoint,
-        textField: _formatLabel(symbolInfo.title),
+        textField: _formatLabel(symbolInfo.title, 5),
         textAnchor: "top",
         textColor: "#000",
         textHaloColor: "#FFF",
@@ -517,117 +593,124 @@ class _MapPageState extends State<MapPage> {
         iconImage: "mapbox-marker-icon-blue",
         iconSize: 1,
       ));
-      futureSymbol.then((symbol) {
-        // DB に行追加
-        SymbolInfoWithLatLng symbolInfoWithLatLng =
-            SymbolInfoWithLatLng(0, symbolInfo, tapPoint); // id はダミー
-        Future<int> futureId = _addRecord(symbol, symbolInfoWithLatLng);
-        // Map に DB の id を追加
-        futureId.then((id) {
-          _symbolInfoMap[symbol.id] = id;
-          symbolId = id;
-        });
-      });
+      // DB に行追加
+      final SymbolInfoWithLatLng symbolInfoWithLatLng =
+          SymbolInfoWithLatLng(0, symbolInfo, tapPoint); // id はダミー
+      final int id = await _addRecord(symbol, symbolInfoWithLatLng);
+      // Map に DB の id を追加
+      _symbolInfoMap[symbol.id] = id;
+      symbolId = id;
     });
     return symbolId;
   }
 
   // マークをタップしたときに Symbol の情報を表示する
-  void _onSymbolTap(Symbol symbol) {
+  _onSymbolTap(Symbol symbol) {
     _dispSymbolInfo(symbol);
   }
 
   // Symbol の情報を表示する
-  void _dispSymbolInfo(Symbol symbol) {
-    int symbolId = _symbolInfoMap[symbol.id]!;
-    Future<SymbolInfo> futureSymbolInfo = _fetchRecord(symbol);
-    futureSymbolInfo.then((symbolInfo) => {
-          showDialog(
-            context: navigatorKey.currentContext!,
-            builder: (BuildContext context) => AlertDialog(
-              title: Text(symbolInfo.title),
-              content: Column(
-                mainAxisSize: MainAxisSize.max,
-                children: <Widget>[
-                  Text(symbolInfo.dateTime.toString().substring(0, 19)),
-                  const Gap(16),
-                  Text(symbolInfo.describe),
-                ],
-              ),
-              actions: <Widget>[
-                TextButton(
-                  child: const Text('写真追加'),
-                  onPressed: () {
-                    _addPictureFromCamera(symbolId);
-                  },
-                ),
-                TextButton(
-                  child: const Text('削除'),
-                  onPressed: () {
-                    _removeMark(symbol);
-                    Navigator.pop(context);
-                  },
-                ),
-                TextButton(
-                  child: const Text('閉じる'),
-                  onPressed: () {
-                    Navigator.pop(context);
-                  },
-                ),
-              ],
-            ),
-          )
+  _dispSymbolInfo(Symbol symbol) async {
+    final int symbolId = _symbolInfoMap[symbol.id]!;
+    final List<Picture> pictures = await _fetchPictureRecords(symbol);
+    final SymbolInfo symbolInfo = await _fetchRecord(symbol);
+    final modifiedSymbolInfo = await Navigator.of(navigatorKey.currentContext!)
+        .pushNamed('/displaySymbol',
+            arguments: FullSymbolInfo(
+                symbolId,
+                symbol,
+                symbolInfo,
+                _addPictureFromCamera,
+                _removeMark,
+                _modifyRecord,
+                _formatLabel,
+                pictures,
+                _imagePath));
+    if (modifiedSymbolInfo != null) {
+      // タイトル変更？
+      SymbolInfo newSymbolInfo = modifiedSymbolInfo as SymbolInfo;
+      if (symbolInfo.title != newSymbolInfo.title) {
+        await _controller.future.then((mapboxMap) async {
+          await mapboxMap.updateSymbol(
+              symbol,
+              SymbolOptions(
+                textField: _formatLabel(newSymbolInfo.title, 5),
+                textAnchor: "top",
+                textColor: "#000",
+                textHaloColor: "#FFF",
+                textHaloWidth: 3,
+                textSize: 12.0,
+                iconImage: "mapbox-marker-icon-blue",
+                iconSize: 1,
+              ));
         });
-  }
-
-  // マーク（ピン）を削除する
-  void _removeMark(Symbol symbol) {
-    _controller.future.then((mapboxMap) {
-      mapboxMap.removeSymbol(symbol);
-    });
-    _removeRecord(symbol);
-    _symbolInfoMap.remove(symbol.id);
-  }
-
-  // 写真を撮影して画面の中心にマーク（ピン）を立てる
-  void _addPictureFromCameraAndMark() {
-    _addPictureFromCamera(0);
-  }
-
-  // 写真を撮影してマーク（ピン）に追加する
-  Future<void> _addPictureFromCamera(int symbolId) async {
-    if (_symbolAllSet) {
-      final XFile? photo = await _picker.pickImage(
-          source: ImageSource.camera,
-          maxWidth: 1600,
-          maxHeight: 1600,
-          imageQuality: 85);
-      if (photo != null) {
-        if (symbolId == 0) {
-          // ピン未選択→まず画面の中心にピンを立てる
-          await _controller.future.then((mapboxMap) {
-            CameraPosition? camera = mapboxMap.cameraPosition;
-            LatLng position = camera!.target;
-            SymbolInfo symbolInfo = SymbolInfo('[pic]', '写真', DateTime.now());
-            symbolId = _addMarkToMap(position, symbolInfo);
-          });
-        }
-        // 写真を保存する
-        await _savePicture(photo, symbolId)
-            .then((filePath) => {_addPictureInfo(photo, symbolId, filePath)});
       }
     }
   }
 
+  // マーク（ピン）を削除する
+  _removeMark(Symbol symbol) async {
+    await _controller.future.then((mapboxMap) {
+      mapboxMap.removeSymbol(symbol);
+    });
+    await _removeRecord(symbol);
+    _symbolInfoMap.remove(symbol.id);
+  }
+
+  // 写真を撮影して画面の中心にマーク（ピン）を立てる
+  _addPictureFromCameraAndMark() {
+    _addPictureFromCamera(0);
+  }
+
+  // 写真を撮影してマーク（ピン）に追加する
+  Future<Picture?>? _addPictureFromCamera(int symbolId) async {
+    if (!_symbolAllSet) {
+      return null;
+    }
+    final XFile? photo = await _takePhoto();
+    if (photo == null) {
+      // 撮影キャンセルの場合
+      return null;
+    }
+    if (symbolId != 0) {
+      // ピン選択済み→写真を保存する
+      return await _savePhoto(photo, symbolId);
+    }
+    // ピン未選択→まず画面の中心にピンを立てる
+    _controller.future.then((mapboxMap) async {
+      final CameraPosition? camera = mapboxMap.cameraPosition;
+      final LatLng position = camera!.target;
+      final SymbolInfo symbolInfo = SymbolInfo('[pic]', '写真', DateTime.now());
+      final int symbolId = await _addMarkToMap(position, symbolInfo);
+      // 写真を保存する
+      return await _savePhoto(photo, symbolId);
+    });
+  }
+
+  // 写真を撮影する
+  Future<XFile?> _takePhoto() {
+    return _picker.pickImage(
+        source: ImageSource.camera,
+        maxWidth: 1600,
+        maxHeight: 1600,
+        imageQuality: 85);
+  }
+
+  // 写真を保存する
+  Future<Picture> _savePhoto(XFile photo, int symbolId) async {
+    final String filePath = await _savePicture(photo, symbolId);
+    return await _addPictureInfo(photo, symbolId, filePath);
+  }
+
   // 画像を保存する
   Future<String> _savePicture(XFile photo, int symbolId) async {
-    Uint8List buffer = await photo.readAsBytes();
-    String imagePath = (await getApplicationDocumentsDirectory()).path;
-    String savePath = '$imagePath/${photo.name}';
-    File saveFile = File(savePath);
+    final Uint8List buffer = await photo.readAsBytes();
+    final String savePath = '$_imagePath/${photo.name}';
+    final File saveFile = File(savePath);
     saveFile.writeAsBytesSync(buffer, flush: true, mode: FileMode.write);
 
-    int len = await saveFile.length().then((value) => value);
+    // ここは後で消す（デバッグ用）
+    final int len = await saveFile.length().then((value) => value);
     // ignore: avoid_print
     print('Path: ${saveFile.path}, Length: $len');
 
@@ -638,27 +721,33 @@ class _MapPageState extends State<MapPage> {
   }
 
   // 画像情報を保存する
-  void _addPictureInfo(XFile photo, int symbolId, String filePath) {
-    Picture picture = Picture(0, symbolId, '', DateTime.now(), filePath, '');
-    _addPictureRecord(picture);
-  }
-
-  // 先頭 5 文字を取得（5 文字以上なら先頭 4 文字＋「…」）
-  String _formatLabel(String label) {
-    return (label.length < 6 ? label : '${label.substring(0, 4)}…');
+  Future<Picture> _addPictureInfo(
+      XFile photo, int symbolId, String filePath) async {
+    final Picture picture =
+        Picture(0, symbolId, '', DateTime.now(), filePath, '');
+    final int id = await _addPictureRecord(picture);
+    return Picture(id, symbolId, '', DateTime.now(), filePath, '');
   }
 
   // 地図の上を北に
-  void _resetBearing() {
+  _resetBearing() {
     _controller.future.then((mapboxMap) {
       mapboxMap.animateCamera(CameraUpdate.bearingTo(_initialBearing));
     });
   }
 
   // 地図のズームを初期状態に
-  void _resetZoom() {
+  _resetZoom() {
     _controller.future.then((mapboxMap) {
       mapboxMap.moveCamera(CameraUpdate.zoomTo(_initialZoom));
     });
+  }
+
+  // 先頭 n 文字を取得（n 文字以上なら先頭 (n-1) 文字＋「…」）
+  String _formatLabel(String label, int len) {
+    int shortLen = len - 1;
+    return (label.length < (len + 1)
+        ? label
+        : '${label.substring(0, shortLen)}…');
   }
 }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
-import 'package:maptool/create_symbol_info_page.dart';
+import 'package:maptool/edit_symbol_info_page.dart';
+import 'package:maptool/display_symbol_info_page.dart';
 import 'package:maptool/map_page.dart';
 
 final navigatorKey = GlobalKey<NavigatorState>();
@@ -11,7 +12,9 @@ void main() {
       initialRoute: '/',
       routes: <String, WidgetBuilder>{
         '/': (BuildContext context) => const MapPage(),
-        '/createSymbol': (BuildContext context) => const CreateSymbolInfoPage(),
+        '/editSymbol': (BuildContext context) => const CreateSymbolInfoPage(),
+        '/displaySymbol': (BuildContext context) =>
+            const DisplaySymbolInfoPage(),
       },
       navigatorKey: navigatorKey,
     ),

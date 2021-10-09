@@ -195,26 +195,23 @@ class _MapPageState extends State<MapPage> {
   }
 
   // DB から Symbol 情報を読み込んで地図に表示する
-  void _addSymbols() {
-    Future<List<SymbolInfoWithLatLng>> futureInfoList = _fetchRecords();
-    futureInfoList.then((infoList) => {
-          _controller.future.then((mapboxMap) {
-            Future<List<Symbol>> futureSymbolList =
-                mapboxMap.addSymbols(_convertToSymbolOptions(infoList));
-            // 全 Symbol 情報（DB 主キーへの変換マップ）を設定する
-            _symbolInfoMap.clear();
-            futureSymbolList.then((symbolList) => {
-                  for (int i = 0; i < symbolList.length; i++)
-                    {_symbolInfoMap[symbolList[i].id] = infoList[i].id}
-                });
-          })
+  void _addSymbols() async {
+    List<SymbolInfoWithLatLng> infoList = await _fetchRecords();
+    _controller.future.then((mapboxMap) async {
+      List<Symbol> symbolList =
+          await mapboxMap.addSymbols(_convertToSymbolOptions(infoList));
+      // 全 Symbol 情報（DB 主キーへの変換マップ）を設定する
+      _symbolInfoMap.clear();
+      for (int i = 0; i < symbolList.length; i++) {
+        _symbolInfoMap[symbolList[i].id] = infoList[i].id;
+      }
+      // 全てのマーク（ピン）を立て終えた
+      if (!_symbolAllSet) {
+        setState(() {
+          _symbolAllSet = true;
         });
-    // 全てのマーク（ピン）を立て終えた
-    if (!_symbolAllSet) {
-      setState(() {
-        _symbolAllSet = true;
-      });
-    }
+      }
+    });
   }
 
   // SymbolInfoWithLatLngs のリストから SymbolOptions のリストに変換

@@ -1,20 +1,20 @@
 # maptool
 
-## Explanation
+## Explanation（Blog / 説明記事）
 
  - https://qiita.com/hmatsu47/items/b98ef4c1a87cc0ec415d
  - https://zenn.dev/hmatsu47/articles/846c3186f5b4fe
  - https://zenn.dev/hmatsu47/articles/9102fb79a99a98
  - https://zenn.dev/hmatsu47/articles/e81bf3c2bf00f8
 
-**In development:**
+**In development:**（※開発中の機能）
 
- - Edit information about pin.
- - Take photographs (related to pin).
+ - Modify the detail information about pin.（ピンの詳細情報変更）
+ - Take photographs (related to pin).（ピンに関連する写真撮影）
 
 ![画面例](map_image.png "画面例")
 
-## Settings etc.
+## Settings etc.（開発環境の設定情報など）
 
  - **Create Mapbox Style**
 

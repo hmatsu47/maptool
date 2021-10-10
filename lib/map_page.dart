@@ -62,6 +62,7 @@ class FullSymbolInfo {
   Function removeMark;
   Function modifyRecord;
   Function formatLabel;
+  Completer<MapboxMapController> controller;
   List<Picture> pictures;
   String imagePath;
 
@@ -73,6 +74,7 @@ class FullSymbolInfo {
       this.removeMark,
       this.modifyRecord,
       this.formatLabel,
+      this.controller,
       this.pictures,
       this.imagePath);
 }
@@ -572,9 +574,9 @@ class _MapPageState extends State<MapPage> {
     final symbolInfo = await Navigator.of(navigatorKey.currentContext!)
         .pushNamed('/editSymbol',
             arguments: SymbolInfo('', '', DateTime.now()));
-    if (symbolInfo != null) {
+    if (symbolInfo is SymbolInfo) {
       // 詳細情報が入力されたらマーク（ピン）を立てる
-      _addMarkToMap(tapPoint, symbolInfo as SymbolInfo);
+      _addMarkToMap(tapPoint, symbolInfo);
     }
   }
 
@@ -614,38 +616,18 @@ class _MapPageState extends State<MapPage> {
     final int symbolId = _symbolInfoMap[symbol.id]!;
     final List<Picture> pictures = await _fetchPictureRecords(symbol);
     final SymbolInfo symbolInfo = await _fetchRecord(symbol);
-    final modifiedSymbolInfo = await Navigator.of(navigatorKey.currentContext!)
-        .pushNamed('/displaySymbol',
-            arguments: FullSymbolInfo(
-                symbolId,
-                symbol,
-                symbolInfo,
-                _addPictureFromCamera,
-                _removeMark,
-                _modifyRecord,
-                _formatLabel,
-                pictures,
-                _imagePath));
-    if (modifiedSymbolInfo != null) {
-      // タイトル変更？
-      SymbolInfo newSymbolInfo = modifiedSymbolInfo as SymbolInfo;
-      if (symbolInfo.title != newSymbolInfo.title) {
-        await _controller.future.then((mapboxMap) async {
-          await mapboxMap.updateSymbol(
-              symbol,
-              SymbolOptions(
-                textField: _formatLabel(newSymbolInfo.title, 5),
-                textAnchor: "top",
-                textColor: "#000",
-                textHaloColor: "#FFF",
-                textHaloWidth: 3,
-                textSize: 12.0,
-                iconImage: "mapbox-marker-icon-blue",
-                iconSize: 1,
-              ));
-        });
-      }
-    }
+    Navigator.of(navigatorKey.currentContext!).pushNamed('/displaySymbol',
+        arguments: FullSymbolInfo(
+            symbolId,
+            symbol,
+            symbolInfo,
+            _addPictureFromCamera,
+            _removeMark,
+            _modifyRecord,
+            _formatLabel,
+            _controller,
+            pictures,
+            _imagePath));
   }
 
   // マーク（ピン）を削除する

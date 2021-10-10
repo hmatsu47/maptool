@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -24,6 +25,7 @@ class _DisplaySymbolInfoPageState extends State<DisplaySymbolInfoPage> {
   Function? _removeMark;
   Function? _modifyRecord;
   Function? _formatLabel;
+  Completer<MapboxMapController?>? _controller;
   String _imagePath = '';
 
   @override
@@ -39,6 +41,7 @@ class _DisplaySymbolInfoPageState extends State<DisplaySymbolInfoPage> {
     _removeMark = args.removeMark;
     _modifyRecord = args.modifyRecord;
     _formatLabel = args.formatLabel;
+    _controller = args.controller;
     _imagePath = args.imagePath;
 
     return Scaffold(
@@ -93,10 +96,25 @@ class _DisplaySymbolInfoPageState extends State<DisplaySymbolInfoPage> {
                     final symbolInfo = await Navigator.of(context).pushNamed(
                         '/editSymbol',
                         arguments: SymbolInfo(_title, _describe, _dateTime));
-                    if (symbolInfo != null) {
-                      await _modifyRecord!(_symbol, symbolInfo as SymbolInfo);
-                      Navigator.pop(
-                          context, SymbolInfo(_title, _describe, _dateTime));
+                    if (symbolInfo is SymbolInfo) {
+                      // 変更を反映
+                      await _modifyRecord!(_symbol, symbolInfo);
+                      await _controller!.future.then((mapboxMap) async {
+                        await mapboxMap!.updateSymbol(
+                            _symbol!,
+                            SymbolOptions(
+                              geometry: _symbol!.options.geometry,
+                              textField: _formatLabel!(symbolInfo.title, 5),
+                              textAnchor: "top",
+                              textColor: "#000",
+                              textHaloColor: "#FFF",
+                              textHaloWidth: 3,
+                              textSize: 12.0,
+                              iconImage: "mapbox-marker-icon-blue",
+                              iconSize: 1,
+                            ));
+                        Navigator.pop(context);
+                      });
                     }
                   },
                 ),

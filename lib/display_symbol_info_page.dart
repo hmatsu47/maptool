@@ -14,6 +14,18 @@ class DisplaySymbolInfoPage extends StatefulWidget {
   _DisplaySymbolInfoPageState createState() => _DisplaySymbolInfoPageState();
 }
 
+// 画像の登録情報（画像保存先パス付き）
+class PictureInfo {
+  Picture picture;
+  Function modifyPicture;
+  Function removePicture;
+  Function localFile;
+  Function lookUpPicture;
+
+  PictureInfo(this.picture, this.modifyPicture, this.removePicture,
+      this.localFile, this.lookUpPicture);
+}
+
 class _DisplaySymbolInfoPageState extends State<DisplaySymbolInfoPage> {
   int _symbolId = 0;
   Symbol? _symbol;
@@ -24,6 +36,8 @@ class _DisplaySymbolInfoPageState extends State<DisplaySymbolInfoPage> {
   Function? _addPictureFromCamera;
   Function? _removeMark;
   Function? _modifyRecord;
+  Function? _modifyPictureRecord;
+  Function? _removePictureRecord;
   Function? _formatLabel;
   Completer<MapboxMapController?>? _controller;
   String _imagePath = '';
@@ -40,6 +54,8 @@ class _DisplaySymbolInfoPageState extends State<DisplaySymbolInfoPage> {
     _addPictureFromCamera = args.addPictureFromCamera;
     _removeMark = args.removeMark;
     _modifyRecord = args.modifyRecord;
+    _modifyPictureRecord = args.modifyPictureRecord;
+    _removePictureRecord = args.removePictureRecord;
     _formatLabel = args.formatLabel;
     _controller = args.controller;
     _imagePath = args.imagePath;
@@ -80,42 +96,14 @@ class _DisplaySymbolInfoPageState extends State<DisplaySymbolInfoPage> {
               children: <Widget>[
                 TextButton(
                   child: const Text('写真追加'),
-                  onPressed: () async {
-                    final Picture? picture =
-                        await _addPictureFromCamera!(_symbolId);
-                    if (picture != null) {
-                      setState(() {
-                        _pictures.add(picture);
-                      });
-                    }
+                  onPressed: () {
+                    _addPicture();
                   },
                 ),
                 TextButton(
                   child: const Text('編集'),
                   onPressed: () async {
-                    final symbolInfo = await Navigator.of(context).pushNamed(
-                        '/editSymbol',
-                        arguments: SymbolInfo(_title, _describe, _dateTime));
-                    if (symbolInfo is SymbolInfo) {
-                      // 変更を反映
-                      await _modifyRecord!(_symbol, symbolInfo);
-                      await _controller!.future.then((mapboxMap) async {
-                        await mapboxMap!.updateSymbol(
-                            _symbol!,
-                            SymbolOptions(
-                              geometry: _symbol!.options.geometry,
-                              textField: _formatLabel!(symbolInfo.title, 5),
-                              textAnchor: "top",
-                              textColor: "#000",
-                              textHaloColor: "#FFF",
-                              textHaloWidth: 3,
-                              textSize: 12.0,
-                              iconImage: "mapbox-marker-icon-blue",
-                              iconSize: 1,
-                            ));
-                        Navigator.pop(context);
-                      });
-                    }
+                    _editSymbolPage(context);
                   },
                 ),
                 TextButton(
@@ -125,29 +113,7 @@ class _DisplaySymbolInfoPageState extends State<DisplaySymbolInfoPage> {
                     child: const Text('削除'),
                     onPressed: () {
                       if (_pictures.isEmpty) {
-                        showDialog(
-                          context: context,
-                          builder: (BuildContext context) => AlertDialog(
-                            title: const Text('確認'),
-                            content: const Text('削除してもよろしいですか？'),
-                            actions: <Widget>[
-                              TextButton(
-                                child: const Text('いいえ'),
-                                onPressed: () {
-                                  Navigator.pop(context);
-                                },
-                              ),
-                              TextButton(
-                                child: const Text('はい（削除）'),
-                                onPressed: () {
-                                  _removeMark!(_symbol);
-                                  Navigator.popUntil(
-                                      context, ModalRoute.withName('/'));
-                                },
-                              ),
-                            ],
-                          ),
-                        );
+                        _removeSymbolDialog(context);
                       }
                     }),
                 TextButton(
@@ -175,22 +141,7 @@ class _DisplaySymbolInfoPageState extends State<DisplaySymbolInfoPage> {
 
   // 画像表示ウィジェット
   Widget _pictureItem(Picture picture) {
-    File? file;
-    // filePath がパス付きの場合はファイル名のみを抽出
-    int indexOf = picture.filePath.lastIndexOf('/');
-    final String fileName = (indexOf == -1
-        ? picture.filePath
-        : picture.filePath.substring(indexOf + 1));
-    final String filePath = '$_imagePath/$fileName';
-    try {
-      if (File(filePath).existsSync()) {
-        file = File(filePath);
-        // } else {
-        //   file = null;
-      }
-    } catch (e) {
-      file = null;
-    }
+    File? file = _localFile(picture);
     final String title = _formatLabel!(picture.comment, 22);
     return Card(
       child: Container(
@@ -209,8 +160,125 @@ class _DisplaySymbolInfoPageState extends State<DisplaySymbolInfoPage> {
             (title != '' ? title : '無題'),
             textScaleFactor: 0.8,
           ),
+          onTap: () {
+            _displayPictureInfo(
+                context,
+                PictureInfo(picture, _modifyPicture, _removePicture, _localFile,
+                    _lookUpPicture));
+          },
         ),
       ),
     );
+  }
+
+  // 画像ファイル取得
+  File? _localFile(Picture picture) {
+    // filePath がパス付きの場合はファイル名のみを抽出
+    int pathIndexOf = picture.filePath.lastIndexOf('/');
+    final String fileName = (pathIndexOf == -1
+        ? picture.filePath
+        : picture.filePath.substring(pathIndexOf + 1));
+    final String filePath = '$_imagePath/$fileName';
+    try {
+      if (File(filePath).existsSync()) {
+        return File(filePath);
+      }
+      return null;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  // 画像追加
+  _addPicture() async {
+    final Picture? picture = await _addPictureFromCamera!(_symbolId);
+    if (picture != null) {
+      setState(() {
+        _pictures.add(picture);
+      });
+    }
+  }
+
+  // Symbol 情報変更
+  _editSymbolPage(BuildContext context) async {
+    final symbolInfo = await Navigator.of(context).pushNamed('/editSymbol',
+        arguments: SymbolInfo(_title, _describe, _dateTime));
+    if (symbolInfo is SymbolInfo) {
+      // 変更を反映
+      await _modifyRecord!(_symbol, symbolInfo);
+      await _controller!.future.then((mapboxMap) async {
+        await mapboxMap!.updateSymbol(
+            _symbol!,
+            SymbolOptions(
+              geometry: _symbol!.options.geometry,
+              textField: _formatLabel!(symbolInfo.title, 5),
+              textAnchor: "top",
+              textColor: "#000",
+              textHaloColor: "#FFF",
+              textHaloWidth: 3,
+              textSize: 12.0,
+              iconImage: "mapbox-marker-icon-blue",
+              iconSize: 1,
+            ));
+        Navigator.pop(context);
+      });
+    }
+  }
+
+  // Symbol 削除（確認ダイアログ）
+  _removeSymbolDialog(BuildContext context) async {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) => AlertDialog(
+        title: const Text('確認'),
+        content: const Text('削除してもよろしいですか？'),
+        actions: <Widget>[
+          TextButton(
+            child: const Text('いいえ'),
+            onPressed: () {
+              Navigator.pop(context);
+            },
+          ),
+          TextButton(
+            child: const Text('はい（削除）'),
+            onPressed: () {
+              _removeMark!(_symbol);
+              Navigator.popUntil(context, ModalRoute.withName('/'));
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  // 画像ページを表示
+  _displayPictureInfo(BuildContext context, PictureInfo pictureInfo) {
+    Navigator.of(context).pushNamed('/displayPicture', arguments: pictureInfo);
+  }
+
+  // 画像の登録情報をリストから検索
+  int _lookUpPicture(Picture picture) {
+    return _pictures.indexOf(picture);
+  }
+
+  // 画像の登録情報を編集
+  _modifyPicture(int indexOf, Picture picture) async {
+    await _modifyPictureRecord!(picture);
+    setState(() {
+      _pictures[indexOf] = picture;
+    });
+  }
+
+  // 画像を削除
+  _removePicture(Picture picture) async {
+    File? file = _localFile(picture);
+    if (file != null) {
+      file.deleteSync();
+    }
+    // DB 画像行削除
+    await _removePictureRecord!(picture);
+    setState(() {
+      _pictures.remove(picture);
+    });
   }
 }

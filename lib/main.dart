@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:maptool/edit_symbol_info_page.dart';
+import 'package:maptool/display_picture_page.dart';
 import 'package:maptool/display_symbol_info_page.dart';
 import 'package:maptool/map_page.dart';
 
@@ -15,6 +16,7 @@ void main() {
         '/editSymbol': (BuildContext context) => const CreateSymbolInfoPage(),
         '/displaySymbol': (BuildContext context) =>
             const DisplaySymbolInfoPage(),
+        '/displayPicture': (BuildContext context) => const DisplayPicturePage(),
       },
       navigatorKey: navigatorKey,
     ),

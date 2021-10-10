@@ -7,10 +7,14 @@
  - https://zenn.dev/hmatsu47/articles/9102fb79a99a98
  - https://zenn.dev/hmatsu47/articles/e81bf3c2bf00f8
 
-**In development:**（※開発中の機能）
+**In Addition to:**（追加した機能）
 
  - Modify the detail information about pin.（ピンの詳細情報変更）
  - Take photographs (related to pin).（ピンに関連する写真撮影）
+
+**In development:**（開発中の機能）
+
+ - List all pins.（ピン一覧）
 
 ![画面例](map_image.png "画面例")
 
@@ -126,3 +130,4 @@ password [Mapbox Access Token or Secret Token here]
     - [lib/map_page.dart](lib/map_page.dart)
     - [lib/display_symbol_info_page.dart](lib/display_symbol_info_page.dart)
     - [lib/edit_symbol_info_page.dart](lib/edit_symbol_info_page.dart)
+    - [lib/display_picture_page.dart](lib/display_picture_page.dart)

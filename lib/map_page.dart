@@ -61,6 +61,8 @@ class FullSymbolInfo {
   Function addPictureFromCamera;
   Function removeMark;
   Function modifyRecord;
+  Function modifyPictureRecord;
+  Function removePictureRecord;
   Function formatLabel;
   Completer<MapboxMapController> controller;
   List<Picture> pictures;
@@ -73,6 +75,8 @@ class FullSymbolInfo {
       this.addPictureFromCamera,
       this.removeMark,
       this.modifyRecord,
+      this.modifyPictureRecord,
+      this.removePictureRecord,
       this.formatLabel,
       this.controller,
       this.pictures,
@@ -508,6 +512,24 @@ class _MapPageState extends State<MapPage> {
     );
   }
 
+  // DB 画像行更新
+  Future<int> _modifyPictureRecord(Picture picture) async {
+    return await _database.update(
+      'pictures',
+      {
+        'comment': picture.comment,
+      },
+      where: 'id = ?',
+      whereArgs: [picture.id],
+    );
+  }
+
+  // DB 画像行削除
+  Future<int> _removePictureRecord(Picture picture) async {
+    return await _database
+        .delete('pictures', where: 'id = ?', whereArgs: [picture.id]);
+  }
+
   // 現在位置を取得
   _getLocation() async {
     _yourLocation = await _locationService.getLocation();
@@ -624,6 +646,8 @@ class _MapPageState extends State<MapPage> {
             _addPictureFromCamera,
             _removeMark,
             _modifyRecord,
+            _modifyPictureRecord,
+            _removePictureRecord,
             _formatLabel,
             _controller,
             pictures,

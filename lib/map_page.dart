@@ -83,6 +83,14 @@ class FullSymbolInfo {
       this.imagePath);
 }
 
+// Symbol 一覧表示画面に渡す内容一式
+class FullSymbolList {
+  List<SymbolInfoWithLatLng> infoList;
+  Function formatLabel;
+
+  FullSymbolList(this.infoList, this.formatLabel);
+}
+
 class _MapPageState extends State<MapPage> {
   final Completer<MapboxMapController> _controller = Completer();
   final Location _locationService = Location();
@@ -95,6 +103,8 @@ class _MapPageState extends State<MapPage> {
   final double _initialLong = 139.6917337;
   // ズームのデフォルト値
   final double _initialZoom = 13.5;
+  // Symbol 一覧から遷移したときのズーム値
+  final double _detailZoom = 16.0;
   // 方位のデフォルト値（北）
   final double _initialBearing = 0.0;
   // 全 Symbol 情報（DB 主キーへの変換マップ）
@@ -212,6 +222,18 @@ class _MapPageState extends State<MapPage> {
       //       Icons.delete,
       //     )),
       // const Gap(32),
+      FloatingActionButton(
+        heroTag: 'moveToSymbolPosition',
+        backgroundColor: Colors.blue,
+        onPressed: () {
+          // 全 Symbol 一覧を表示して選択した Symbol の位置へ移動
+          _moveToSymbolPosition();
+        },
+        child: Icon(_symbolInfoMap.isNotEmpty
+            ? Icons.view_list
+            : Icons.view_list_outlined),
+      ),
+      const Gap(32),
       FloatingActionButton(
         heroTag: 'addPictureFromCameraAndMark',
         backgroundColor: Colors.blue,
@@ -559,6 +581,34 @@ class _MapPageState extends State<MapPage> {
         }
       });
     }
+  }
+
+  // 全 Symbol 一覧を表示して選択した Symbol の位置へ移動
+  _moveToSymbolPosition() async {
+    if (_symbolInfoMap.isNotEmpty) {
+      final List<SymbolInfoWithLatLng> infoList = await _fetchRecords();
+      final latLng = await Navigator.of(navigatorKey.currentContext!).pushNamed(
+          '/listSymbol',
+          arguments: FullSymbolList(infoList, _formatLabel));
+      if (latLng is LatLng) {
+        setState(() {
+          _gpsTracking = false;
+        });
+        await _moveCameraToDetailPoint(latLng);
+      }
+    }
+  }
+
+  // 地図の中心を移動して詳細表示
+  _moveCameraToDetailPoint(LatLng latLng) {
+    _controller.future.then((mapboxMap) async {
+      await mapboxMap.moveCamera(CameraUpdate.zoomTo(_detailZoom));
+      if (Platform.isAndroid) {
+        mapboxMap.moveCamera(CameraUpdate.newLatLng(latLng));
+      } else if (Platform.isIOS) {
+        mapboxMap.animateCamera(CameraUpdate.newLatLng(latLng));
+      }
+    });
   }
 
   // 地図をタップしたときの処理

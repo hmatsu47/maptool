@@ -11,10 +11,11 @@
 
  - Modify the detail information about pin.（ピンの詳細情報変更）
  - Take photographs (related to pin).（ピンに関連する写真撮影）
+ - List all pins.（ピン一覧）
 
 **In development:**（開発中の機能）
 
- - List all pins.（ピン一覧）
+ - Search pins (with keywords).（ピンのキーワード検索）
 
 ![画面例](map_image.png "画面例")
 
@@ -58,7 +59,7 @@ dependency_overrides:
  - **Edit '`android/build.gradle`'** ( for Android / in `android` -> `defaultConfig` )
 
 ```json:build.gradle
-        minSdkVersion 20
+        minSdkVersion 21
         multiDexEnabled true
 ```
 
@@ -131,3 +132,4 @@ password [Mapbox Access Token or Secret Token here]
     - [lib/display_symbol_info_page.dart](lib/display_symbol_info_page.dart)
     - [lib/edit_symbol_info_page.dart](lib/edit_symbol_info_page.dart)
     - [lib/display_picture_page.dart](lib/display_picture_page.dart)
+    - [lib/list_symbol_page.dart](lib/list_symbol_page.dart)

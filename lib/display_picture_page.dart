@@ -54,10 +54,10 @@ class _DisplayPicturePageState extends State<DisplayPicturePage> {
               children: [
                 const Gap(12),
                 (file != null
-                    ? Image.file(file)
+                    ? Image.file(file, height: 360.0, fit: BoxFit.scaleDown)
                     : const Icon(
                         Icons.no_photography,
-                        size: 180.0,
+                        size: 240.0,
                       )),
                 const Gap(12),
                 Text(_picture!.dateTime.toString().substring(0, 19),

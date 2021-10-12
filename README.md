@@ -12,10 +12,11 @@
  - Modify the detail information about pin.（ピンの詳細情報変更）
  - Take photographs (related to pin).（ピンに関連する写真撮影）
  - List all pins.（ピン一覧）
+ - Search pins (with keywords).（ピンのキーワード検索）
 
 **In development:**（開発中の機能）
 
- - Search pins (with keywords).（ピンのキーワード検索）
+ - Geocoding and Reverse Geocoding.（ジオコーディングと逆ジオコーディング）
 
 ![画面例](map_image.png "画面例")
 

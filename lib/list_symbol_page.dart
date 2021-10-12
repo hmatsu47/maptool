@@ -14,16 +14,26 @@ class ListSymbolPage extends StatefulWidget {
 class _ListSymbolPageState extends State<ListSymbolPage> {
   List<SymbolInfoWithLatLng> _infoList = [];
   Function? _formatLabel;
+  String _keyword = '';
+  List<SymbolInfoWithLatLng> _filtered = [];
 
   @override
   Widget build(BuildContext context) {
     final args = ModalRoute.of(context)!.settings.arguments as FullSymbolList;
     _infoList = args.infoList;
     _formatLabel = args.formatLabel;
+    _viewList();
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('ピン情報一覧'),
+        title: TextField(
+            style: const TextStyle(color: Colors.white),
+            decoration: const InputDecoration(
+              prefixIcon: Icon(Icons.search, color: Colors.white),
+              hintText: 'タイトル検索',
+              hintStyle: TextStyle(color: Colors.white),
+            ),
+            onChanged: (value) => {_keywordChangeAndViewList(value)}),
       ),
       body: _makeDisplayForm(),
     );
@@ -42,9 +52,9 @@ class _ListSymbolPageState extends State<ListSymbolPage> {
             const Gap(12),
             Flexible(
               child: ListView.builder(
-                itemCount: _infoList.length,
+                itemCount: _filtered.length,
                 itemBuilder: (BuildContext context, int index) {
-                  return _symbolInfoItem(_infoList[index]);
+                  return _symbolInfoItem(_filtered[index]);
                 },
               ),
             ),
@@ -81,5 +91,38 @@ class _ListSymbolPageState extends State<ListSymbolPage> {
         ),
       ),
     );
+  }
+
+  // キーワードを変更して一覧を表示
+  _keywordChangeAndViewList(keyword) {
+    setState(() {
+      _keyword = keyword;
+    });
+    _viewList;
+  }
+
+  // 一覧を表示
+  _viewList() {
+    setState(() {
+      _filtered = _filterList();
+    });
+  }
+
+  // 一覧の対象をフィルタ
+  List<SymbolInfoWithLatLng> _filterList() {
+    if (_keyword == '') {
+      return _infoList;
+    }
+    List<SymbolInfoWithLatLng> filtered = [];
+    for (int i = 0; i < _infoList.length; i++) {
+      if (_infoList[i]
+          .symbolInfo
+          .title
+          .toLowerCase()
+          .contains(_keyword.toLowerCase())) {
+        filtered.add(_infoList[i]);
+      }
+    }
+    return filtered;
   }
 }

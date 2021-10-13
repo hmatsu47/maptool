@@ -100,7 +100,7 @@ class _DisplayPicturePageState extends State<DisplayPicturePage> {
   }
 
   // 画像情報変更（ダイアログ）
-  _modifyPictureInfoDialog(BuildContext context) {
+  void _modifyPictureInfoDialog(BuildContext context) {
     showDialog(
       context: context,
       builder: (BuildContext context) => AlertDialog(
@@ -146,7 +146,7 @@ class _DisplayPicturePageState extends State<DisplayPicturePage> {
   }
 
   // 画像削除（確認ダイアログ）
-  _removePictureDialog(BuildContext context) {
+  void _removePictureDialog(BuildContext context) {
     showDialog(
       context: context,
       builder: (BuildContext context) => AlertDialog(

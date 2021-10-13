@@ -101,8 +101,8 @@ class _CreateSymbolInfoPageState extends State<CreateSymbolInfoPage> {
     );
   }
 
-// 保存
-  _saveSymbolInfo(BuildContext context) {
+  // 保存
+  void _saveSymbolInfo(BuildContext context) {
     if (_title == '') {
       setState(() {
         _isError = true;

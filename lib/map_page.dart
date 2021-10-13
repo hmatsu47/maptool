@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
 import 'dart:typed_data';
@@ -6,6 +7,7 @@ import 'dart:typed_data';
 import 'package:cross_file/cross_file.dart';
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
+import 'package:http/http.dart' as http;
 import 'package:image_gallery_saver/image_gallery_saver.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:location/location.dart';
@@ -121,6 +123,14 @@ class _MapPageState extends State<MapPage> {
   final ImagePicker _picker = ImagePicker();
   // 画像保存パス
   String _imagePath = '';
+  // 逆ジオコーディング用の都道府県＋市区町村マップ
+  final Map<int, String> _muniMap = {};
+  // 逆ジオコーディング用のマップを作り終えた？
+  bool _muniAllSet = false;
+  // 画面の中心の都道府県＋市区町村（前回の逆ジオコーディング時）
+  String _muni = '';
+  // 前回の逆ジオコーディング時の位置
+  LatLng? _lastLatLng;
 
   // 現在位置の監視状況
   StreamSubscription? _locationChangedListen;
@@ -184,8 +194,8 @@ class _MapPageState extends State<MapPage> {
       ),
       onMapCreated: (MapboxMapController controller) {
         _controller.complete(controller);
-        _createDatabase()
-            .then((value) => {_addSymbols(), _createIndex(), _setImagePath()});
+        _createDatabase().then((value) =>
+            {_addSymbols(), _createIndex(), _setImagePath(), _makeMuniMap()});
         _controller.future.then((mapboxMap) {
           mapboxMap.onSymbolTapped.add(_onSymbolTap);
         });
@@ -288,16 +298,27 @@ class _MapPageState extends State<MapPage> {
           _gpsTracking ? Icons.gps_fixed : Icons.gps_not_fixed,
         ),
       ),
+      const Gap(16),
+      FloatingActionButton(
+        heroTag: 'checkMuni',
+        backgroundColor: Colors.blue,
+        onPressed: () {
+          _checkMuni();
+        },
+        child: Icon(
+          _muniAllSet ? Icons.info : Icons.info_outlined,
+        ),
+      ),
     ]);
   }
 
   // 画像パス
-  _setImagePath() async {
+  void _setImagePath() async {
     _imagePath = (await getApplicationDocumentsDirectory()).path;
   }
 
   // DB から Symbol 情報を読み込んで地図に表示する
-  _addSymbols() async {
+  void _addSymbols() async {
     final List<SymbolInfoWithLatLng> infoList = await _fetchRecords();
     _controller.future.then((mapboxMap) async {
       final List<Symbol> symbolList =
@@ -338,7 +359,7 @@ class _MapPageState extends State<MapPage> {
   }
 
   // DB 作成
-  _createDatabase() async {
+  Future<void> _createDatabase() async {
     // DB テーブル作成
     _database = await openDatabase('maptool.db', version: 2,
         onCreate: (db, version) async {
@@ -367,13 +388,13 @@ class _MapPageState extends State<MapPage> {
   }
 
   // INDEX 作成
-  _createIndex() async {
+  void _createIndex() async {
     await _database.execute('CREATE INDEX IF NOT EXISTS pictures_symbol_id'
         '  ON pictures (symbol_id)');
   }
 
   // // TABLE 再作成
-  // _recreateTables() {
+  // void _recreateTables() {
   //   _dropTables().then((value) => {_createTables()});
   //   // _dropTables();
   // }
@@ -385,7 +406,7 @@ class _MapPageState extends State<MapPage> {
   // }
 
   // // CREATE TABLE
-  // _createTables() async {
+  // void _createTables() async {
   //   await _database.execute(
   //     'CREATE TABLE IF NOT EXISTS symbol_info ('
   //     '  id INTEGER PRIMARY KEY AUTOINCREMENT,'
@@ -409,7 +430,7 @@ class _MapPageState extends State<MapPage> {
   // }
 
   // DB クローズ
-  _closeDatabase() async {
+  void _closeDatabase() async {
     _database.close();
   }
 
@@ -553,12 +574,12 @@ class _MapPageState extends State<MapPage> {
   }
 
   // 現在位置を取得
-  _getLocation() async {
+  void _getLocation() async {
     _yourLocation = await _locationService.getLocation();
   }
 
   // GPS 追従を ON / OFF
-  _gpsToggle() {
+  void _gpsToggle() {
     setState(() {
       _gpsTracking = !_gpsTracking;
     });
@@ -567,7 +588,7 @@ class _MapPageState extends State<MapPage> {
   }
 
   // GPS 追従が ON なら地図の中心を現在位置へ
-  _moveCameraToGpsPoint() {
+  void _moveCameraToGpsPoint() {
     if (_gpsTracking) {
       _controller.future.then((mapboxMap) {
         if (Platform.isAndroid) {
@@ -584,7 +605,7 @@ class _MapPageState extends State<MapPage> {
   }
 
   // 全 Symbol 一覧を表示して選択した Symbol の位置へ移動
-  _moveToSymbolPosition() async {
+  void _moveToSymbolPosition() async {
     if (_symbolInfoMap.isNotEmpty) {
       final List<SymbolInfoWithLatLng> infoList = await _fetchRecords();
       final latLng = await Navigator.of(navigatorKey.currentContext!).pushNamed(
@@ -612,7 +633,7 @@ class _MapPageState extends State<MapPage> {
   }
 
   // 地図をタップしたときの処理
-  _onTap(Point<double> point, LatLng tapPoint) {
+  void _onTap(Point<double> point, LatLng tapPoint) {
     _moveCameraToTapPoint(tapPoint);
     setState(() {
       _gpsTracking = false;
@@ -620,7 +641,7 @@ class _MapPageState extends State<MapPage> {
   }
 
   // 地図の中心をタップした場所へ
-  _moveCameraToTapPoint(LatLng tapPoint) {
+  void _moveCameraToTapPoint(LatLng tapPoint) {
     _controller.future.then((mapboxMap) {
       if (Platform.isAndroid) {
         mapboxMap.moveCamera(CameraUpdate.newLatLng(tapPoint));
@@ -631,7 +652,7 @@ class _MapPageState extends State<MapPage> {
   }
 
   // 画面の中心にマーク（ピン）を立てる
-  _addSymbolOnCameraPosition() {
+  void _addSymbolOnCameraPosition() {
     if (_symbolAllSet) {
       _controller.future.then((mapboxMap) {
         CameraPosition? camera = mapboxMap.cameraPosition;
@@ -642,7 +663,7 @@ class _MapPageState extends State<MapPage> {
   }
 
   // マーク（ピン）を立ててラベルを付ける
-  _addMark(LatLng tapPoint) async {
+  void _addMark(LatLng tapPoint) async {
     final symbolInfo = await Navigator.of(navigatorKey.currentContext!)
         .pushNamed('/editSymbol',
             arguments: SymbolInfo('', '', DateTime.now()));
@@ -679,12 +700,12 @@ class _MapPageState extends State<MapPage> {
   }
 
   // マークをタップしたときに Symbol の情報を表示する
-  _onSymbolTap(Symbol symbol) {
+  void _onSymbolTap(Symbol symbol) {
     _dispSymbolInfo(symbol);
   }
 
   // Symbol の情報を表示する
-  _dispSymbolInfo(Symbol symbol) async {
+  void _dispSymbolInfo(Symbol symbol) async {
     final int symbolId = _symbolInfoMap[symbol.id]!;
     final List<Picture> pictures = await _fetchPictureRecords(symbol);
     final SymbolInfo symbolInfo = await _fetchRecord(symbol);
@@ -705,7 +726,7 @@ class _MapPageState extends State<MapPage> {
   }
 
   // マーク（ピン）を削除する
-  _removeMark(Symbol symbol) async {
+  void _removeMark(Symbol symbol) async {
     await _controller.future.then((mapboxMap) {
       mapboxMap.removeSymbol(symbol);
     });
@@ -714,7 +735,7 @@ class _MapPageState extends State<MapPage> {
   }
 
   // 写真を撮影して画面の中心にマーク（ピン）を立てる
-  _addPictureFromCameraAndMark() {
+  void _addPictureFromCameraAndMark() {
     _addPictureFromCamera(0);
   }
 
@@ -754,12 +775,12 @@ class _MapPageState extends State<MapPage> {
 
   // 写真を保存する
   Future<Picture> _savePhoto(XFile photo, int symbolId) async {
-    final String filePath = await _savePicture(photo, symbolId);
+    final String filePath = await _savePicture(photo);
     return await _addPictureInfo(photo, symbolId, filePath);
   }
 
   // 画像を保存する
-  Future<String> _savePicture(XFile photo, int symbolId) async {
+  Future<String> _savePicture(XFile photo) async {
     final Uint8List buffer = await photo.readAsBytes();
     final String savePath = '$_imagePath/${photo.name}';
     final File saveFile = File(savePath);
@@ -786,14 +807,14 @@ class _MapPageState extends State<MapPage> {
   }
 
   // 地図の上を北に
-  _resetBearing() {
+  void _resetBearing() {
     _controller.future.then((mapboxMap) {
       mapboxMap.animateCamera(CameraUpdate.bearingTo(_initialBearing));
     });
   }
 
   // 地図のズームを初期状態に
-  _resetZoom() {
+  void _resetZoom() {
     _controller.future.then((mapboxMap) {
       mapboxMap.moveCamera(CameraUpdate.zoomTo(_initialZoom));
     });
@@ -805,5 +826,89 @@ class _MapPageState extends State<MapPage> {
     return (label.length < (len + 1)
         ? label
         : '${label.substring(0, shortLen)}…');
+  }
+
+  // 逆ジオコーディング用の都道府県＋市区町村マップを生成
+  void _makeMuniMap() async {
+    String muniJS = await _getMuniJS();
+    String muniJSUtf8 = utf8.decode(muniJS.runes.toList());
+    List<String> muniJSList = muniJSUtf8.split(';');
+    for (int i = 0; i < muniJSList.length; i++) {
+      int splitFrom = muniJSList[i].indexOf("'");
+      int splitTo = muniJSList[i].lastIndexOf("'");
+      if (splitFrom >= 0 && splitFrom != splitTo) {
+        List<String> splitText =
+            muniJSList[i].substring(splitFrom + 1, splitTo).split(',');
+        if (splitText.length == 4) {
+          int muniCode = int.parse(splitText[2]);
+          String muniText = (splitText[1] + splitText[3]).replaceAll('　', '');
+          _muniMap[muniCode] = muniText;
+        }
+      }
+    }
+    _muniAllSet = true;
+  }
+
+  // muni.js を取得
+  Future<String> _getMuniJS() async {
+    return await http.read(Uri.parse('https://maps.gsi.go.jp/js/muni.js'));
+  }
+
+  // 画面の中心にあたる都道府県＋市区町村を取得して表示
+  void _checkMuni() {
+    if (_muniAllSet) {
+      _controller.future.then((mapboxMap) async {
+        CameraPosition? camera = mapboxMap.cameraPosition;
+        LatLng position = camera!.target;
+        // 初回または移動した場合にのみ新たに取得して表示
+        if (_lastLatLng == null ||
+            (_lastLatLng!.latitude != position.latitude &&
+                (_lastLatLng!.longitude != position.longitude))) {
+          String geoJson = await _getReverseGeo(position);
+          Map<String, dynamic> geoResultMap = jsonDecode(geoJson);
+          setState(() {
+            int muniCode = int.parse(geoResultMap['results']['muniCd']);
+            _muni =
+                '${_muniMap[muniCode]!}${geoResultMap['results']['lv01Nm']}';
+          });
+          _lastLatLng = position;
+          _showMuni();
+          return;
+        }
+        // 移動していない場合は前回の取得結果を表示
+        _showMuni();
+      });
+    }
+  }
+
+  // 画面の中心を逆ジオコーディング
+  Future<String> _getReverseGeo(LatLng position) async {
+    String latitude = position.latitude.toString();
+    String longtitude = position.longitude.toString();
+    return await http.read(Uri.parse(
+        'https://mreversegeocoder.gsi.go.jp/reverse-geocoder/LonLatToAddress?lat=$latitude&lon=$longtitude'));
+  }
+
+  // 都道府県＋市区町村名を表示する
+  void _showMuni() {
+    if (_muni != '') {
+      showDialog(
+        context: context,
+        builder: (BuildContext context) => AlertDialog(
+          content: Text(
+            _muni,
+            textAlign: TextAlign.center,
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('戻る'),
+              onPressed: () {
+                Navigator.pop(context);
+              },
+            ),
+          ],
+        ),
+      );
+    }
   }
 }

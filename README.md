@@ -6,6 +6,7 @@
  - https://zenn.dev/hmatsu47/articles/846c3186f5b4fe
  - https://zenn.dev/hmatsu47/articles/9102fb79a99a98
  - https://zenn.dev/hmatsu47/articles/e81bf3c2bf00f8
+ - https://qiita.com/hmatsu47/items/e4f7e310e88376d54009
 
 **In Addition to:**（追加した機能）
 
@@ -13,6 +14,7 @@
  - Take photographs (related to pin).（ピンに関連する写真撮影）
  - List all pins.（ピン一覧）
  - Search pins (with keywords).（ピンのキーワード検索）
+ - Reverse Geocoding.（逆ジオコーディング：画面の中心位置の地名表示）
 
 **In development:**（開発中の機能）
 
@@ -40,8 +42,9 @@ dependencies:
   sqflite: ^2.0.0+4
   image_picker: ^0.8.4+2
   cross_file: ^0.3.1+5
-  image_gallery_saver: '^1.7.0'
+  image_gallery_saver: ^1.7.0
   path_provider: ^2.0.5
+  http: ^0.13.4
 
 dependency_overrides:
   mapbox_gl:

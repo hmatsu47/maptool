@@ -190,7 +190,7 @@ class _DisplaySymbolInfoPageState extends State<DisplaySymbolInfoPage> {
   }
 
   // 画像追加
-  _addPicture() async {
+  void _addPicture() async {
     final Picture? picture = await _addPictureFromCamera!(_symbolId);
     if (picture != null) {
       setState(() {
@@ -200,7 +200,7 @@ class _DisplaySymbolInfoPageState extends State<DisplaySymbolInfoPage> {
   }
 
   // Symbol 情報変更
-  _editSymbolPage(BuildContext context) async {
+  void _editSymbolPage(BuildContext context) async {
     final symbolInfo = await Navigator.of(context).pushNamed('/editSymbol',
         arguments: SymbolInfo(_title, _describe, _dateTime));
     if (symbolInfo is SymbolInfo) {
@@ -226,7 +226,7 @@ class _DisplaySymbolInfoPageState extends State<DisplaySymbolInfoPage> {
   }
 
   // Symbol 削除（確認ダイアログ）
-  _removeSymbolDialog(BuildContext context) async {
+  void _removeSymbolDialog(BuildContext context) async {
     showDialog(
       context: context,
       builder: (BuildContext context) => AlertDialog(
@@ -252,7 +252,7 @@ class _DisplaySymbolInfoPageState extends State<DisplaySymbolInfoPage> {
   }
 
   // 画像ページを表示
-  _displayPictureInfo(BuildContext context, PictureInfo pictureInfo) {
+  void _displayPictureInfo(BuildContext context, PictureInfo pictureInfo) {
     Navigator.of(context).pushNamed('/displayPicture', arguments: pictureInfo);
   }
 
@@ -262,7 +262,7 @@ class _DisplaySymbolInfoPageState extends State<DisplaySymbolInfoPage> {
   }
 
   // 画像の登録情報を編集
-  _modifyPicture(int indexOf, Picture picture) async {
+  void _modifyPicture(int indexOf, Picture picture) async {
     await _modifyPictureRecord!(picture);
     setState(() {
       _pictures[indexOf] = picture;
@@ -270,7 +270,7 @@ class _DisplaySymbolInfoPageState extends State<DisplaySymbolInfoPage> {
   }
 
   // 画像を削除
-  _removePicture(Picture picture) async {
+  void _removePicture(Picture picture) async {
     File? file = _localFile(picture);
     if (file != null) {
       file.deleteSync();

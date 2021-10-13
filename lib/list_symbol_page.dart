@@ -94,7 +94,7 @@ class _ListSymbolPageState extends State<ListSymbolPage> {
   }
 
   // キーワードを変更して一覧を表示
-  _keywordChangeAndViewList(keyword) {
+  void _keywordChangeAndViewList(keyword) {
     setState(() {
       _keyword = keyword;
     });
@@ -102,7 +102,7 @@ class _ListSymbolPageState extends State<ListSymbolPage> {
   }
 
   // 一覧を表示
-  _viewList() {
+  void _viewList() {
     setState(() {
       _filtered = _filterList();
     });

@@ -14,7 +14,7 @@
  - Take photographs (related to pin).（ピンに関連する写真撮影）
  - List all pins.（ピン一覧）
  - Search pins (with keywords).（ピンのキーワード検索）
- - Reverse Geocoding.（逆ジオコーディング：画面の中心位置の地名表示）
+ - Reverse Geocoding.（逆ジオコーディング：画面の中心位置の地名表示・ピンの都道府県名＋市区町村名表示）
 
 **In development:**（開発中の機能）
 

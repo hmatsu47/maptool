@@ -13,6 +13,7 @@ class CreateSymbolInfoPage extends StatefulWidget {
 
 class _CreateSymbolInfoPageState extends State<CreateSymbolInfoPage> {
   String _title = "";
+  PrefMuni? _prefMuni;
   String _describe = "";
   DateTime _dateTime = DateTime.now();
 
@@ -22,6 +23,7 @@ class _CreateSymbolInfoPageState extends State<CreateSymbolInfoPage> {
   Widget build(BuildContext context) {
     final args = ModalRoute.of(context)!.settings.arguments as SymbolInfo;
     _title = args.title;
+    _prefMuni = args.prefMuni;
     _describe = args.describe;
     _dateTime = args.dateTime;
     final titleBar = (_title == '' ? 'ピン情報登録' : 'ピン情報変更');
@@ -109,6 +111,7 @@ class _CreateSymbolInfoPageState extends State<CreateSymbolInfoPage> {
       });
       return;
     }
-    Navigator.pop(context, SymbolInfo(_title, _describe, _dateTime));
+    Navigator.pop(
+        context, SymbolInfo(_title, _describe, _dateTime, _prefMuni!));
   }
 }

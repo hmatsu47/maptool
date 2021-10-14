@@ -29,8 +29,9 @@ class SymbolInfo {
   String title;
   String describe;
   DateTime dateTime;
+  PrefMuni prefMuni;
 
-  SymbolInfo(this.title, this.describe, this.dateTime);
+  SymbolInfo(this.title, this.describe, this.dateTime, this.prefMuni);
 }
 
 // マーク（ピン）の登録情報（DB の id・緯度・経度つき）
@@ -40,6 +41,14 @@ class SymbolInfoWithLatLng {
   LatLng latLng;
 
   SymbolInfoWithLatLng(this.id, this.symbolInfo, this.latLng);
+}
+
+// 都道府県＋市区町村
+class PrefMuni {
+  String prefecture;
+  String municipalities;
+
+  PrefMuni(this.prefecture, this.municipalities);
 }
 
 // 画像の登録情報
@@ -66,6 +75,7 @@ class FullSymbolInfo {
   Function modifyPictureRecord;
   Function removePictureRecord;
   Function formatLabel;
+  Function getPrefMuni;
   Completer<MapboxMapController> controller;
   List<Picture> pictures;
   String imagePath;
@@ -80,6 +90,7 @@ class FullSymbolInfo {
       this.modifyPictureRecord,
       this.removePictureRecord,
       this.formatLabel,
+      this.getPrefMuni,
       this.controller,
       this.pictures,
       this.imagePath);
@@ -124,11 +135,11 @@ class _MapPageState extends State<MapPage> {
   // 画像保存パス
   String _imagePath = '';
   // 逆ジオコーディング用の都道府県＋市区町村マップ
-  final Map<int, String> _muniMap = {};
+  final Map<int, PrefMuni> _prefMuniMap = {};
   // 逆ジオコーディング用のマップを作り終えた？
   bool _muniAllSet = false;
   // 画面の中心の都道府県＋市区町村（前回の逆ジオコーディング時）
-  String _muni = '';
+  String _prefMuni = '';
   // 前回の逆ジオコーディング時の位置
   LatLng? _lastLatLng;
 
@@ -361,16 +372,18 @@ class _MapPageState extends State<MapPage> {
   // DB 作成
   Future<void> _createDatabase() async {
     // DB テーブル作成
-    _database = await openDatabase('maptool.db', version: 2,
+    _database = await openDatabase('maptool.db', version: 4,
         onCreate: (db, version) async {
       await db.execute(
-        'CREATE TABLE symbol_info ('
+        'CREATE TABLE IF NOT EXISTS symbol_info ('
         '  id INTEGER PRIMARY KEY AUTOINCREMENT,'
         '  title TEXT NOT NULL,'
         '  describe TEXT NOT NULL,'
         '  date_time INTEGER NOT NULL,'
         '  latitude REAL NOT NULL,'
-        '  longtitude REAL NOT NULL'
+        '  longtitude REAL NOT NULL,'
+        '  prefecture TEXT NOT NULL DEFAULT "",'
+        '  municipalities TEXT NOT NULL DEFAULT ""'
         ')',
       );
     }, onUpgrade: (db, oldVersion, newVersion) async {
@@ -384,6 +397,13 @@ class _MapPageState extends State<MapPage> {
         '  cloud_path TEXT NOT NULL'
         ')',
       );
+      // await db.execute(
+      //   'ALTER TABLE symbol_info ADD COLUMN '
+      //   // '  prefecture TEXT NOT NULL DEFAULT ""',
+      //   '  municipalities TEXT NOT NULL DEFAULT ""',
+      // );
+      // ignore: avoid_print
+      print('alter table');
     });
   }
 
@@ -414,7 +434,9 @@ class _MapPageState extends State<MapPage> {
   //     '  describe TEXT NOT NULL,'
   //     '  date_time INTEGER NOT NULL,'
   //     '  latitude REAL NOT NULL,'
-  //     '  longtitude REAL NOT NULL'
+  //     '  longtitude REAL NOT NULL,
+  //     '  prefecture TEXT NOT NULL DEFAULT "",
+  //     '  municipalities TEXT NOT NULL DEFAULT "",
   //     ')',
   //   );
   //   await _database.execute(
@@ -444,16 +466,21 @@ class _MapPageState extends State<MapPage> {
         'describe',
         'date_time',
         'latitude',
-        'longtitude'
+        'longtitude',
+        'prefecture',
+        'municipalities',
       ],
       orderBy: 'id ASC',
     );
     List<SymbolInfoWithLatLng> symbolInfoWithLatLngs = [];
     for (Map map in maps) {
-      SymbolInfo symbolInfo = SymbolInfo(map['title'], map['describe'],
-          DateTime.fromMillisecondsSinceEpoch(map['date_time'], isUtc: false));
-      LatLng latLng = LatLng(map['latitude'], map['longtitude']);
-      SymbolInfoWithLatLng symbolInfoWithLatLng =
+      final SymbolInfo symbolInfo = SymbolInfo(
+          map['title'],
+          map['describe'],
+          DateTime.fromMillisecondsSinceEpoch(map['date_time'], isUtc: false),
+          PrefMuni(map['prefecture'], map['municipalities']));
+      final LatLng latLng = LatLng(map['latitude'], map['longtitude']);
+      final SymbolInfoWithLatLng symbolInfoWithLatLng =
           SymbolInfoWithLatLng(map['id'], symbolInfo, latLng);
       symbolInfoWithLatLngs.add(symbolInfoWithLatLng);
     }
@@ -465,13 +492,22 @@ class _MapPageState extends State<MapPage> {
     final int id = _symbolInfoMap[symbol.id]!;
     final List<Map<String, Object?>> maps = await _database.query(
       'symbol_info',
-      columns: ['title', 'describe', 'date_time'],
+      columns: [
+        'title',
+        'describe',
+        'date_time',
+        'prefecture',
+        'municipalities'
+      ],
       where: 'id = ?',
       whereArgs: [id],
     );
     Map map = maps.first;
-    return SymbolInfo(map['title'], map['describe'],
-        DateTime.fromMillisecondsSinceEpoch(map['date_time'], isUtc: false));
+    return SymbolInfo(
+        map['title'],
+        map['describe'],
+        DateTime.fromMillisecondsSinceEpoch(map['date_time'], isUtc: false),
+        PrefMuni(map['prefecture'], map['municipalities']));
   }
 
   // DB 行追加
@@ -486,6 +522,9 @@ class _MapPageState extends State<MapPage> {
             symbolInfoWithLatLng.symbolInfo.dateTime.millisecondsSinceEpoch,
         'latitude': symbolInfoWithLatLng.latLng.latitude,
         'longtitude': symbolInfoWithLatLng.latLng.longitude,
+        'prefecture': symbolInfoWithLatLng.symbolInfo.prefMuni.prefecture,
+        'municipalities':
+            symbolInfoWithLatLng.symbolInfo.prefMuni.municipalities
       },
     );
   }
@@ -498,6 +537,8 @@ class _MapPageState extends State<MapPage> {
       {
         'title': symbolInfo.title,
         'describe': symbolInfo.describe,
+        'prefecture': symbolInfo.prefMuni.prefecture,
+        'municipalities': symbolInfo.prefMuni.municipalities
       },
       where: 'id = ?',
       whereArgs: [id],
@@ -664,9 +705,12 @@ class _MapPageState extends State<MapPage> {
 
   // マーク（ピン）を立ててラベルを付ける
   void _addMark(LatLng tapPoint) async {
-    final symbolInfo = await Navigator.of(navigatorKey.currentContext!)
-        .pushNamed('/editSymbol',
-            arguments: SymbolInfo('', '', DateTime.now()));
+    final PrefMuni prefMuni = await _getPrefMuni(tapPoint);
+    final symbolInfo =
+        await Navigator.of(navigatorKey.currentContext!).pushNamed(
+      '/editSymbol',
+      arguments: SymbolInfo('', '', DateTime.now(), prefMuni),
+    );
     if (symbolInfo is SymbolInfo) {
       // 詳細情報が入力されたらマーク（ピン）を立てる
       _addMarkToMap(tapPoint, symbolInfo);
@@ -720,6 +764,7 @@ class _MapPageState extends State<MapPage> {
             _modifyPictureRecord,
             _removePictureRecord,
             _formatLabel,
+            _getPrefMuni,
             _controller,
             pictures,
             _imagePath));
@@ -757,7 +802,9 @@ class _MapPageState extends State<MapPage> {
     _controller.future.then((mapboxMap) async {
       final CameraPosition? camera = mapboxMap.cameraPosition;
       final LatLng position = camera!.target;
-      final SymbolInfo symbolInfo = SymbolInfo('[pic]', '写真', DateTime.now());
+      final PrefMuni prefMuni = await _getPrefMuni(position);
+      final SymbolInfo symbolInfo =
+          SymbolInfo('[pic]', '写真', DateTime.now(), prefMuni);
       final int symbolId = await _addMarkToMap(position, symbolInfo);
       // 写真を保存する
       return await _savePhoto(photo, symbolId);
@@ -830,19 +877,20 @@ class _MapPageState extends State<MapPage> {
 
   // 逆ジオコーディング用の都道府県＋市区町村マップを生成
   void _makeMuniMap() async {
-    String muniJS = await _getMuniJS();
-    String muniJSUtf8 = utf8.decode(muniJS.runes.toList());
-    List<String> muniJSList = muniJSUtf8.split(';');
+    final String muniJS = await _getMuniJS();
+    final String muniJSUtf8 = utf8.decode(muniJS.runes.toList());
+    final List<String> muniJSList = muniJSUtf8.split(';');
     for (int i = 0; i < muniJSList.length; i++) {
-      int splitFrom = muniJSList[i].indexOf("'");
-      int splitTo = muniJSList[i].lastIndexOf("'");
+      final int splitFrom = muniJSList[i].indexOf("'");
+      final int splitTo = muniJSList[i].lastIndexOf("'");
       if (splitFrom >= 0 && splitFrom != splitTo) {
-        List<String> splitText =
+        final List<String> splitText =
             muniJSList[i].substring(splitFrom + 1, splitTo).split(',');
         if (splitText.length == 4) {
-          int muniCode = int.parse(splitText[2]);
-          String muniText = (splitText[1] + splitText[3]).replaceAll('　', '');
-          _muniMap[muniCode] = muniText;
+          final int muniCode = int.parse(splitText[2]);
+          final String prefText = splitText[1];
+          final String muniText = splitText[3].replaceAll('　', '');
+          _prefMuniMap[muniCode] = PrefMuni(prefText, muniText);
         }
       }
     }
@@ -858,45 +906,45 @@ class _MapPageState extends State<MapPage> {
   void _checkMuni() {
     if (_muniAllSet) {
       _controller.future.then((mapboxMap) async {
-        CameraPosition? camera = mapboxMap.cameraPosition;
-        LatLng position = camera!.target;
+        final CameraPosition? camera = mapboxMap.cameraPosition;
+        final LatLng position = camera!.target;
         // 初回または移動した場合にのみ新たに取得して表示
         if (_lastLatLng == null ||
             (_lastLatLng!.latitude != position.latitude &&
                 (_lastLatLng!.longitude != position.longitude))) {
-          String geoJson = await _getReverseGeo(position);
-          Map<String, dynamic> geoResultMap = jsonDecode(geoJson);
+          final String geoJson = await _getReverseGeo(position);
+          final Map<String, dynamic> geoResultMap = jsonDecode(geoJson);
           setState(() {
-            int muniCode = int.parse(geoResultMap['results']['muniCd']);
-            _muni =
-                '${_muniMap[muniCode]!}${geoResultMap['results']['lv01Nm']}';
+            final int muniCode = int.parse(geoResultMap['results']['muniCd']);
+            _prefMuni =
+                '${_prefMuniMap[muniCode]!.prefecture}${_prefMuniMap[muniCode]!.municipalities}${geoResultMap['results']['lv01Nm']}';
           });
           _lastLatLng = position;
-          _showMuni();
+          _showPrefMuni();
           return;
         }
         // 移動していない場合は前回の取得結果を表示
-        _showMuni();
+        _showPrefMuni();
       });
     }
   }
 
   // 画面の中心を逆ジオコーディング
   Future<String> _getReverseGeo(LatLng position) async {
-    String latitude = position.latitude.toString();
-    String longtitude = position.longitude.toString();
+    final String latitude = position.latitude.toString();
+    final String longtitude = position.longitude.toString();
     return await http.read(Uri.parse(
         'https://mreversegeocoder.gsi.go.jp/reverse-geocoder/LonLatToAddress?lat=$latitude&lon=$longtitude'));
   }
 
   // 都道府県＋市区町村名を表示する
-  void _showMuni() {
-    if (_muni != '') {
+  void _showPrefMuni() {
+    if (_prefMuni != '') {
       showDialog(
         context: context,
         builder: (BuildContext context) => AlertDialog(
           content: Text(
-            _muni,
+            _prefMuni,
             textAlign: TextAlign.center,
           ),
           actions: <Widget>[
@@ -910,5 +958,14 @@ class _MapPageState extends State<MapPage> {
         ),
       );
     }
+  }
+
+  // 対象となる緯度経度の都道府県＋市区町村名を取得
+  Future<PrefMuni> _getPrefMuni(LatLng position) async {
+    final String geoJson = await _getReverseGeo(position);
+    final Map<String, dynamic> geoResultMap = jsonDecode(geoJson);
+    final int muniCode = int.parse(geoResultMap['results']['muniCd']);
+    return PrefMuni(_prefMuniMap[muniCode]!.prefecture,
+        _prefMuniMap[muniCode]!.municipalities);
   }
 }

@@ -30,7 +30,7 @@ class _ListSymbolPageState extends State<ListSymbolPage> {
             style: const TextStyle(color: Colors.white),
             decoration: const InputDecoration(
               prefixIcon: Icon(Icons.search, color: Colors.white),
-              hintText: 'タイトル検索',
+              hintText: 'タイトル・地域検索',
               hintStyle: TextStyle(color: Colors.white),
             ),
             onChanged: (value) => {_keywordChangeAndViewList(value)}),
@@ -64,10 +64,14 @@ class _ListSymbolPageState extends State<ListSymbolPage> {
     );
   }
 
-  // 画像表示ウィジェット
+  // 項目表示ウィジェット
   Widget _symbolInfoItem(SymbolInfoWithLatLng symbolInfoWithLatLng) {
     final String title =
         _formatLabel!(symbolInfoWithLatLng.symbolInfo.title, 15);
+    final String prefMuniText =
+        '${symbolInfoWithLatLng.symbolInfo.prefMuni.prefecture}${symbolInfoWithLatLng.symbolInfo.prefMuni.municipalities}';
+    final String dateTimeText =
+        symbolInfoWithLatLng.symbolInfo.dateTime.toString().substring(0, 19);
     return Card(
       child: Container(
         decoration: BoxDecoration(
@@ -79,9 +83,13 @@ class _ListSymbolPageState extends State<ListSymbolPage> {
             size: 30.0,
           )),
           title: Text(title),
-          subtitle: Text(symbolInfoWithLatLng.symbolInfo.dateTime
-              .toString()
-              .substring(0, 19)),
+          subtitle: Column(
+            children: [
+              Text(prefMuniText),
+              Text(dateTimeText),
+            ],
+            crossAxisAlignment: CrossAxisAlignment.start,
+          ),
           onTap: () {
             Navigator.pop(
                 context,
@@ -116,10 +124,12 @@ class _ListSymbolPageState extends State<ListSymbolPage> {
     List<SymbolInfoWithLatLng> filtered = [];
     for (int i = 0; i < _infoList.length; i++) {
       if (_infoList[i]
-          .symbolInfo
-          .title
-          .toLowerCase()
-          .contains(_keyword.toLowerCase())) {
+              .symbolInfo
+              .title
+              .toLowerCase()
+              .contains(_keyword.toLowerCase()) ||
+          _infoList[i].symbolInfo.prefMuni.prefecture.contains(_keyword) ||
+          _infoList[i].symbolInfo.prefMuni.municipalities.contains(_keyword)) {
         filtered.add(_infoList[i]);
       }
     }

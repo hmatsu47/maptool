@@ -30,6 +30,7 @@ class _DisplaySymbolInfoPageState extends State<DisplaySymbolInfoPage> {
   int _symbolId = 0;
   Symbol? _symbol;
   String _title = "";
+  PrefMuni? _prefMuni;
   DateTime _dateTime = DateTime.now();
   String _describe = "";
   List<Picture> _pictures = [];
@@ -39,6 +40,7 @@ class _DisplaySymbolInfoPageState extends State<DisplaySymbolInfoPage> {
   Function? _modifyPictureRecord;
   Function? _removePictureRecord;
   Function? _formatLabel;
+  Function? _getPrefMuni;
   Completer<MapboxMapController?>? _controller;
   String _imagePath = '';
 
@@ -48,6 +50,7 @@ class _DisplaySymbolInfoPageState extends State<DisplaySymbolInfoPage> {
     _symbolId = args.symbolId;
     _symbol = args.symbol;
     _title = args.symbolInfo.title;
+    _prefMuni = args.symbolInfo.prefMuni;
     _dateTime = args.symbolInfo.dateTime;
     _describe = args.symbolInfo.describe;
     _pictures = args.pictures;
@@ -57,6 +60,7 @@ class _DisplaySymbolInfoPageState extends State<DisplaySymbolInfoPage> {
     _modifyPictureRecord = args.modifyPictureRecord;
     _removePictureRecord = args.removePictureRecord;
     _formatLabel = args.formatLabel;
+    _getPrefMuni = args.getPrefMuni;
     _controller = args.controller;
     _imagePath = args.imagePath;
 
@@ -70,6 +74,8 @@ class _DisplaySymbolInfoPageState extends State<DisplaySymbolInfoPage> {
 
   // 表示フォームウィジェット
   Widget _makeDisplayForm() {
+    final String prefMuniText =
+        '${_prefMuni!.prefecture}${_prefMuni!.municipalities}';
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 20.0),
       child: Align(
@@ -78,19 +84,23 @@ class _DisplaySymbolInfoPageState extends State<DisplaySymbolInfoPage> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Gap(12),
+            const Gap(8),
             Text(_title,
                 textAlign: TextAlign.left,
                 style: const TextStyle(fontSize: 20.0)),
-            const Gap(12),
+            const Gap(4),
+            Text(prefMuniText,
+                textAlign: TextAlign.left,
+                style: const TextStyle(fontSize: 16.0)),
+            const Gap(8),
             Text(_dateTime.toString().substring(0, 19),
                 textAlign: TextAlign.left,
                 style: const TextStyle(fontSize: 18.0)),
-            const Gap(12),
+            const Gap(8),
             Text(_describe,
                 textAlign: TextAlign.left,
                 style: const TextStyle(fontSize: 16.0)),
-            const Gap(12),
+            const Gap(8),
             Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: <Widget>[
@@ -141,7 +151,7 @@ class _DisplaySymbolInfoPageState extends State<DisplaySymbolInfoPage> {
 
   // 画像表示ウィジェット
   Widget _pictureItem(Picture picture) {
-    File? file = _localFile(picture);
+    final File? file = _localFile(picture);
     final String title = _formatLabel!(picture.comment, 22);
     return Card(
       child: Container(
@@ -174,7 +184,7 @@ class _DisplaySymbolInfoPageState extends State<DisplaySymbolInfoPage> {
   // 画像ファイル取得
   File? _localFile(Picture picture) {
     // filePath がパス付きの場合はファイル名のみを抽出
-    int pathIndexOf = picture.filePath.lastIndexOf('/');
+    final int pathIndexOf = picture.filePath.lastIndexOf('/');
     final String fileName = (pathIndexOf == -1
         ? picture.filePath
         : picture.filePath.substring(pathIndexOf + 1));
@@ -202,9 +212,10 @@ class _DisplaySymbolInfoPageState extends State<DisplaySymbolInfoPage> {
   // Symbol 情報変更
   void _editSymbolPage(BuildContext context) async {
     final symbolInfo = await Navigator.of(context).pushNamed('/editSymbol',
-        arguments: SymbolInfo(_title, _describe, _dateTime));
+        arguments: SymbolInfo(_title, _describe, _dateTime, _prefMuni!));
     if (symbolInfo is SymbolInfo) {
-      // 変更を反映
+      // 変更を反映（都道府県＋市区町村は都度更新）
+      symbolInfo.prefMuni = await _getPrefMuni!(_symbol!.options.geometry!);
       await _modifyRecord!(_symbol, symbolInfo);
       await _controller!.future.then((mapboxMap) async {
         await mapboxMap!.updateSymbol(
@@ -271,7 +282,7 @@ class _DisplaySymbolInfoPageState extends State<DisplaySymbolInfoPage> {
 
   // 画像を削除
   void _removePicture(Picture picture) async {
-    File? file = _localFile(picture);
+    final File? file = _localFile(picture);
     if (file != null) {
       file.deleteSync();
     }

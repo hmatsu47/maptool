@@ -104,6 +104,14 @@ class FullSymbolList {
   FullSymbolList(this.infoList, this.formatLabel);
 }
 
+// 地名検索画面に渡す内容一式
+class FullSearchKeyword {
+  Map<int, PrefMuni> prefMuniMap;
+  Function formatLabel;
+
+  FullSearchKeyword(this.prefMuniMap, this.formatLabel);
+}
+
 class _MapPageState extends State<MapPage> {
   final Completer<MapboxMapController> _controller = Completer();
   final Location _locationService = Location();
@@ -253,6 +261,17 @@ class _MapPageState extends State<MapPage> {
         child: Icon(_symbolInfoMap.isNotEmpty
             ? Icons.view_list
             : Icons.view_list_outlined),
+      ),
+      const Gap(16),
+      FloatingActionButton(
+        heroTag: 'searchPlaceName',
+        backgroundColor: Colors.blue,
+        onPressed: () {
+          _searchPlaceName();
+        },
+        child: Icon(
+          _muniAllSet ? Icons.search : Icons.search_off,
+        ),
       ),
       const Gap(32),
       FloatingActionButton(
@@ -967,5 +986,20 @@ class _MapPageState extends State<MapPage> {
     final int muniCode = int.parse(geoResultMap['results']['muniCd']);
     return PrefMuni(_prefMuniMap[muniCode]!.prefecture,
         _prefMuniMap[muniCode]!.municipalities);
+  }
+
+  // 地名検索画面で選択した場所へ移動
+  void _searchPlaceName() async {
+    if (_muniAllSet) {
+      final latLng = await Navigator.of(navigatorKey.currentContext!).pushNamed(
+          '/searchKeyword',
+          arguments: FullSearchKeyword(_prefMuniMap, _formatLabel));
+      if (latLng is LatLng) {
+        setState(() {
+          _gpsTracking = false;
+        });
+        _moveCameraToTapPoint(latLng);
+      }
+    }
   }
 }

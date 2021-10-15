@@ -5,6 +5,7 @@ import 'package:maptool/display_picture_page.dart';
 import 'package:maptool/display_symbol_info_page.dart';
 import 'package:maptool/list_symbol_page.dart';
 import 'package:maptool/map_page.dart';
+import 'package:maptool/search_keyword_page.dart';
 
 final navigatorKey = GlobalKey<NavigatorState>();
 void main() {
@@ -19,6 +20,7 @@ void main() {
             const DisplaySymbolInfoPage(),
         '/displayPicture': (BuildContext context) => const DisplayPicturePage(),
         '/listSymbol': (BuildContext context) => const ListSymbolPage(),
+        '/searchKeyword': (BuildContext context) => const SearchKeywordPage(),
       },
       navigatorKey: navigatorKey,
     ),

@@ -15,10 +15,11 @@
  - List all pins.（ピン一覧）
  - Search pins (with keywords).（ピンのキーワード検索）
  - Reverse Geocoding.（逆ジオコーディング：画面の中心位置の地名表示・ピンの都道府県名＋市区町村名表示）
+ - Geocoding.（ジオコーディング：地名検索）
 
 **In development:**（開発中の機能）
 
- - Geocoding and Reverse Geocoding.（ジオコーディングと逆ジオコーディング）
+ - Add picture(s) from Image garelly.（ギャラリーからの写真・画像追加）
 
 ![画面例](map_image.png "画面例")
 
@@ -137,3 +138,4 @@ password [Mapbox Access Token or Secret Token here]
     - [lib/edit_symbol_info_page.dart](lib/edit_symbol_info_page.dart)
     - [lib/display_picture_page.dart](lib/display_picture_page.dart)
     - [lib/list_symbol_page.dart](lib/list_symbol_page.dart)
+    - [lib/search_keyword_page.dart](lib/search_keyword_page.dart)

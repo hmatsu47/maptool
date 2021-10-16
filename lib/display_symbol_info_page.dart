@@ -35,6 +35,7 @@ class _DisplaySymbolInfoPageState extends State<DisplaySymbolInfoPage> {
   String _describe = "";
   List<Picture> _pictures = [];
   Function? _addPictureFromCamera;
+  Function? _addPicturesFromGarelly;
   Function? _removeMark;
   Function? _modifyRecord;
   Function? _modifyPictureRecord;
@@ -55,6 +56,7 @@ class _DisplaySymbolInfoPageState extends State<DisplaySymbolInfoPage> {
     _describe = args.symbolInfo.describe;
     _pictures = args.pictures;
     _addPictureFromCamera = args.addPictureFromCamera;
+    _addPicturesFromGarelly = args.addPicturesFromGarelly;
     _removeMark = args.removeMark;
     _modifyRecord = args.modifyRecord;
     _modifyPictureRecord = args.modifyPictureRecord;
@@ -105,9 +107,15 @@ class _DisplaySymbolInfoPageState extends State<DisplaySymbolInfoPage> {
               mainAxisAlignment: MainAxisAlignment.end,
               children: <Widget>[
                 TextButton(
-                  child: const Text('写真追加'),
+                  child: const Text('撮影'),
                   onPressed: () {
                     _addPicture();
+                  },
+                ),
+                TextButton(
+                  child: const Text('写真選択'),
+                  onPressed: () {
+                    _selectAndAddPictures();
                   },
                 ),
                 TextButton(
@@ -199,12 +207,22 @@ class _DisplaySymbolInfoPageState extends State<DisplaySymbolInfoPage> {
     }
   }
 
-  // 画像追加
+  // 撮影（写真追加）
   void _addPicture() async {
     final Picture? picture = await _addPictureFromCamera!(_symbolId);
     if (picture != null) {
       setState(() {
         _pictures.add(picture);
+      });
+    }
+  }
+
+  // 画像追加（ギャラリーから）
+  void _selectAndAddPictures() async {
+    final List<Picture> pictures = await _addPicturesFromGarelly!(_symbolId);
+    if (pictures.isNotEmpty) {
+      setState(() {
+        _pictures.addAll(pictures);
       });
     }
   }

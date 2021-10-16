@@ -16,10 +16,11 @@
  - Search pins (with keywords).（ピンのキーワード検索）
  - Reverse Geocoding.（逆ジオコーディング：画面の中心位置の地名表示・ピンの都道府県名＋市区町村名表示）
  - Geocoding.（ジオコーディング：地名検索）
+ - Add picture(s) from Image garelly.（ギャラリーからの写真・画像追加）
 
 **In development:**（開発中の機能）
 
- - Add picture(s) from Image garelly.（ギャラリーからの写真・画像追加）
+ - Backup data on AWS.（AWS へデータバックアップ）
 
 ![画面例](map_image.png "画面例")
 

@@ -70,6 +70,7 @@ class FullSymbolInfo {
   Symbol symbol;
   SymbolInfo symbolInfo;
   Function addPictureFromCamera;
+  Function addPicturesFromGarelly;
   Function removeMark;
   Function modifyRecord;
   Function modifyPictureRecord;
@@ -85,6 +86,7 @@ class FullSymbolInfo {
       this.symbol,
       this.symbolInfo,
       this.addPictureFromCamera,
+      this.addPicturesFromGarelly,
       this.removeMark,
       this.modifyRecord,
       this.modifyPictureRecord,
@@ -111,6 +113,9 @@ class FullSearchKeyword {
 
   FullSearchKeyword(this.prefMuniMap, this.formatLabel);
 }
+
+// ボタン表示のタイプ
+enum ButtonType { invisible, view, search, add }
 
 class _MapPageState extends State<MapPage> {
   final Completer<MapboxMapController> _controller = Completer();
@@ -150,6 +155,9 @@ class _MapPageState extends State<MapPage> {
   String _prefMuni = '';
   // 前回の逆ジオコーディング時の位置
   LatLng? _lastLatLng;
+
+  // アイコンボタンの表示状態（0:非表示／1:参照／2:検索／3:追加）
+  ButtonType _buttonType = ButtonType.invisible;
 
   // 現在位置の監視状況
   StreamSubscription? _locationChangedListen;
@@ -240,105 +248,171 @@ class _MapPageState extends State<MapPage> {
   // フローティングアイコンウィジェット
   Widget _makeFloatingIcons() {
     return Column(mainAxisSize: MainAxisSize.min, children: [
-      // FloatingActionButton(
-      //     heroTag: 'recreateTables',
-      //     backgroundColor: Colors.blue,
-      //     onPressed: () {
-      //       // DB のテーブルを再作成する
-      //       _recreateTables();
-      //     },
-      //     child: const Icon(
-      //       Icons.delete,
-      //     )),
-      // const Gap(32),
-      FloatingActionButton(
-        heroTag: 'moveToSymbolPosition',
-        backgroundColor: Colors.blue,
-        onPressed: () {
-          // 全 Symbol 一覧を表示して選択した Symbol の位置へ移動
-          _moveToSymbolPosition();
-        },
-        child: Icon(_symbolInfoMap.isNotEmpty
-            ? Icons.view_list
-            : Icons.view_list_outlined),
-      ),
-      const Gap(16),
-      FloatingActionButton(
-        heroTag: 'searchPlaceName',
-        backgroundColor: Colors.blue,
-        onPressed: () {
-          _searchPlaceName();
-        },
-        child: Icon(
-          _muniAllSet ? Icons.search : Icons.search_off,
+      // Visibility(
+      //   child: FloatingActionButton(
+      //       heroTag: 'recreateTables',
+      //       backgroundColor: Colors.blue,
+      //       onPressed: () {
+      //         // DB のテーブルを再作成する
+      //         _recreateTables();
+      //       },
+      //       child: const Icon(
+      //         Icons.delete,
+      //       )),
+      //   visible: _buttonType == ButtonType.add,
+      // ),
+      // Visibility(
+      //   child: const Gap(12),
+      //   visible: _buttonType == ButtonType.add,
+      // ),
+      // const Gap(20),
+      // ここから Sreach
+      Visibility(
+        child: FloatingActionButton(
+          heroTag: 'moveToSymbolPosition',
+          backgroundColor: Colors.blue,
+          onPressed: () {
+            // 全 Symbol 一覧を表示して選択した Symbol の位置へ移動
+            _moveToSymbolPosition();
+          },
+          child: Icon(_symbolInfoMap.isNotEmpty
+              ? Icons.view_list
+              : Icons.view_list_outlined),
         ),
+        visible: _buttonType == ButtonType.search,
       ),
-      const Gap(32),
-      FloatingActionButton(
-        heroTag: 'addPictureFromCameraAndMark',
-        backgroundColor: Colors.blue,
-        onPressed: () {
-          // 画面の中心の座標で写真を撮ってマーク（ピン）を立てる
-          _addPictureFromCameraAndMark();
-        },
-        child:
-            Icon(_symbolAllSet ? Icons.camera_alt : Icons.camera_alt_outlined),
+      Visibility(
+        child: const Gap(12),
+        visible: _buttonType == ButtonType.search,
       ),
-      const Gap(16),
-      FloatingActionButton(
-        heroTag: 'addSymbolOnCameraPosition',
-        backgroundColor: Colors.blue,
-        onPressed: () {
-          // 画面の中心にマーク（ピン）を立てる
-          _addSymbolOnCameraPosition();
-        },
-        child: Icon(
-            _symbolAllSet ? Icons.add_location : Icons.add_location_outlined),
-      ),
-      const Gap(16),
-      FloatingActionButton(
-        heroTag: 'resetZoom',
-        backgroundColor: Colors.blue,
-        onPressed: () {
-          // ズームを戻す
-          _resetZoom();
-        },
-        child: const Text('±', style: TextStyle(fontSize: 28.0, height: 1.0)),
-      ),
-      const Gap(16),
-      FloatingActionButton(
-        heroTag: 'resetBearing',
-        backgroundColor: Colors.blue,
-        onPressed: () {
-          // 北向きに戻す
-          _resetBearing();
-        },
-        child: const Text('N',
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-      ),
-      const Gap(16),
-      FloatingActionButton(
-        heroTag: 'gpsToggle',
-        backgroundColor: Colors.blue,
-        onPressed: () {
-          _gpsToggle();
-        },
-        child: Icon(
-          // GPS 追従の ON / OFF に合わせてアイコン表示する
-          _gpsTracking ? Icons.gps_fixed : Icons.gps_not_fixed,
+      Visibility(
+        child: FloatingActionButton(
+          heroTag: 'searchPlaceName',
+          backgroundColor: Colors.blue,
+          onPressed: () {
+            _searchPlaceName();
+          },
+          child: Icon(
+            _muniAllSet ? Icons.search : Icons.search_off,
+          ),
         ),
+        visible: _buttonType == ButtonType.search,
       ),
-      const Gap(16),
-      FloatingActionButton(
-        heroTag: 'checkMuni',
-        backgroundColor: Colors.blue,
-        onPressed: () {
-          _checkMuni();
-        },
-        child: Icon(
-          _muniAllSet ? Icons.info : Icons.info_outlined,
+      Visibility(
+        child: const Gap(12),
+        visible: _buttonType == ButtonType.search,
+      ),
+      Visibility(
+        child: FloatingActionButton(
+          heroTag: 'checkMuni',
+          backgroundColor: Colors.blue,
+          onPressed: () {
+            _checkMuni();
+          },
+          child: Icon(
+            _muniAllSet ? Icons.info : Icons.info_outlined,
+          ),
         ),
+        visible: _buttonType == ButtonType.search,
       ),
+      // ここから Add
+      Visibility(
+        child: FloatingActionButton(
+          heroTag: 'addPictureFromCameraAndMark',
+          backgroundColor: Colors.blue,
+          onPressed: () {
+            // 画面の中心の座標で写真を撮ってマーク（ピン）を立てる
+            _addPictureFromCameraAndMark();
+          },
+          child: Icon(
+              _symbolAllSet ? Icons.camera_alt : Icons.camera_alt_outlined),
+        ),
+        visible: _buttonType == ButtonType.add,
+      ),
+      Visibility(
+        child: const Gap(12),
+        visible: _buttonType == ButtonType.add,
+      ),
+      Visibility(
+        child: FloatingActionButton(
+          heroTag: 'addSymbolOnCameraPosition',
+          backgroundColor: Colors.blue,
+          onPressed: () {
+            // 画面の中心にマーク（ピン）を立てる
+            _addSymbolOnCameraPosition();
+          },
+          child: Icon(
+              _symbolAllSet ? Icons.add_location : Icons.add_location_outlined),
+        ),
+        visible: _buttonType == ButtonType.add,
+      ),
+      // ここから View
+      Visibility(
+        child: FloatingActionButton(
+          heroTag: 'resetZoom',
+          backgroundColor: Colors.blue,
+          onPressed: () {
+            // ズームを戻す
+            _resetZoom();
+          },
+          child: const Text('±', style: TextStyle(fontSize: 28.0, height: 1.0)),
+        ),
+        visible: _buttonType == ButtonType.view,
+      ),
+      Visibility(
+        child: const Gap(12),
+        visible: _buttonType == ButtonType.view,
+      ),
+      Visibility(
+        child: FloatingActionButton(
+          heroTag: 'resetBearing',
+          backgroundColor: Colors.blue,
+          onPressed: () {
+            // 北向きに戻す
+            _resetBearing();
+          },
+          child: const Text('N',
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+        ),
+        visible: _buttonType == ButtonType.view,
+      ),
+      Visibility(
+        child: const Gap(12),
+        visible: _buttonType == ButtonType.view,
+      ),
+      Visibility(
+        child: FloatingActionButton(
+          heroTag: 'gpsToggle',
+          backgroundColor: Colors.blue,
+          onPressed: () {
+            _gpsToggle();
+          },
+          child: Icon(
+            // GPS 追従の ON / OFF に合わせてアイコン表示する
+            _gpsTracking ? Icons.gps_fixed : Icons.gps_not_fixed,
+          ),
+        ),
+        visible: _buttonType == ButtonType.view,
+      ),
+      Visibility(
+        child: const Gap(20),
+        visible: _buttonType != ButtonType.invisible,
+      ),
+      FloatingActionButton(
+          heroTag: 'buttonToggle',
+          backgroundColor: Colors.blue,
+          onPressed: () {
+            _buttonChange();
+          },
+          child: (_buttonType == ButtonType.invisible
+              ? const Icon(Icons.menu)
+              : Text(
+                  (_buttonType == ButtonType.view
+                      ? 'View'
+                      : (_buttonType == ButtonType.search ? 'Search' : 'Add')),
+                  style: const TextStyle(
+                      fontSize: 12, fontWeight: FontWeight.bold),
+                ))),
     ]);
   }
 
@@ -633,6 +707,26 @@ class _MapPageState extends State<MapPage> {
         .delete('pictures', where: 'id = ?', whereArgs: [picture.id]);
   }
 
+  // ボタンの表示（非表示）入れ替え
+  void _buttonChange() {
+    setState(() {
+      switch (_buttonType) {
+        case ButtonType.invisible:
+          _buttonType = ButtonType.view;
+          break;
+        case ButtonType.view:
+          _buttonType = ButtonType.search;
+          break;
+        case ButtonType.search:
+          _buttonType = ButtonType.add;
+          break;
+        case ButtonType.add:
+          _buttonType = ButtonType.invisible;
+          break;
+      }
+    });
+  }
+
   // 現在位置を取得
   void _getLocation() async {
     _yourLocation = await _locationService.getLocation();
@@ -778,6 +872,7 @@ class _MapPageState extends State<MapPage> {
             symbol,
             symbolInfo,
             _addPictureFromCamera,
+            _addPicturesFromGarelly,
             _removeMark,
             _modifyRecord,
             _modifyPictureRecord,
@@ -815,7 +910,7 @@ class _MapPageState extends State<MapPage> {
     }
     if (symbolId != 0) {
       // ピン選択済み→写真を保存する
-      return await _savePhoto(photo, symbolId);
+      return await _saveAndRecordPicture(photo, symbolId, true);
     }
     // ピン未選択→まず画面の中心にピンを立てる
     _controller.future.then((mapboxMap) async {
@@ -826,7 +921,7 @@ class _MapPageState extends State<MapPage> {
           SymbolInfo('[pic]', '写真', DateTime.now(), prefMuni);
       final int symbolId = await _addMarkToMap(position, symbolInfo);
       // 写真を保存する
-      return await _savePhoto(photo, symbolId);
+      return await _saveAndRecordPicture(photo, symbolId, true);
     });
   }
 
@@ -839,14 +934,40 @@ class _MapPageState extends State<MapPage> {
         imageQuality: 85);
   }
 
-  // 写真を保存する
-  Future<Picture> _savePhoto(XFile photo, int symbolId) async {
-    final String filePath = await _savePicture(photo);
-    return await _addPictureInfo(photo, symbolId, filePath);
+  // ギャラリーで画像を選んでマーク（ピン）に追加する
+  Future<List<Picture?>?> _addPicturesFromGarelly(int symbolId) async {
+    List<Picture> picList = [];
+    if (!_symbolAllSet) {
+      return picList;
+    }
+    final List<XFile?>? pictures = await _selectPictures();
+    if (pictures == null || pictures.isEmpty) {
+      // 選択キャンセルの場合
+      return picList;
+    }
+    // 選択画像を全て保存する
+    for (int i = 0; i < pictures.length; i++) {
+      Picture picture =
+          await _saveAndRecordPicture(pictures[i]!, symbolId, false);
+      picList.add(picture);
+    }
+    return picList;
   }
 
-  // 画像を保存する
-  Future<String> _savePicture(XFile photo) async {
+  // 画像を複数選択する
+  Future<List<XFile?>?> _selectPictures() {
+    return _picker.pickMultiImage(maxWidth: 1600, maxHeight: 1600);
+  }
+
+  // 画像をファイル保存して DB に情報を追加する
+  Future<Picture> _saveAndRecordPicture(
+      XFile picture, int symbolId, bool addGarelly) async {
+    final String filePath = await _savePicture(picture, addGarelly);
+    return await _addPictureInfo(picture, symbolId, filePath);
+  }
+
+  // 画像をファイル保存する
+  Future<String> _savePicture(XFile photo, bool addGarelly) async {
     final Uint8List buffer = await photo.readAsBytes();
     final String savePath = '$_imagePath/${photo.name}';
     final File saveFile = File(savePath);
@@ -857,8 +978,10 @@ class _MapPageState extends State<MapPage> {
     // ignore: avoid_print
     print('Path: ${saveFile.path}, Length: $len');
 
-    // 画像ギャラリーにも保存
-    await ImageGallerySaver.saveImage(buffer, name: photo.name);
+    if (addGarelly) {
+      // 画像ギャラリーにも保存
+      await ImageGallerySaver.saveImage(buffer, name: photo.name);
+    }
 
     return saveFile.path;
   }

@@ -4,6 +4,9 @@ import 'dart:io';
 import 'dart:math';
 import 'dart:typed_data';
 
+import 'package:amplify_api/amplify_api.dart';
+import 'package:amplify_auth_cognito/amplify_auth_cognito.dart';
+import 'package:amplify_flutter/amplify.dart';
 import 'package:cross_file/cross_file.dart';
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
@@ -12,6 +15,7 @@ import 'package:image_gallery_saver/image_gallery_saver.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:location/location.dart';
 import 'package:mapbox_gl/mapbox_gl.dart';
+import 'package:maptool/amplifyconfiguration.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';
 
@@ -162,9 +166,15 @@ class _MapPageState extends State<MapPage> {
   // 現在位置の監視状況
   StreamSubscription? _locationChangedListen;
 
+  // Amplify
+  final _amplify = Amplify;
+
   @override
   void initState() {
     super.initState();
+
+    // Amplify
+    _configureAmplify();
 
     // 現在位置の取得
     _getLocation();
@@ -179,6 +189,23 @@ class _MapPageState extends State<MapPage> {
     setState(() {
       _gpsTracking = true;
     });
+  }
+
+  // Amplify
+  void _configureAmplify() async {
+    AmplifyAuthCognito authPlugin = AmplifyAuthCognito();
+    AmplifyAPI apiPlugin = AmplifyAPI();
+    await _amplify.addPlugins([authPlugin, apiPlugin]);
+
+    // Once Plugins are added, configure Amplify
+    // Note: Amplify can only be configured once.
+    try {
+      await _amplify.configure(amplifyconfig);
+    } on AmplifyAlreadyConfiguredException {
+      // ignore: avoid_print
+      print(
+          "Tried to reconfigure Amplify; this can occur when your app restarts on Android.");
+    }
   }
 
   @override
@@ -316,6 +343,22 @@ class _MapPageState extends State<MapPage> {
         visible: _buttonType == ButtonType.search,
       ),
       // ここから Add
+      Visibility(
+        child: FloatingActionButton(
+          heroTag: 'backupData',
+          backgroundColor: Colors.blue,
+          onPressed: () {
+            // AWS にデータバックアップ
+            _backupData();
+          },
+          child: const Icon(Icons.backup),
+        ),
+        visible: _buttonType == ButtonType.add,
+      ),
+      Visibility(
+        child: const Gap(12),
+        visible: _buttonType == ButtonType.add,
+      ),
       Visibility(
         child: FloatingActionButton(
           heroTag: 'addPictureFromCameraAndMark',
@@ -465,7 +508,7 @@ class _MapPageState extends State<MapPage> {
   // DB 作成
   Future<void> _createDatabase() async {
     // DB テーブル作成
-    _database = await openDatabase('maptool.db', version: 4,
+    _database = await openDatabase('maptool.db', version: 6,
         onCreate: (db, version) async {
       await db.execute(
         'CREATE TABLE IF NOT EXISTS symbol_info ('
@@ -479,7 +522,29 @@ class _MapPageState extends State<MapPage> {
         '  municipalities TEXT NOT NULL DEFAULT ""'
         ')',
       );
+      await db.execute(
+        'CREATE TABLE IF NOT EXISTS pictures ('
+        '  id INTEGER PRIMARY KEY AUTOINCREMENT,'
+        '  symbol_id INTEGER NOT NULL,'
+        '  comment TEXT NOT NULL,'
+        '  date_time INTEGER NOT NULL,'
+        '  file_path TEXT NOT NULL,'
+        '  cloud_path TEXT NOT NULL'
+        ')',
+      );
     }, onUpgrade: (db, oldVersion, newVersion) async {
+      await db.execute(
+        'CREATE TABLE IF NOT EXISTS symbol_info ('
+        '  id INTEGER PRIMARY KEY AUTOINCREMENT,'
+        '  title TEXT NOT NULL,'
+        '  describe TEXT NOT NULL,'
+        '  date_time INTEGER NOT NULL,'
+        '  latitude REAL NOT NULL,'
+        '  longtitude REAL NOT NULL,'
+        '  prefecture TEXT NOT NULL DEFAULT "",'
+        '  municipalities TEXT NOT NULL DEFAULT ""'
+        ')',
+      );
       await db.execute(
         'CREATE TABLE IF NOT EXISTS pictures ('
         '  id INTEGER PRIMARY KEY AUTOINCREMENT,'
@@ -496,7 +561,7 @@ class _MapPageState extends State<MapPage> {
       //   '  municipalities TEXT NOT NULL DEFAULT ""',
       // );
       // ignore: avoid_print
-      print('alter table');
+      // print('alter table');
     });
   }
 
@@ -643,6 +708,34 @@ class _MapPageState extends State<MapPage> {
     final int id = _symbolInfoMap[symbol.id]!;
     return await _database
         .delete('symbol_info', where: 'id = ?', whereArgs: [id]);
+  }
+
+  // DB 画像行全取得
+  Future<List<Picture>> _fetchAllPictureRecords() async {
+    final List<Map<String, Object?>> maps = await _database.query(
+      'pictures',
+      columns: [
+        'id',
+        'symbol_id',
+        'comment',
+        'date_time',
+        'file_path',
+        'cloud_path'
+      ],
+      orderBy: 'id ASC',
+    );
+    List<Picture> pictures = [];
+    for (Map map in maps) {
+      final Picture picture = Picture(
+          map['id'],
+          map['symbol_id'],
+          map['comment'],
+          DateTime.fromMillisecondsSinceEpoch(map['date_time'], isUtc: false),
+          map['file_path'],
+          map['cloud_path']);
+      pictures.add(picture);
+    }
+    return pictures;
   }
 
   // DB 画像行取得（対象 Symbol の）
@@ -1124,5 +1217,111 @@ class _MapPageState extends State<MapPage> {
         _moveCameraToTapPoint(latLng);
       }
     }
+  }
+
+  // AWS にデータバックアップ
+  _backupData() async {
+    final String backupTitle = DateTime.now().toString().substring(0, 19);
+    final bool pictureSave = await _backupPicture(backupTitle);
+    if (pictureSave) {
+      final bool infoSave = await _backupSymbolInfo(backupTitle);
+      if (infoSave) {
+        await _backupSet(backupTitle);
+      }
+    }
+  }
+
+  // バックアップ情報を登録
+  Future<bool> _backupSet(String backupTitle) async {
+    try {
+      final RestOptions options = RestOptions(
+          path: '/backupset',
+          body: const Utf8Encoder().convert(
+              ('{"OperationType": "PUT", "Keys": {"title": ${jsonEncode(backupTitle)}}}')));
+      final RestOperation restOperation =
+          _amplify.API.post(restOptions: options);
+      await restOperation.response;
+      // ignore: avoid_print
+      print('POST call succeeded');
+      return true;
+    } on ApiException catch (e) {
+      // ignore: avoid_print
+      print('POST call (/backupset) failed: $e');
+      return false;
+    }
+  }
+
+  // Symbol 情報をバックアップ
+  Future<bool> _backupSymbolInfo(String backupTitle) async {
+    final List<SymbolInfoWithLatLng> records = await _fetchRecords();
+    for (SymbolInfoWithLatLng record in records) {
+      final int id = record.id;
+      final String title = record.symbolInfo.title;
+      final String describe = record.symbolInfo.describe;
+      final int dateTime = record.symbolInfo.dateTime.millisecondsSinceEpoch;
+      final double latitude = record.latLng.latitude;
+      final double longtitude = record.latLng.longitude;
+      final String prefecture = record.symbolInfo.prefMuni.prefecture;
+      final String municipalities = record.symbolInfo.prefMuni.municipalities;
+      final RestOptions options = RestOptions(
+          path: '/backupsymbolinfo',
+          body: const Utf8Encoder().convert(('{"OperationType": "PUT"'
+                  ', "Keys": {"backupTitle": ${jsonEncode(backupTitle)}'
+                  ', "id": ${jsonEncode(id)}, "title": ${jsonEncode(title)}' +
+              (describe == '' ? '' : ', "describe": ${jsonEncode(describe)}') +
+              ', "dateTime": ${jsonEncode(dateTime)}'
+                  ', "latitude": ${jsonEncode(latitude)}'
+                  ', "longtitude": ${jsonEncode(longtitude)}'
+                  ', "prefecture": ${jsonEncode(prefecture)}'
+                  ', "municipalities": ${jsonEncode(municipalities)}'
+                  '}}')));
+      try {
+        final RestOperation restOperation =
+            _amplify.API.post(restOptions: options);
+        await restOperation.response;
+        // ignore: avoid_print
+        print('POST call succeeded');
+      } on ApiException catch (e) {
+        // ignore: avoid_print
+        print('POST call (/backupsymbolinfo) failed: $e');
+        return false;
+      }
+    }
+    return true;
+  }
+
+  // 画像情報をバックアップ
+  Future<bool> _backupPicture(String backupTitle) async {
+    final List<Picture> records = await _fetchAllPictureRecords();
+    for (Picture record in records) {
+      final int id = record.id;
+      final int symbolId = record.symbolId;
+      final String comment = record.comment;
+      final int dateTime = record.dateTime.millisecondsSinceEpoch;
+      final String filePath = record.filePath;
+      final String cloudPath = record.cloudPath;
+      final RestOptions options = RestOptions(
+          path: '/backuppicture',
+          body: const Utf8Encoder().convert(('{"OperationType": "PUT"'
+              ', "Keys": {"backupTitle": ${jsonEncode(backupTitle)}'
+              ', "id": ${jsonEncode(id)}, "symbolId": ${jsonEncode(symbolId)}'
+              ', "comment": ${jsonEncode(comment)}'
+              ', "dateTime": $dateTime'
+              ', "filePath": ${jsonEncode(filePath)}'
+              ', "cloudPath": ${jsonEncode(cloudPath)}'
+              '}}')));
+      try {
+        final RestOperation restOperation =
+            _amplify.API.post(restOptions: options);
+        await restOperation.response;
+        // ignore: avoid_print
+        print('POST call succeeded');
+      } on ApiException catch (e) {
+        // ignore: avoid_print
+        print('POST call (/backuppicture) failed: $e');
+        return false;
+      }
+    }
+    return true;
   }
 }

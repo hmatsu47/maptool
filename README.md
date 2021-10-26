@@ -53,6 +53,7 @@ dependencies:
   amplify_flutter: ^0.2.5
   amplify_auth_cognito: ^0.2.5
   amplify_api: ^0.2.5
+  minio: ^3.0.0
 
 dependency_overrides:
   mapbox_gl:
@@ -142,7 +143,7 @@ login mapbox
 password [Mapbox Access Token or Secret Token here]
 ```
 
- - **Set Amplify Flutter config**
+ - **Set Amplify Flutter CLI config**
 
 (See https://docs.amplify.aws/lib/project-setup/prereq/q/platform/flutter/ )
 
@@ -158,14 +159,14 @@ amplify configure
  - **Create Lambda Functions**
  - **Create API Gateway (API & resource)**
 
- - **Run '`flutter pub get`' & '`amplify init`'**
-
-```sh:
-flutter pub get
-```
+ - **Run '`amplify init`' & '`flutter pub get`'**
 
 ```sh:
 amplify init
+```
+
+```sh:
+flutter pub get
 ```
 
  - **Edit (Create) `.dart` Files**
@@ -178,6 +179,5 @@ amplify init
     - [lib/list_symbol_page.dart](lib/list_symbol_page.dart)
     - [lib/search_keyword_page.dart](lib/search_keyword_page.dart)
 
- - **Add Amplify API(s) & settings**
-   - Authentication
-   - `lib/amplifyconfiguration.dart`
+ - **Add Amplify application config**
+    - [`lib/amplifyconfiguration.dart`](lib/amplifyconfiguration.dart)

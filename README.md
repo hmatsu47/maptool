@@ -180,4 +180,4 @@ flutter pub get
     - [lib/search_keyword_page.dart](lib/search_keyword_page.dart)
 
  - **Add Amplify application config**
-    - [`lib/amplifyconfiguration.dart`](lib/amplifyconfiguration.dart)
+    - [lib/amplifyconfiguration.dart](lib/amplifyconfiguration.dart)

@@ -38,6 +38,9 @@ dependencies:
   image_gallery_saver: ^1.7.0
   path_provider: ^2.0.5
   http: ^0.13.4
+  amplify_flutter: ^0.2.5
+  amplify_api: ^0.2.5
+  minio: ^3.0.0
   
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.

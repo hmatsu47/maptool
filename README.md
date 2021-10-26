@@ -20,7 +20,10 @@
 
 **In development:**（開発中の機能）
 
- - Backup data on AWS.（AWS へデータバックアップ）
+ - Backup data to AWS.（AWS へデータバックアップ）
+   - DB data to DynamoDB.（ピンの詳細情報）
+   - Photographs / Pictures to S3 Bucket.（写真・画像）
+ - Restore data from AWS.（AWS からデータリストア）
 
 ![画面例](map_image.png "画面例")
 
@@ -47,6 +50,10 @@ dependencies:
   image_gallery_saver: ^1.7.0
   path_provider: ^2.0.5
   http: ^0.13.4
+  amplify_flutter: ^0.2.5
+  amplify_auth_cognito: ^0.2.5
+  amplify_api: ^0.2.5
+  minio: ^3.0.0
 
 dependency_overrides:
   mapbox_gl:
@@ -91,6 +98,13 @@ dependency_overrides:
 export SDK_REGISTRY_TOKEN="[Mapbox Access Token or Secret Token here]"
 ```
 
+ - **Edit '`ios/Podfile`'** ( for iOS / Relevant part only )
+
+```ruby:
+# Uncomment this line to define a global platform for your project
+platform :ios, '13.0'
+```
+
  - **Edit '`ios/Runner/Info.plist`'** ( for iOS / Relevant part only )
 
 ```xml:
@@ -129,7 +143,31 @@ login mapbox
 password [Mapbox Access Token or Secret Token here]
 ```
 
- - **Run '`flutter pub get`'**
+ - **Set Amplify Flutter CLI config**
+
+(See https://docs.amplify.aws/lib/project-setup/prereq/q/platform/flutter/ )
+
+```sh:
+npm install -g @aws-amplify/cli
+```
+
+```sh:
+amplify configure
+```
+
+ - **Create DynamoDB tables**
+ - **Create Lambda Functions**
+ - **Create API Gateway (API & resource)**
+
+ - **Run '`amplify init`' & '`flutter pub get`'**
+
+```sh:
+amplify init
+```
+
+```sh:
+flutter pub get
+```
 
  - **Edit (Create) `.dart` Files**
 
@@ -140,3 +178,6 @@ password [Mapbox Access Token or Secret Token here]
     - [lib/display_picture_page.dart](lib/display_picture_page.dart)
     - [lib/list_symbol_page.dart](lib/list_symbol_page.dart)
     - [lib/search_keyword_page.dart](lib/search_keyword_page.dart)
+
+ - **Add Amplify application config**
+    - [`lib/amplifyconfiguration.dart`](lib/amplifyconfiguration.dart)

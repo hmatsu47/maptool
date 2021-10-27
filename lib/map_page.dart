@@ -120,7 +120,7 @@ class FullSearchKeyword {
 }
 
 // ボタン表示のタイプ
-enum ButtonType { invisible, view, search, add }
+enum ButtonType { invisible, add }
 
 class _MapPageState extends State<MapPage> {
   final Completer<MapboxMapController> _controller = Completer();
@@ -140,8 +140,8 @@ class _MapPageState extends State<MapPage> {
   final double _initialZoom = 13.5;
   // Symbol 一覧から遷移したときのズーム値
   final double _detailZoom = 16.0;
-  // 方位のデフォルト値（北）
-  final double _initialBearing = 0.0;
+  // // 方位のデフォルト値（北）
+  // final double _initialBearing = 0.0;
   // 全 Symbol 情報（DB 主キーへの変換マップ）
   final Map<String, int> _symbolInfoMap = {};
   // 現在位置
@@ -234,9 +234,80 @@ class _MapPageState extends State<MapPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: _makeAppBar(),
+      extendBodyBehindAppBar: true,
       body: _makeMapboxMap(),
       floatingActionButton: _makeFloatingIcons(),
     );
+  }
+
+  // タイトルバー
+  AppBar _makeAppBar() {
+    return AppBar(
+        backgroundColor: Colors.white.withOpacity(0.5),
+        toolbarHeight: 40.0,
+        actions: <Widget>[
+          IconButton(
+            icon: Icon(_symbolInfoMap.isNotEmpty
+                ? Icons.backup
+                : Icons.backup_outlined),
+            color: Colors.orange[900],
+            onPressed: () {
+              // AWS にデータバックアップ
+              _backupData();
+            },
+          ),
+          const Gap(20),
+          IconButton(
+            icon: Icon(_symbolInfoMap.isNotEmpty
+                ? Icons.view_list
+                : Icons.view_list_outlined),
+            color: Colors.blue[700],
+            onPressed: () {
+              // 全 Symbol 一覧を表示して選択した Symbol の位置へ移動
+              _moveToSymbolPosition();
+            },
+          ),
+          IconButton(
+            icon: Icon(
+              _muniAllSet ? Icons.search : Icons.search_off,
+            ),
+            color: Colors.blue[700],
+            onPressed: () {
+              // 地名検索
+              _searchPlaceName();
+            },
+          ),
+          IconButton(
+            icon: Icon(
+              _muniAllSet ? Icons.info : Icons.info_outlined,
+            ),
+            color: Colors.blue[700],
+            onPressed: () {
+              // 画面中央の地名を表示
+              _checkMuni();
+            },
+          ),
+          IconButton(
+            icon: const Icon(Icons.adjust),
+            color: Colors.black87,
+            onPressed: () {
+              // ズームを戻す
+              _resetZoom();
+            },
+          ),
+          IconButton(
+            icon: Icon(
+              _gpsTracking ? Icons.gps_fixed : Icons.gps_not_fixed,
+            ),
+            color: Colors.black87,
+            onPressed: () {
+              // GPS 追従の ON / OFF
+              _gpsToggle();
+            },
+          ),
+          const Gap(10),
+        ]);
   }
 
   // 地図ウィジェット
@@ -268,6 +339,7 @@ class _MapPageState extends State<MapPage> {
         });
       },
       compassEnabled: true,
+      compassViewMargins: const Point(20.0, 100.0),
       // 現在位置を表示する
       myLocationEnabled: true,
       // カメラの位置を追跡する
@@ -306,72 +378,6 @@ class _MapPageState extends State<MapPage> {
       //   visible: _buttonType == ButtonType.add,
       // ),
       // const Gap(20),
-      // ここから Sreach
-      Visibility(
-        child: FloatingActionButton(
-          heroTag: 'moveToSymbolPosition',
-          backgroundColor: Colors.blue,
-          onPressed: () {
-            // 全 Symbol 一覧を表示して選択した Symbol の位置へ移動
-            _moveToSymbolPosition();
-          },
-          child: Icon(_symbolInfoMap.isNotEmpty
-              ? Icons.view_list
-              : Icons.view_list_outlined),
-        ),
-        visible: _buttonType == ButtonType.search,
-      ),
-      Visibility(
-        child: const Gap(12),
-        visible: _buttonType == ButtonType.search,
-      ),
-      Visibility(
-        child: FloatingActionButton(
-          heroTag: 'searchPlaceName',
-          backgroundColor: Colors.blue,
-          onPressed: () {
-            _searchPlaceName();
-          },
-          child: Icon(
-            _muniAllSet ? Icons.search : Icons.search_off,
-          ),
-        ),
-        visible: _buttonType == ButtonType.search,
-      ),
-      Visibility(
-        child: const Gap(12),
-        visible: _buttonType == ButtonType.search,
-      ),
-      Visibility(
-        child: FloatingActionButton(
-          heroTag: 'checkMuni',
-          backgroundColor: Colors.blue,
-          onPressed: () {
-            _checkMuni();
-          },
-          child: Icon(
-            _muniAllSet ? Icons.info : Icons.info_outlined,
-          ),
-        ),
-        visible: _buttonType == ButtonType.search,
-      ),
-      // ここから Add
-      Visibility(
-        child: FloatingActionButton(
-          heroTag: 'backupData',
-          backgroundColor: Colors.blue,
-          onPressed: () {
-            // AWS にデータバックアップ
-            _backupData();
-          },
-          child: const Icon(Icons.backup),
-        ),
-        visible: _buttonType == ButtonType.add,
-      ),
-      Visibility(
-        child: const Gap(12),
-        visible: _buttonType == ButtonType.add,
-      ),
       Visibility(
         child: FloatingActionButton(
           heroTag: 'addPictureFromCameraAndMark',
@@ -402,54 +408,6 @@ class _MapPageState extends State<MapPage> {
         ),
         visible: _buttonType == ButtonType.add,
       ),
-      // ここから View
-      Visibility(
-        child: FloatingActionButton(
-          heroTag: 'resetZoom',
-          backgroundColor: Colors.blue,
-          onPressed: () {
-            // ズームを戻す
-            _resetZoom();
-          },
-          child: const Text('±', style: TextStyle(fontSize: 28.0, height: 1.0)),
-        ),
-        visible: _buttonType == ButtonType.view,
-      ),
-      Visibility(
-        child: const Gap(12),
-        visible: _buttonType == ButtonType.view,
-      ),
-      Visibility(
-        child: FloatingActionButton(
-          heroTag: 'resetBearing',
-          backgroundColor: Colors.blue,
-          onPressed: () {
-            // 北向きに戻す
-            _resetBearing();
-          },
-          child: const Text('N',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-        ),
-        visible: _buttonType == ButtonType.view,
-      ),
-      Visibility(
-        child: const Gap(12),
-        visible: _buttonType == ButtonType.view,
-      ),
-      Visibility(
-        child: FloatingActionButton(
-          heroTag: 'gpsToggle',
-          backgroundColor: Colors.blue,
-          onPressed: () {
-            _gpsToggle();
-          },
-          child: Icon(
-            // GPS 追従の ON / OFF に合わせてアイコン表示する
-            _gpsTracking ? Icons.gps_fixed : Icons.gps_not_fixed,
-          ),
-        ),
-        visible: _buttonType == ButtonType.view,
-      ),
       Visibility(
         child: const Gap(20),
         visible: _buttonType != ButtonType.invisible,
@@ -462,12 +420,9 @@ class _MapPageState extends State<MapPage> {
           },
           child: (_buttonType == ButtonType.invisible
               ? const Icon(Icons.menu)
-              : Text(
-                  (_buttonType == ButtonType.view
-                      ? 'View'
-                      : (_buttonType == ButtonType.search ? 'Search' : 'Add')),
-                  style: const TextStyle(
-                      fontSize: 12, fontWeight: FontWeight.bold),
+              : const Text(
+                  'Add',
+                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
                 ))),
     ]);
   }
@@ -800,7 +755,11 @@ class _MapPageState extends State<MapPage> {
     return await _database.update(
       'pictures',
       {
+        'symbol_id': picture.symbolId,
         'comment': picture.comment,
+        'date_time': picture.dateTime.millisecondsSinceEpoch,
+        'file_path': picture.filePath,
+        'cloud_path': picture.cloudPath,
       },
       where: 'id = ?',
       whereArgs: [picture.id],
@@ -818,12 +777,6 @@ class _MapPageState extends State<MapPage> {
     setState(() {
       switch (_buttonType) {
         case ButtonType.invisible:
-          _buttonType = ButtonType.view;
-          break;
-        case ButtonType.view:
-          _buttonType = ButtonType.search;
-          break;
-        case ButtonType.search:
           _buttonType = ButtonType.add;
           break;
         case ButtonType.add:
@@ -1101,12 +1054,13 @@ class _MapPageState extends State<MapPage> {
     return Picture(id, symbolId, '', DateTime.now(), filePath, '');
   }
 
-  // 地図の上を北に
-  void _resetBearing() {
-    _controller.future.then((mapboxMap) {
-      mapboxMap.animateCamera(CameraUpdate.bearingTo(_initialBearing));
-    });
-  }
+  // タイトルバーを表示したらコンパスが表示されるようになったので不要化
+  // // 地図の上を北に
+  // void _resetBearing() {
+  //   _controller.future.then((mapboxMap) {
+  //     mapboxMap.animateCamera(CameraUpdate.bearingTo(_initialBearing));
+  //   });
+  // }
 
   // 地図のズームを初期状態に
   void _resetZoom() {
@@ -1234,14 +1188,41 @@ class _MapPageState extends State<MapPage> {
 
   // AWS にデータバックアップ
   void _backupData() async {
+    if (_symbolInfoMap.isEmpty) {
+      return;
+    }
+    bool result = false;
     final String backupTitle = DateTime.now().toString().substring(0, 19);
     final bool pictureSave = await _backupPicture(backupTitle);
     if (pictureSave) {
       final bool infoSave = await _backupSymbolInfo(backupTitle);
       if (infoSave) {
-        await _backupSet(backupTitle);
+        result = await _backupSet(backupTitle);
       }
     }
+    _showBackupResult(backupTitle, result);
+  }
+
+  // バックアップ完了・失敗表示
+  void _showBackupResult(String backupTitle, bool result) {
+    final String message = (result ? 'バックアップ成功 : $backupTitle' : 'バックアップ失敗');
+    showDialog(
+      context: context,
+      builder: (BuildContext context) => AlertDialog(
+        content: Text(
+          message,
+          textAlign: TextAlign.center,
+        ),
+        actions: <Widget>[
+          TextButton(
+            child: const Text('戻る'),
+            onPressed: () {
+              Navigator.pop(context);
+            },
+          ),
+        ],
+      ),
+    );
   }
 
   // バックアップ情報を登録
@@ -1335,7 +1316,19 @@ class _MapPageState extends State<MapPage> {
       final String comment = record.comment;
       final int dateTime = record.dateTime.millisecondsSinceEpoch;
       final String filePath = record.filePath;
-      final String cloudPath = record.cloudPath;
+      String cloudPath = record.cloudPath;
+      if (cloudPath == '') {
+        final fileName = await _uploadS3(record);
+        if (fileName is! String) {
+          return false;
+        }
+        cloudPath = fileName;
+        final Picture newRecord = Picture(
+            id, symbolId, comment, record.dateTime, filePath, cloudPath);
+        // ignore: avoid_print
+        print(newRecord.cloudPath);
+        await _modifyPictureRecord(newRecord);
+      }
       body += '{"backupTitle": ${jsonEncode(backupTitle)}'
           ', "id": ${jsonEncode(id)}, "symbolId": ${jsonEncode(symbolId)}'
           ', "comment": ${jsonEncode(comment)}'
@@ -1349,10 +1342,6 @@ class _MapPageState extends State<MapPage> {
           return false;
         }
         body = '';
-      }
-      final bool uploadS3 = await _uploadS3(backupTitle, record);
-      if (!uploadS3) {
-        return false;
       }
     }
     if (body != '') {
@@ -1387,24 +1376,17 @@ class _MapPageState extends State<MapPage> {
   }
 
   // 画像ファイルを S3 アップロード
-  Future<bool> _uploadS3(String backupTitle, Picture picture) async {
-    final String s3Path = backupTitle.replaceAll(' ', '_');
+  _uploadS3(Picture picture) async {
     final int pathIndexOf = picture.filePath.lastIndexOf('/');
     final String fileName = (pathIndexOf == -1
         ? picture.filePath
         : picture.filePath.substring(pathIndexOf + 1));
     final String filePath = '$_imagePath/$fileName';
-    final file = File(filePath);
-    final int length = await file.length();
     try {
-      await _minio.putObject(_s3Bucket, '$s3Path/$fileName', file.openRead(),
-          size: length,
-          metadata: {
-            'content-type': 'image/jpeg',
-          });
+      await _minio.fPutObject(_s3Bucket, fileName, filePath);
       // ignore: avoid_print
       print('S3 upload $fileName succeeded');
-      return true;
+      return fileName;
     } catch (e) {
       // ignore: avoid_print
       print('S3 upload $fileName failed: $e');

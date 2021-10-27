@@ -20,7 +20,7 @@
 
 **In development:**（開発中の機能）
 
- - Backup data to AWS.（AWS へデータバックアップ）
+ - Backup data to AWS.（AWS へデータバックアップ）※β版実装済み
    - DB data to DynamoDB.（ピンの詳細情報）
    - Photographs / Pictures to S3 Bucket.（写真・画像）
  - Restore data from AWS.（AWS からデータリストア）
@@ -41,32 +41,18 @@
 dependencies:
   flutter:
     sdk: flutter
-  mapbox_gl: ^0.12.0
+  mapbox_gl: ^0.13.0
   location: ^4.3.0
   gap: ^2.0.0
   sqflite: ^2.0.0+4
-  image_picker: ^0.8.4+2
+  image_picker: ^0.8.4+3
   cross_file: ^0.3.1+5
-  image_gallery_saver: ^1.7.0
+  image_gallery_saver: ^1.7.1
   path_provider: ^2.0.5
   http: ^0.13.4
   amplify_flutter: ^0.2.5
-  amplify_auth_cognito: ^0.2.5
   amplify_api: ^0.2.5
   minio: ^3.0.0
-
-dependency_overrides:
-  mapbox_gl:
-    git:
-      url: https://github.com/tobrun/flutter-mapbox-gl.git
-  mapbox_gl_platform_interface:
-    git:
-      url: https://github.com/tobrun/flutter-mapbox-gl.git
-      path: mapbox_gl_platform_interface
-  mapbox_gl_web:
-    git:
-      url: https://github.com/tobrun/flutter-mapbox-gl.git
-      path: mapbox_gl_web
 ```
 
  - **Edit '`android/build.gradle`'** ( for Android / in `android` -> `defaultConfig` )

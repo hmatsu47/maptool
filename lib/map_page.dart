@@ -125,10 +125,8 @@ enum ButtonType { invisible, add }
 class _MapPageState extends State<MapPage> {
   final Completer<MapboxMapController> _controller = Completer();
   final Location _locationService = Location();
-  // 地図スタイル用 Mapbox URL（Android で日本語表示ができないので地図スタイルを切り替え可能に）
-  final String _style = (Platform.isAndroid
-      ? '[Mapbox Style URL for Android]'
-      : '[Mapbox Style URL for iOS]');
+  // 地図スタイル用 Mapbox URL
+  final String _style = '[Mapbox Style URL]';
   // S3 アクセスキー
   final String _s3AccessKey = '[S3 Access Key]';
   final String _s3SecretKey = '[S3 Secret Key]';
@@ -377,7 +375,6 @@ class _MapPageState extends State<MapPage> {
       //   child: const Gap(12),
       //   visible: _buttonType == ButtonType.add,
       // ),
-      // const Gap(20),
       Visibility(
         child: FloatingActionButton(
           heroTag: 'addPictureFromCameraAndMark',
@@ -560,9 +557,9 @@ class _MapPageState extends State<MapPage> {
   //     '  describe TEXT NOT NULL,'
   //     '  date_time INTEGER NOT NULL,'
   //     '  latitude REAL NOT NULL,'
-  //     '  longtitude REAL NOT NULL,
-  //     '  prefecture TEXT NOT NULL DEFAULT "",
-  //     '  municipalities TEXT NOT NULL DEFAULT "",
+  //     '  longtitude REAL NOT NULL,'
+  //     '  prefecture TEXT NOT NULL DEFAULT "",'
+  //     '  municipalities TEXT NOT NULL DEFAULT ""'
   //     ')',
   //   );
   //   await _database.execute(

@@ -40,7 +40,7 @@
             android:value="2" />
         <meta-data
             android:name="com.mapbox.token"
-            android:value="[Mapbox Access Token or Secret Token here]"
+            android:value="[Mapbox Access Token here]"
             />
     </application>
 </manifest>

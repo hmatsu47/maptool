@@ -113,7 +113,7 @@ class _DisplaySymbolInfoPageState extends State<DisplaySymbolInfoPage> {
                   },
                 ),
                 TextButton(
-                  child: const Text('写真選択'),
+                  child: const Text('選択'),
                   onPressed: () {
                     _selectAndAddPictures();
                   },

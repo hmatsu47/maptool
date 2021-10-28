@@ -27,7 +27,7 @@
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>MGLMapboxAccessToken</key>
-	<string>[Mapbox Access Token or Secret Token here]</string>
+	<string>[Mapbox Access Token here]</string>
 	<key>NSBonjourServices</key>
 	<array>
 		<string>_dartobservatory._tcp.</string>

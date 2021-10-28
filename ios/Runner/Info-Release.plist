@@ -25,7 +25,7 @@
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>MGLMapboxAccessToken</key>
-	<string>[Mapbox Access Token or Secret Token here]</string>
+	<string>[Mapbox Access Token here]</string>
 	<key>NSLocationAlwaysUsageDescription</key>
 	<string>Your location is required for this app</string>
 	<key>NSLocationWhenInUseUsageDescription</key>

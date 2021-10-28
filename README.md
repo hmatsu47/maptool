@@ -55,11 +55,42 @@ dependencies:
   minio: ^3.0.0
 ```
 
- - **Edit '`android/build.gradle`'** ( for Android / in `android` -> `defaultConfig` )
+ - **Edit '`android/build.gradle`'** ( for Android / in `allprojects` -> `repositories` )
+
+```json:build.gradle
+        maven {
+            url 'https://api.mapbox.com/downloads/v2/releases/maven'
+            authentication {
+            basic(BasicAuthentication)
+        }
+        credentials {
+            // Do not change the username below.
+            // This should always be `mapbox` (not your username). 
+            username = 'mapbox'
+            // Use the secret token you stored in gradle.properties as the password
+            password = project.properties['MAPBOX_DOWNLOADS_TOKEN'] ?: ""
+            }
+        }
+```
+
+ - **Edit '`android/app/build.gradle`'** ( for Android / in `android` -> `defaultConfig` )
 
 ```json:build.gradle
         minSdkVersion 21
         multiDexEnabled true
+```
+
+ - **Edit '`android/app/build.gradle`'** ( for Android / in `android` )
+
+```json:build.gradle
+    buildTypes {
+        release {
+            // other configs
+            ndk {
+                abiFilters 'armeabi-v7a','arm64-v8a','x86_64', 'x86'
+            }
+        }
+    }
 ```
 
  - **Edit '`android/app/src/AndroidManifest.xml`'** ( for Android / Relevant part only )
@@ -74,14 +105,20 @@ dependencies:
 ```xml:AndroidManifest.xml
         <meta-data
             android:name="com.mapbox.token"
-            android:value="[Mapbox Access Token or Secret Token here]"
+            android:value="[Mapbox Access Token here]"
             />
+```
+
+ - **Edit '`android/gradle.properties`'** ( for Android / Relevant part only )
+
+```text:gradle.properties
+MAPBOX_DOWNLOADS_TOKEN=[Mapbox Secret Token here]
 ```
 
  - **Add `Environment Variable(s)`** ( for Android )
 
 ```sh:.zshrc
-export SDK_REGISTRY_TOKEN="[Mapbox Access Token or Secret Token here]"
+export SDK_REGISTRY_TOKEN="[Mapbox Secret Token here]"
 ```
 
  - **Edit '`ios/Podfile`'** ( for iOS / Relevant part only )
@@ -105,7 +142,7 @@ platform :ios, '13.0'
 	<key>NSMicrophoneUsageDescription</key>
 	<string>This app requires to add file to your photo library your microphone</string>
 	<key>MGLMapboxAccessToken</key>
-	<string>[Mapbox Access Token or Secret Token here]</string>
+	<string>[Mapbox Access Token here]</string>
 	<key>UISupportsDocumentBrowser</key>
 	<true/>
 	<key>LSSupportsOpeningDocumentsInPlace</key>
@@ -126,7 +163,7 @@ platform :ios, '13.0'
 ```sh:.netrc
 machine api.mapbox.com
 login mapbox
-password [Mapbox Access Token or Secret Token here]
+password [Mapbox Secret Token here]
 ```
 
  - **Set Amplify Flutter CLI config**

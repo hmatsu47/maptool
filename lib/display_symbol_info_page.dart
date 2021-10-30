@@ -42,8 +42,8 @@ class _DisplaySymbolInfoPageState extends State<DisplaySymbolInfoPage> {
   Function? _removePictureRecord;
   Function? _formatLabel;
   Function? _getPrefMuni;
+  Function? _localFile;
   Completer<MapboxMapController?>? _controller;
-  String _imagePath = '';
 
   @override
   Widget build(BuildContext context) {
@@ -63,8 +63,8 @@ class _DisplaySymbolInfoPageState extends State<DisplaySymbolInfoPage> {
     _removePictureRecord = args.removePictureRecord;
     _formatLabel = args.formatLabel;
     _getPrefMuni = args.getPrefMuni;
+    _localFile = args.localFile;
     _controller = args.controller;
-    _imagePath = args.imagePath;
 
     return Scaffold(
       appBar: AppBar(
@@ -159,7 +159,7 @@ class _DisplaySymbolInfoPageState extends State<DisplaySymbolInfoPage> {
 
   // 画像表示ウィジェット
   Widget _pictureItem(Picture picture) {
-    final File? file = _localFile(picture);
+    final File? file = _localFile!(picture);
     final String title = _formatLabel!(picture.comment, 22);
     return Card(
       child: Container(
@@ -181,30 +181,12 @@ class _DisplaySymbolInfoPageState extends State<DisplaySymbolInfoPage> {
           onTap: () {
             _displayPictureInfo(
                 context,
-                PictureInfo(picture, _modifyPicture, _removePicture, _localFile,
-                    _lookUpPicture));
+                PictureInfo(picture, _modifyPicture, _removePicture,
+                    _localFile!, _lookUpPicture));
           },
         ),
       ),
     );
-  }
-
-  // 画像ファイル取得
-  File? _localFile(Picture picture) {
-    // filePath がパス付きの場合はファイル名のみを抽出
-    final int pathIndexOf = picture.filePath.lastIndexOf('/');
-    final String fileName = (pathIndexOf == -1
-        ? picture.filePath
-        : picture.filePath.substring(pathIndexOf + 1));
-    final String filePath = '$_imagePath/$fileName';
-    try {
-      if (File(filePath).existsSync()) {
-        return File(filePath);
-      }
-      return null;
-    } catch (e) {
-      return null;
-    }
   }
 
   // 撮影（写真追加）
@@ -300,7 +282,7 @@ class _DisplaySymbolInfoPageState extends State<DisplaySymbolInfoPage> {
 
   // 画像を削除
   void _removePicture(Picture picture) async {
-    final File? file = _localFile(picture);
+    final File? file = _localFile!(picture);
     if (file != null) {
       file.deleteSync();
     }

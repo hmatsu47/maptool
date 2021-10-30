@@ -34,12 +34,12 @@ dependencies:
   gap: ^2.0.0
   sqflite: ^2.0.0+4
   image_picker: ^0.8.4+3
-  cross_file: ^0.3.1+5
+  cross_file: ^0.3.2
   image_gallery_saver: ^1.7.1
-  path_provider: ^2.0.5
+  path_provider: ^2.0.6
   http: ^0.13.4
-  amplify_flutter: ^0.2.5
-  amplify_api: ^0.2.5
+  amplify_flutter: ^0.2.6
+  amplify_api: ^0.2.6
   minio: ^3.0.0
   
   # The following adds the Cupertino Icons font to your application.

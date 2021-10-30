@@ -23,7 +23,7 @@
  - Backup data to AWS.（AWS へデータバックアップ）※β版実装済み
    - DB data to DynamoDB.（ピンの詳細情報）
    - Photographs / Pictures to S3 Bucket.（写真・画像）
- - Restore data from AWS.（AWS からデータリストア）
+ - Restore data from AWS.（AWS からデータリストア）※β版実装済み
 
 ![画面例](map_image.png "画面例")
 
@@ -46,12 +46,12 @@ dependencies:
   gap: ^2.0.0
   sqflite: ^2.0.0+4
   image_picker: ^0.8.4+3
-  cross_file: ^0.3.1+5
+  cross_file: ^0.3.2
   image_gallery_saver: ^1.7.1
-  path_provider: ^2.0.5
+  path_provider: ^2.0.6
   http: ^0.13.4
-  amplify_flutter: ^0.2.5
-  amplify_api: ^0.2.5
+  amplify_flutter: ^0.2.6
+  amplify_api: ^0.2.6
   minio: ^3.0.0
 ```
 
@@ -178,10 +178,6 @@ npm install -g @aws-amplify/cli
 amplify configure
 ```
 
- - **Create DynamoDB tables**
- - **Create Lambda Functions**
- - **Create API Gateway (API & resource)**
-
  - **Run '`amplify init`' & '`flutter pub get`'**
 
 ```sh:
@@ -192,15 +188,221 @@ amplify init
 flutter pub get
 ```
 
+ - **Create DynamoDB tables**
+
+```sh:
+amplify add storage
+```
+
+ - Add 3 tables
+   - backupSet (backupSet-maptool)
+     - title : String (Partition Key)
+   - backupSymbolInfo (backupSymbolInfo-maptool)
+     - backupTitle : String (Partition Key)
+     - id : Number (Sort Key)
+   - backupPicture (backupPicture-maptool)
+     - backupTitle : String (Partition Key)
+     - id : Number (Sort Key)
+
+```sh:
+amplify push
+```
+
+ - After creation, change capacity mode to On-Demand.
+
+ - **Create Lambda Functions**
+
+```sh:
+amplify add function
+```
+
+ - Add 3 tables
+   - backupSet (backupSet-maptool)
+     - [amplify/backend/function/backupSet/src/index.py](amplify/backend/function/backupSet/src/index.py)
+   - backupSymbolInfo (backupSymbolInfo-maptool)
+     - [amplify/backend/function/backupSymbolInfo/src/index.py](amplify/backend/function/backupSymbolInfo/src/index.py)
+   - backupPicture (backupPicture-maptool)
+     - [amplify/backend/function/backupPicture/src/index.py](amplify/backend/function/backupPicture/src/index.py)
+
+```sh:
+amplify push
+```
+
+ - After creation, modify & adjust IAM Roles (Policies).
+
+ - lambda-execution-policy(BackupSet)
+
+```json:lambda-execution-policy(BackupSet)
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "VisualEditor0",
+            "Effect": "Allow",
+            "Action": "dynamodb:ListTables",
+            "Resource": "*"
+        },
+        {
+            "Sid": "VisualEditor1",
+            "Effect": "Allow",
+            "Action": [
+                "logs:CreateLogStream",
+                "dynamodb:PutItem",
+                "dynamodb:DeleteItem",
+                "dynamodb:GetItem",
+                "dynamodb:Scan",
+                "dynamodb:Query",
+                "dynamodb:UpdateItem",
+                "logs:CreateLogGroup",
+                "logs:PutLogEvents"
+            ],
+            "Resource": [
+                "arn:aws:logs:ap-northeast-1:[Account ID]:log-group:/aws/lambda/backupSet-maptool:log-stream:*",
+                "arn:aws:dynamodb:ap-northeast-1:[Account ID]:table/backupSet-maptool"
+            ]
+        }
+    ]
+}
+```
+
+ - lambda-execution-policy(BackupSymbolInfo)
+
+```json:lambda-execution-policy(BackupSymbolInfo)
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "VisualEditor0",
+            "Effect": "Allow",
+            "Action": "dynamodb:ListTables",
+            "Resource": "*"
+        },
+        {
+            "Sid": "VisualEditor1",
+            "Effect": "Allow",
+            "Action": [
+                "logs:CreateLogStream",
+                "dynamodb:BatchWriteItem",
+                "dynamodb:PutItem",
+                "dynamodb:DeleteItem",
+                "dynamodb:GetItem",
+                "dynamodb:Scan",
+                "dynamodb:Query",
+                "dynamodb:UpdateItem",
+                "logs:CreateLogGroup",
+                "logs:PutLogEvents"
+            ],
+            "Resource": [
+                "arn:aws:logs:ap-northeast-1:[Account ID]:log-group:/aws/lambda/backupPicture-maptool:log-stream:*",
+                "arn:aws:dynamodb:ap-northeast-1:[Account ID]:table/backupPicture-maptool"
+            ]
+        }
+    ]
+}
+```
+
+ - lambda-execution-policy(BackupPicture)
+
+```json:lambda-execution-policy(BackupPicture)
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "VisualEditor0",
+            "Effect": "Allow",
+            "Action": "dynamodb:ListTables",
+            "Resource": "*"
+        },
+        {
+            "Sid": "VisualEditor1",
+            "Effect": "Allow",
+            "Action": [
+                "logs:CreateLogStream",
+                "dynamodb:PutItem",
+                "dynamodb:DeleteItem",
+                "dynamodb:GetItem",
+                "dynamodb:Scan",
+                "dynamodb:Query",
+                "dynamodb:UpdateItem",
+                "logs:CreateLogGroup",
+                "logs:PutLogEvents"
+            ],
+            "Resource": [
+                "arn:aws:logs:ap-northeast-1:[Account ID]:log-group:/aws/lambda/backupSet-maptool:log-stream:*",
+                "arn:aws:dynamodb:ap-northeast-1:[Account ID]:table/backupSet-maptool"
+            ]
+        }
+    ]
+}
+```
+
+ - **Create API Gateway (API & resource)**
+
+   - Create API
+     - maptool
+   - Create API Key
+     - maptool
+   - Create Usage Plan & Stage
+     - maptool / prod
+   - Create Resources
+     - /backupsets
+       - Lambda Function : backupSet-maptool
+     - /backupsymbolinfos
+       - Lambda Function : backupSymbolInfo-maptool
+     - /backuppictures
+       - Lambda Function : backupPicture-maptool
+   - Create Method (to each Resources)
+     - POST
+       - Authorization : NONE
+       - API Key Required : true
+   - Deploy API
+
+ - **Create S3 bucket & IAM user (Access key / Secret access key)
+
+   - Create S3 bucket
+     - Block all public access : Off
+   - Create IAM user
+     - AWS credential type : Access key - Programmatic access
+     - Attach Role (Policy)
+
+```json:Role(Policy)
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "VisualEditor0",
+            "Effect": "Allow",
+            "Action": [
+                "s3:PutObject",
+                "s3:GetObject",
+                "s3:ListBucket",
+                "s3:DeleteObject"
+            ],
+            "Resource": [
+                "arn:aws:s3:::[Bucket name]/*",
+                "arn:aws:s3:::[Bucket name]"
+            ]
+        },
+        {
+            "Sid": "VisualEditor1",
+            "Effect": "Allow",
+            "Action": "s3:ListAllMyBuckets",
+            "Resource": "*"
+        }
+    ]
+}
+```
+
  - **Edit (Create) `.dart` Files**
 
-    - [lib/main.dart](lib/main.dart)
-    - [lib/map_page.dart](lib/map_page.dart)
-    - [lib/display_symbol_info_page.dart](lib/display_symbol_info_page.dart)
-    - [lib/edit_symbol_info_page.dart](lib/edit_symbol_info_page.dart)
-    - [lib/display_picture_page.dart](lib/display_picture_page.dart)
-    - [lib/list_symbol_page.dart](lib/list_symbol_page.dart)
-    - [lib/search_keyword_page.dart](lib/search_keyword_page.dart)
+   - [lib/main.dart](lib/main.dart)
+   - [lib/map_page.dart](lib/map_page.dart)
+   - [lib/display_symbol_info_page.dart](lib/display_symbol_info_page.dart)
+   - [lib/edit_symbol_info_page.dart](lib/edit_symbol_info_page.dart)
+   - [lib/display_picture_page.dart](lib/display_picture_page.dart)
+   - [lib/list_symbol_page.dart](lib/list_symbol_page.dart)
+   - [lib/search_keyword_page.dart](lib/search_keyword_page.dart)
+   - [lib/restore_data_page.dart](lib/restore_data_page.dart)
 
  - **Add Amplify application config**
-    - [lib/amplifyconfiguration.dart](lib/amplifyconfiguration.dart)
+   - [lib/amplifyconfiguration.dart](lib/amplifyconfiguration.dart)

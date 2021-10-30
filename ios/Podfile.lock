@@ -1,5 +1,56 @@
 PODS:
+  - Amplify (1.15.3):
+    - Amplify/Default (= 1.15.3)
+  - Amplify/Default (1.15.3)
+  - amplify_api (0.0.1):
+    - Amplify (~> 1.15.3)
+    - amplify_core
+    - AmplifyPlugins/AWSAPIPlugin (~> 1.15.3)
+    - Flutter
+  - amplify_core (0.0.1):
+    - Flutter
+  - amplify_flutter (0.0.1):
+    - Amplify (~> 1.15.3)
+    - amplify_core
+    - AmplifyPlugins/AWSCognitoAuthPlugin (~> 1.15.3)
+    - AWSPluginsCore (~> 1.15.3)
+    - Flutter
+  - AmplifyPlugins/AWSAPIPlugin (1.15.3):
+    - AppSyncRealTimeClient (~> 1.4)
+    - AWSCore (~> 2.26.1)
+    - AWSPluginsCore (= 1.15.3)
+  - AmplifyPlugins/AWSCognitoAuthPlugin (1.15.3):
+    - AWSAuthCore (~> 2.26.1)
+    - AWSCognitoIdentityProvider (~> 2.26.1)
+    - AWSCognitoIdentityProviderASF (~> 2.26.1)
+    - AWSCore (~> 2.26.1)
+    - AWSMobileClient (~> 2.26.1)
+    - AWSPluginsCore (= 1.15.3)
+  - AppSyncRealTimeClient (1.5.0):
+    - Starscream (~> 3.1.1)
+  - AWSAuthCore (2.26.3):
+    - AWSCore (= 2.26.3)
+  - AWSCognitoIdentityProvider (2.26.3):
+    - AWSCognitoIdentityProviderASF (= 2.26.3)
+    - AWSCore (= 2.26.3)
+  - AWSCognitoIdentityProviderASF (2.26.3)
+  - AWSCore (2.26.3)
+  - AWSMobileClient (2.26.3):
+    - AWSAuthCore (= 2.26.3)
+    - AWSCognitoIdentityProvider (= 2.26.3)
+    - AWSCognitoIdentityProviderASF (= 2.26.3)
+    - AWSCore (= 2.26.3)
+  - AWSPluginsCore (1.15.3):
+    - Amplify (= 1.15.3)
+    - AWSCore (~> 2.26.1)
   - Flutter (1.0.0)
+  - FMDB (2.7.5):
+    - FMDB/standard (= 2.7.5)
+  - FMDB/standard (2.7.5)
+  - image_gallery_saver (1.5.0):
+    - Flutter
+  - image_picker (0.0.1):
+    - Flutter
   - location (0.0.1):
     - Flutter
   - Mapbox-iOS-SDK (6.3.0):
@@ -10,35 +61,91 @@ PODS:
     - MapboxAnnotationExtension (~> 0.0.1-beta.1)
   - MapboxAnnotationExtension (0.0.1-beta.2):
     - Mapbox-iOS-SDK (~> 6.0)
-  - MapboxMobileEvents (0.10.11)
+  - MapboxMobileEvents (0.10.13)
+  - path_provider (0.0.1):
+    - Flutter
+  - sqflite (0.0.2):
+    - Flutter
+    - FMDB (>= 2.7.5)
+  - Starscream (3.1.1)
 
 DEPENDENCIES:
+  - amplify_api (from `.symlinks/plugins/amplify_api/ios`)
+  - amplify_core (from `.symlinks/plugins/amplify_core/ios`)
+  - amplify_flutter (from `.symlinks/plugins/amplify_flutter/ios`)
   - Flutter (from `Flutter`)
+  - image_gallery_saver (from `.symlinks/plugins/image_gallery_saver/ios`)
+  - image_picker (from `.symlinks/plugins/image_picker/ios`)
   - location (from `.symlinks/plugins/location/ios`)
   - mapbox_gl (from `.symlinks/plugins/mapbox_gl/ios`)
+  - path_provider (from `.symlinks/plugins/path_provider/ios`)
+  - sqflite (from `.symlinks/plugins/sqflite/ios`)
 
 SPEC REPOS:
   trunk:
+    - Amplify
+    - AmplifyPlugins
+    - AppSyncRealTimeClient
+    - AWSAuthCore
+    - AWSCognitoIdentityProvider
+    - AWSCognitoIdentityProviderASF
+    - AWSCore
+    - AWSMobileClient
+    - AWSPluginsCore
+    - FMDB
     - Mapbox-iOS-SDK
     - MapboxAnnotationExtension
     - MapboxMobileEvents
+    - Starscream
 
 EXTERNAL SOURCES:
+  amplify_api:
+    :path: ".symlinks/plugins/amplify_api/ios"
+  amplify_core:
+    :path: ".symlinks/plugins/amplify_core/ios"
+  amplify_flutter:
+    :path: ".symlinks/plugins/amplify_flutter/ios"
   Flutter:
     :path: Flutter
+  image_gallery_saver:
+    :path: ".symlinks/plugins/image_gallery_saver/ios"
+  image_picker:
+    :path: ".symlinks/plugins/image_picker/ios"
   location:
     :path: ".symlinks/plugins/location/ios"
   mapbox_gl:
     :path: ".symlinks/plugins/mapbox_gl/ios"
+  path_provider:
+    :path: ".symlinks/plugins/path_provider/ios"
+  sqflite:
+    :path: ".symlinks/plugins/sqflite/ios"
 
 SPEC CHECKSUMS:
+  Amplify: 0f1289c87ce5950d3c76d0e8e0ebbddbcda3cd30
+  amplify_api: 6e6ac528daddba276acc1a2c61a79a1ead007b64
+  amplify_core: 8b38d20089fe4f225c14db6892f586bd03824a42
+  amplify_flutter: d6dab5d246a6d607af75617d1acf1134ed91b201
+  AmplifyPlugins: c2e983fcde04092101425cbebf1c1dddf9c04123
+  AppSyncRealTimeClient: 2b4482b1770a3e5cf64f9714a6d198550017b5a2
+  AWSAuthCore: ce2089f8af1680aa433f6302b028ac786632cc5b
+  AWSCognitoIdentityProvider: a7e5caaade68cc93a92e3a888db30053dc167ee0
+  AWSCognitoIdentityProviderASF: ddcd5b1d919dccc15422b040ba4f99f5fbe85d9f
+  AWSCore: 7077ecff07ae3b184e65e2fa9855f6da048f9ae7
+  AWSMobileClient: 32f38bdb37ee29b2ac2c81739054f95bf3265f66
+  AWSPluginsCore: 7a1acaf5c6224bf6c2b678c24800c16563a76361
   Flutter: 50d75fe2f02b26cc09d224853bb45737f8b3214a
+  FMDB: 2ce00b547f966261cd18927a3ddb07cb6f3db82a
+  image_gallery_saver: 259eab68fb271cfd57d599904f7acdc7832e7ef2
+  image_picker: 9aa50e1d8cdacdbed739e925b7eea16d014367e6
   location: 3a2eed4dd2fab25e7b7baf2a9efefe82b512d740
   Mapbox-iOS-SDK: 2563ed87ead6ec08f1c2090873977b8a7be335a8
   mapbox_gl: 4b91045a7fefc61a8813bad5248f54a8bd8bd1e5
   MapboxAnnotationExtension: 4eee6c26349ef6d909f1a23a7eae2d0f7ca5fa7d
-  MapboxMobileEvents: 1176afebbeca86806614a3dc409840bc02a3dd89
+  MapboxMobileEvents: e78db24b348f48e41e5895be7dc16e5b1bb43562
+  path_provider: d1e9807085df1f9cc9318206cd649dc0b76be3de
+  sqflite: 6d358c025f5b867b29ed92fc697fd34924e11904
+  Starscream: 4bb2f9942274833f7b4d296a55504dcfc7edb7b0
 
-PODFILE CHECKSUM: aafe91acc616949ddb318b77800a7f51bffa2a4c
+PODFILE CHECKSUM: cc1f88378b4bfcf93a6ce00d2c587857c6008d3b
 
-COCOAPODS: 1.11.0
+COCOAPODS: 1.11.2

@@ -82,25 +82,26 @@ class FullSymbolInfo {
   Function removePictureRecord;
   Function formatLabel;
   Function getPrefMuni;
+  Function localFile;
   Completer<MapboxMapController> controller;
   List<Picture> pictures;
-  String imagePath;
 
   FullSymbolInfo(
-      this.symbolId,
-      this.symbol,
-      this.symbolInfo,
-      this.addPictureFromCamera,
-      this.addPicturesFromGarelly,
-      this.removeMark,
-      this.modifyRecord,
-      this.modifyPictureRecord,
-      this.removePictureRecord,
-      this.formatLabel,
-      this.getPrefMuni,
-      this.controller,
-      this.pictures,
-      this.imagePath);
+    this.symbolId,
+    this.symbol,
+    this.symbolInfo,
+    this.addPictureFromCamera,
+    this.addPicturesFromGarelly,
+    this.removeMark,
+    this.modifyRecord,
+    this.modifyPictureRecord,
+    this.removePictureRecord,
+    this.formatLabel,
+    this.getPrefMuni,
+    this.localFile,
+    this.controller,
+    this.pictures,
+  );
 }
 
 // Symbol 一覧表示画面に渡す内容一式
@@ -117,6 +118,15 @@ class FullSearchKeyword {
   Function formatLabel;
 
   FullSearchKeyword(this.prefMuniMap, this.formatLabel);
+}
+
+// データリストア画面に渡す内容一式
+class FullRestoreData {
+  List<String> backupSetList;
+  bool symbolSet;
+  Function restoreData;
+
+  FullRestoreData(this.backupSetList, this.symbolSet, this.restoreData);
 }
 
 // ボタン表示のタイプ
@@ -138,8 +148,8 @@ class _MapPageState extends State<MapPage> {
   final double _initialZoom = 13.5;
   // Symbol 一覧から遷移したときのズーム値
   final double _detailZoom = 16.0;
-  // // 方位のデフォルト値（北）
-  // final double _initialBearing = 0.0;
+  // 方位のデフォルト値（北）
+  final double _initialBearing = 0.0;
   // 全 Symbol 情報（DB 主キーへの変換マップ）
   final Map<String, int> _symbolInfoMap = {};
   // 現在位置
@@ -163,7 +173,7 @@ class _MapPageState extends State<MapPage> {
   // 前回の逆ジオコーディング時の位置
   LatLng? _lastLatLng;
 
-  // アイコンボタンの表示状態（0:非表示／1:参照／2:検索／3:追加）
+  // アイコンボタンの表示状態（0:非表示／1:追加）
   ButtonType _buttonType = ButtonType.invisible;
 
   // 現在位置の監視状況
@@ -180,6 +190,9 @@ class _MapPageState extends State<MapPage> {
     secretKey: _s3SecretKey,
     useSSL: true,
   );
+
+  // データバックアップ中？
+  bool _backupNow = false;
 
   @override
   void initState() {
@@ -246,18 +259,28 @@ class _MapPageState extends State<MapPage> {
         toolbarHeight: 40.0,
         actions: <Widget>[
           IconButton(
-            icon: Icon(_symbolInfoMap.isNotEmpty
-                ? Icons.backup
-                : Icons.backup_outlined),
+            icon: Icon(_symbolInfoMap.isNotEmpty && !_backupNow
+                ? Icons.cloud_upload
+                : Icons.cloud_upload_outlined),
             color: Colors.orange[900],
             onPressed: () {
               // AWS にデータバックアップ
               _backupData();
             },
           ),
-          const Gap(20),
           IconButton(
-            icon: Icon(_symbolInfoMap.isNotEmpty
+            icon: Icon(_symbolAllSet && !_backupNow
+                ? Icons.cloud_download
+                : Icons.cloud_download_outlined),
+            color: Colors.orange[900],
+            onPressed: () {
+              // AWS からデータリストア
+              _restoreDataConfirm();
+            },
+          ),
+          const Gap(12),
+          IconButton(
+            icon: Icon(_symbolInfoMap.isNotEmpty && !_backupNow
                 ? Icons.view_list
                 : Icons.view_list_outlined),
             color: Colors.blue[700],
@@ -292,6 +315,10 @@ class _MapPageState extends State<MapPage> {
             onPressed: () {
               // ズームを戻す
               _resetZoom();
+              // Android の場合は地図の上を北に
+              if (Platform.isAndroid) {
+                _resetBearing();
+              }
             },
           ),
           IconButton(
@@ -304,7 +331,7 @@ class _MapPageState extends State<MapPage> {
               _gpsToggle();
             },
           ),
-          const Gap(10),
+          const Gap(4),
         ]);
   }
 
@@ -348,7 +375,7 @@ class _MapPageState extends State<MapPage> {
       },
       // 地図を長押ししたとき
       onMapLongClick: (Point<double> point, LatLng tapPoint) {
-        if (_symbolAllSet) {
+        if (_symbolAllSet && !_backupNow) {
           _addMark(tapPoint);
         }
       },
@@ -358,23 +385,6 @@ class _MapPageState extends State<MapPage> {
   // フローティングアイコンウィジェット
   Widget _makeFloatingIcons() {
     return Column(mainAxisSize: MainAxisSize.min, children: [
-      // Visibility(
-      //   child: FloatingActionButton(
-      //       heroTag: 'recreateTables',
-      //       backgroundColor: Colors.blue,
-      //       onPressed: () {
-      //         // DB のテーブルを再作成する
-      //         _recreateTables();
-      //       },
-      //       child: const Icon(
-      //         Icons.delete,
-      //       )),
-      //   visible: _buttonType == ButtonType.add,
-      // ),
-      // Visibility(
-      //   child: const Gap(12),
-      //   visible: _buttonType == ButtonType.add,
-      // ),
       Visibility(
         child: FloatingActionButton(
           heroTag: 'addPictureFromCameraAndMark',
@@ -383,8 +393,9 @@ class _MapPageState extends State<MapPage> {
             // 画面の中心の座標で写真を撮ってマーク（ピン）を立てる
             _addPictureFromCameraAndMark();
           },
-          child: Icon(
-              _symbolAllSet ? Icons.camera_alt : Icons.camera_alt_outlined),
+          child: Icon(_symbolAllSet && !_backupNow
+              ? Icons.camera_alt
+              : Icons.camera_alt_outlined),
         ),
         visible: _buttonType == ButtonType.add,
       ),
@@ -400,8 +411,9 @@ class _MapPageState extends State<MapPage> {
             // 画面の中心にマーク（ピン）を立てる
             _addSymbolOnCameraPosition();
           },
-          child: Icon(
-              _symbolAllSet ? Icons.add_location : Icons.add_location_outlined),
+          child: Icon(_symbolAllSet && !_backupNow
+              ? Icons.add_location
+              : Icons.add_location_outlined),
         ),
         visible: _buttonType == ButtonType.add,
       ),
@@ -415,12 +427,9 @@ class _MapPageState extends State<MapPage> {
           onPressed: () {
             _buttonChange();
           },
-          child: (_buttonType == ButtonType.invisible
-              ? const Icon(Icons.menu)
-              : const Text(
-                  'Add',
-                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
-                ))),
+          child: (Icon((_buttonType == ButtonType.invisible
+              ? Icons.menu
+              : Icons.close)))),
     ]);
   }
 
@@ -430,7 +439,7 @@ class _MapPageState extends State<MapPage> {
   }
 
   // DB から Symbol 情報を読み込んで地図に表示する
-  void _addSymbols() async {
+  Future<void> _addSymbols() async {
     final List<SymbolInfoWithLatLng> infoList = await _fetchRecords();
     _controller.future.then((mapboxMap) async {
       final List<Symbol> symbolList =
@@ -472,111 +481,61 @@ class _MapPageState extends State<MapPage> {
 
   // DB 作成
   Future<void> _createDatabase() async {
+    const String createSymbolInfo = 'CREATE TABLE IF NOT EXISTS symbol_info ('
+        '  id INTEGER PRIMARY KEY AUTOINCREMENT,'
+        '  title TEXT NOT NULL,'
+        '  describe TEXT NOT NULL,'
+        '  date_time INTEGER NOT NULL,'
+        '  latitude REAL NOT NULL,'
+        '  longtitude REAL NOT NULL,'
+        '  prefecture TEXT NOT NULL DEFAULT "",'
+        '  municipalities TEXT NOT NULL DEFAULT ""'
+        ')';
+    const String createPictures = 'CREATE TABLE IF NOT EXISTS pictures ('
+        '  id INTEGER PRIMARY KEY AUTOINCREMENT,'
+        '  symbol_id INTEGER NOT NULL,'
+        '  comment TEXT NOT NULL,'
+        '  date_time INTEGER NOT NULL,'
+        '  file_path TEXT NOT NULL,'
+        '  cloud_path TEXT NOT NULL'
+        ')';
     // DB テーブル作成
     _database = await openDatabase('maptool.db', version: 6,
         onCreate: (db, version) async {
       await db.execute(
-        'CREATE TABLE IF NOT EXISTS symbol_info ('
-        '  id INTEGER PRIMARY KEY AUTOINCREMENT,'
-        '  title TEXT NOT NULL,'
-        '  describe TEXT NOT NULL,'
-        '  date_time INTEGER NOT NULL,'
-        '  latitude REAL NOT NULL,'
-        '  longtitude REAL NOT NULL,'
-        '  prefecture TEXT NOT NULL DEFAULT "",'
-        '  municipalities TEXT NOT NULL DEFAULT ""'
-        ')',
+        createSymbolInfo,
       );
       await db.execute(
-        'CREATE TABLE IF NOT EXISTS pictures ('
-        '  id INTEGER PRIMARY KEY AUTOINCREMENT,'
-        '  symbol_id INTEGER NOT NULL,'
-        '  comment TEXT NOT NULL,'
-        '  date_time INTEGER NOT NULL,'
-        '  file_path TEXT NOT NULL,'
-        '  cloud_path TEXT NOT NULL'
-        ')',
+        createPictures,
       );
     }, onUpgrade: (db, oldVersion, newVersion) async {
       await db.execute(
-        'CREATE TABLE IF NOT EXISTS symbol_info ('
-        '  id INTEGER PRIMARY KEY AUTOINCREMENT,'
-        '  title TEXT NOT NULL,'
-        '  describe TEXT NOT NULL,'
-        '  date_time INTEGER NOT NULL,'
-        '  latitude REAL NOT NULL,'
-        '  longtitude REAL NOT NULL,'
-        '  prefecture TEXT NOT NULL DEFAULT "",'
-        '  municipalities TEXT NOT NULL DEFAULT ""'
-        ')',
+        createSymbolInfo,
       );
       await db.execute(
-        'CREATE TABLE IF NOT EXISTS pictures ('
-        '  id INTEGER PRIMARY KEY AUTOINCREMENT,'
-        '  symbol_id INTEGER NOT NULL,'
-        '  comment TEXT NOT NULL,'
-        '  date_time INTEGER NOT NULL,'
-        '  file_path TEXT NOT NULL,'
-        '  cloud_path TEXT NOT NULL'
-        ')',
+        createPictures,
       );
-      // await db.execute(
-      //   'ALTER TABLE symbol_info ADD COLUMN '
-      //   // '  prefecture TEXT NOT NULL DEFAULT ""',
-      //   '  municipalities TEXT NOT NULL DEFAULT ""',
-      // );
-      // ignore: avoid_print
-      // print('alter table');
+      if (oldVersion < 4) {
+        await db.execute(
+          'ALTER TABLE symbol_info ADD COLUMN '
+          '  prefecture TEXT NOT NULL DEFAULT ""'
+          '  municipalities TEXT NOT NULL DEFAULT ""',
+        );
+        // ignore: avoid_print
+        print('alter table add column (symbol_info)');
+      }
     });
   }
 
   // INDEX 作成
-  void _createIndex() async {
+  Future<void> _createIndex() async {
     await _database.execute('CREATE INDEX IF NOT EXISTS pictures_symbol_id'
         '  ON pictures (symbol_id)');
   }
 
-  // // TABLE 再作成
-  // void _recreateTables() {
-  //   _dropTables().then((value) => {_createTables()});
-  //   // _dropTables();
-  // }
-
-  // // DROP TABLE
-  // _dropTables() async {
-  //   await _database.execute('DROP TABLE IF EXISTS symbol_info');
-  //   await _database.execute('DROP TABLE IF EXISTS pictures');
-  // }
-
-  // // CREATE TABLE
-  // void _createTables() async {
-  //   await _database.execute(
-  //     'CREATE TABLE IF NOT EXISTS symbol_info ('
-  //     '  id INTEGER PRIMARY KEY AUTOINCREMENT,'
-  //     '  title TEXT NOT NULL,'
-  //     '  describe TEXT NOT NULL,'
-  //     '  date_time INTEGER NOT NULL,'
-  //     '  latitude REAL NOT NULL,'
-  //     '  longtitude REAL NOT NULL,'
-  //     '  prefecture TEXT NOT NULL DEFAULT "",'
-  //     '  municipalities TEXT NOT NULL DEFAULT ""'
-  //     ')',
-  //   );
-  //   await _database.execute(
-  //     'CREATE TABLE IF NOT EXISTS pictures ('
-  //     '  id INTEGER PRIMARY KEY AUTOINCREMENT,'
-  //     '  symbol_id INTEGER NOT NULL,'
-  //     '  comment TEXT NOT NULL,'
-  //     '  date_time INTEGER NOT NULL,'
-  //     '  file_path TEXT NOT NULL,'
-  //     '  cloud_path TEXT NOT NULL'
-  //     ')',
-  //   );
-  // }
-
   // DB クローズ
-  void _closeDatabase() async {
-    _database.close();
+  Future<void> _closeDatabase() async {
+    await _database.close();
   }
 
   // DB 全行取得
@@ -634,11 +593,30 @@ class _MapPageState extends State<MapPage> {
   }
 
   // DB 行追加
-  Future<int> _addRecord(
-      Symbol symbol, SymbolInfoWithLatLng symbolInfoWithLatLng) async {
+  Future<int> _addRecord(SymbolInfoWithLatLng symbolInfoWithLatLng) async {
     return await _database.insert(
       'symbol_info',
       {
+        'title': symbolInfoWithLatLng.symbolInfo.title,
+        'describe': symbolInfoWithLatLng.symbolInfo.describe,
+        'date_time':
+            symbolInfoWithLatLng.symbolInfo.dateTime.millisecondsSinceEpoch,
+        'latitude': symbolInfoWithLatLng.latLng.latitude,
+        'longtitude': symbolInfoWithLatLng.latLng.longitude,
+        'prefecture': symbolInfoWithLatLng.symbolInfo.prefMuni.prefecture,
+        'municipalities':
+            symbolInfoWithLatLng.symbolInfo.prefMuni.municipalities
+      },
+    );
+  }
+
+  // DB 行追加（id あり）
+  Future<int> _addRecordWithId(
+      SymbolInfoWithLatLng symbolInfoWithLatLng) async {
+    return await _database.insert(
+      'symbol_info',
+      {
+        'id': symbolInfoWithLatLng.id,
         'title': symbolInfoWithLatLng.symbolInfo.title,
         'describe': symbolInfoWithLatLng.symbolInfo.describe,
         'date_time':
@@ -666,6 +644,13 @@ class _MapPageState extends State<MapPage> {
       where: 'id = ?',
       whereArgs: [id],
     );
+  }
+
+  // DB 全削除
+  Future<int> _removeAllRecords() async {
+    await _database.delete('symbol_info');
+    return await _database.delete('sqlite_sequence',
+        where: 'name = ?', whereArgs: ['symbol_info']);
   }
 
   // DB 行削除
@@ -747,6 +732,21 @@ class _MapPageState extends State<MapPage> {
     );
   }
 
+  // DB 画像行追加（id あり）
+  Future<int> _addPictureRecordWithId(Picture picture) async {
+    return await _database.insert(
+      'pictures',
+      {
+        'id': picture.id,
+        'symbol_id': picture.symbolId,
+        'comment': picture.comment,
+        'date_time': picture.dateTime.millisecondsSinceEpoch,
+        'file_path': picture.filePath,
+        'cloud_path': picture.cloudPath,
+      },
+    );
+  }
+
   // DB 画像行更新
   Future<int> _modifyPictureRecord(Picture picture) async {
     return await _database.update(
@@ -761,6 +761,13 @@ class _MapPageState extends State<MapPage> {
       where: 'id = ?',
       whereArgs: [picture.id],
     );
+  }
+
+  // DB 画像行全削除
+  Future<int> _removeAllPictureRecords() async {
+    await _database.delete('pictures');
+    return await _database
+        .delete('sqlite_sequence', where: 'name = ?', whereArgs: ['pictures']);
   }
 
   // DB 画像行削除
@@ -816,22 +823,23 @@ class _MapPageState extends State<MapPage> {
 
   // 全 Symbol 一覧を表示して選択した Symbol の位置へ移動
   void _moveToSymbolPosition() async {
-    if (_symbolInfoMap.isNotEmpty) {
-      final List<SymbolInfoWithLatLng> infoList = await _fetchRecords();
-      final latLng = await Navigator.of(navigatorKey.currentContext!).pushNamed(
-          '/listSymbol',
-          arguments: FullSymbolList(infoList, _formatLabel));
-      if (latLng is LatLng) {
-        setState(() {
-          _gpsTracking = false;
-        });
-        await _moveCameraToDetailPoint(latLng);
-      }
+    if (_symbolInfoMap.isEmpty || _backupNow) {
+      return;
+    }
+    final List<SymbolInfoWithLatLng> infoList = await _fetchRecords();
+    final latLng = await Navigator.of(navigatorKey.currentContext!).pushNamed(
+        '/listSymbol',
+        arguments: FullSymbolList(infoList, _formatLabel));
+    if (latLng is LatLng) {
+      setState(() {
+        _gpsTracking = false;
+      });
+      await _moveCameraToDetailPoint(latLng);
     }
   }
 
   // 地図の中心を移動して詳細表示
-  _moveCameraToDetailPoint(LatLng latLng) {
+  Future<void> _moveCameraToDetailPoint(LatLng latLng) async {
     _controller.future.then((mapboxMap) async {
       await mapboxMap.moveCamera(CameraUpdate.zoomTo(_detailZoom));
       if (Platform.isAndroid) {
@@ -863,17 +871,21 @@ class _MapPageState extends State<MapPage> {
 
   // 画面の中心にマーク（ピン）を立てる
   void _addSymbolOnCameraPosition() {
-    if (_symbolAllSet) {
-      _controller.future.then((mapboxMap) {
-        CameraPosition? camera = mapboxMap.cameraPosition;
-        LatLng position = camera!.target;
-        _addMark(position);
-      });
+    if (!_symbolAllSet || _backupNow) {
+      return;
     }
+    _controller.future.then((mapboxMap) {
+      final CameraPosition? camera = mapboxMap.cameraPosition;
+      final LatLng position = camera!.target;
+      _addMark(position);
+    });
   }
 
   // マーク（ピン）を立ててラベルを付ける
   void _addMark(LatLng tapPoint) async {
+    if (!_symbolAllSet || _backupNow) {
+      return;
+    }
     final PrefMuni prefMuni = await _getPrefMuni(tapPoint);
     final symbolInfo =
         await Navigator.of(navigatorKey.currentContext!).pushNamed(
@@ -904,7 +916,7 @@ class _MapPageState extends State<MapPage> {
       // DB に行追加
       final SymbolInfoWithLatLng symbolInfoWithLatLng =
           SymbolInfoWithLatLng(0, symbolInfo, tapPoint); // id はダミー
-      final int id = await _addRecord(symbol, symbolInfoWithLatLng);
+      final int id = await _addRecord(symbolInfoWithLatLng);
       // Map に DB の id を追加
       _symbolInfoMap[symbol.id] = id;
       symbolId = id;
@@ -919,25 +931,29 @@ class _MapPageState extends State<MapPage> {
 
   // Symbol の情報を表示する
   void _dispSymbolInfo(Symbol symbol) async {
+    if (_backupNow) {
+      return;
+    }
     final int symbolId = _symbolInfoMap[symbol.id]!;
     final List<Picture> pictures = await _fetchPictureRecords(symbol);
     final SymbolInfo symbolInfo = await _fetchRecord(symbol);
     Navigator.of(navigatorKey.currentContext!).pushNamed('/displaySymbol',
         arguments: FullSymbolInfo(
-            symbolId,
-            symbol,
-            symbolInfo,
-            _addPictureFromCamera,
-            _addPicturesFromGarelly,
-            _removeMark,
-            _modifyRecord,
-            _modifyPictureRecord,
-            _removePictureRecord,
-            _formatLabel,
-            _getPrefMuni,
-            _controller,
-            pictures,
-            _imagePath));
+          symbolId,
+          symbol,
+          symbolInfo,
+          _addPictureFromCamera,
+          _addPicturesFromGarelly,
+          _removeMark,
+          _modifyRecord,
+          _modifyPictureRecord,
+          _removePictureRecord,
+          _formatLabel,
+          _getPrefMuni,
+          _localFile,
+          _controller,
+          pictures,
+        ));
   }
 
   // マーク（ピン）を削除する
@@ -956,7 +972,7 @@ class _MapPageState extends State<MapPage> {
 
   // 写真を撮影してマーク（ピン）に追加する
   Future<Picture?>? _addPictureFromCamera(int symbolId) async {
-    if (!_symbolAllSet) {
+    if (!_symbolAllSet || _backupNow) {
       return null;
     }
     final XFile? photo = await _takePhoto();
@@ -1051,13 +1067,12 @@ class _MapPageState extends State<MapPage> {
     return Picture(id, symbolId, '', DateTime.now(), filePath, '');
   }
 
-  // タイトルバーを表示したらコンパスが表示されるようになったので不要化
-  // // 地図の上を北に
-  // void _resetBearing() {
-  //   _controller.future.then((mapboxMap) {
-  //     mapboxMap.animateCamera(CameraUpdate.bearingTo(_initialBearing));
-  //   });
-  // }
+  // 地図の上を北に
+  void _resetBearing() {
+    _controller.future.then((mapboxMap) {
+      mapboxMap.animateCamera(CameraUpdate.bearingTo(_initialBearing));
+    });
+  }
 
   // 地図のズームを初期状態に
   void _resetZoom() {
@@ -1185,18 +1200,24 @@ class _MapPageState extends State<MapPage> {
 
   // AWS にデータバックアップ
   void _backupData() async {
-    if (_symbolInfoMap.isEmpty) {
+    if (_symbolInfoMap.isEmpty || _backupNow) {
       return;
     }
+    setState(() {
+      _backupNow = true;
+    });
     bool result = false;
     final String backupTitle = DateTime.now().toString().substring(0, 19);
-    final bool pictureSave = await _backupPicture(backupTitle);
+    final bool pictureSave = await _backupPictures(backupTitle);
     if (pictureSave) {
-      final bool infoSave = await _backupSymbolInfo(backupTitle);
+      final bool infoSave = await _backupSymbolInfos(backupTitle);
       if (infoSave) {
-        result = await _backupSet(backupTitle);
+        result = await _backupSets(backupTitle);
       }
     }
+    setState(() {
+      _backupNow = false;
+    });
     _showBackupResult(backupTitle, result);
   }
 
@@ -1223,7 +1244,7 @@ class _MapPageState extends State<MapPage> {
   }
 
   // バックアップ情報を登録
-  Future<bool> _backupSet(String backupTitle) async {
+  Future<bool> _backupSets(String backupTitle) async {
     try {
       final RestOptions options = RestOptions(
           path: '/backupsets',
@@ -1243,7 +1264,7 @@ class _MapPageState extends State<MapPage> {
   }
 
   // Symbol 情報をバックアップ
-  Future<bool> _backupSymbolInfo(String backupTitle) async {
+  Future<bool> _backupSymbolInfos(String backupTitle) async {
     final List<SymbolInfoWithLatLng> records = await _fetchRecords();
     String body = '';
     for (SymbolInfoWithLatLng record in records) {
@@ -1304,7 +1325,7 @@ class _MapPageState extends State<MapPage> {
   }
 
   // 画像情報をバックアップ
-  Future<bool> _backupPicture(String backupTitle) async {
+  Future<bool> _backupPictures(String backupTitle) async {
     final List<Picture> records = await _fetchAllPictureRecords();
     String body = '';
     for (Picture record in records) {
@@ -1389,5 +1410,204 @@ class _MapPageState extends State<MapPage> {
       print('S3 upload $fileName failed: $e');
       return false;
     }
+  }
+
+  // AWS からデータリストア（確認画面）
+  void _restoreDataConfirm() async {
+    List<String> backupSetList = await _fetchBackupSets();
+    if (backupSetList.isEmpty) {
+      return;
+    }
+    await Navigator.of(navigatorKey.currentContext!).pushNamed('/restoreData',
+        arguments: FullRestoreData(
+            backupSetList, (_symbolInfoMap.isNotEmpty), _restoreData));
+  }
+
+  // AWS からデータリストア（実行）
+  void _restoreData(String backupTitle) async {
+    if (_symbolInfoMap.isNotEmpty) {
+      // 古いデータを消去
+      await _clearSymbols();
+      await _removeAllTables();
+    }
+    // AWS からバックアップデータを取得してリストア
+    await _restoreRecords(backupTitle);
+    await _restorePictureRecords(backupTitle);
+    // リストアした DB から Symbol 情報を読み込んで地図に表示する
+    await _addSymbols();
+  }
+
+  // バックアップ情報リストを AWS から取得
+  Future<List<String>> _fetchBackupSets() async {
+    List<String> resultList = [];
+    try {
+      final RestOptions options = RestOptions(
+          path: '/backupsets',
+          body: const Utf8Encoder().convert(('{"OperationType": "SCAN"}')));
+      final RestOperation restOperation =
+          _amplify.API.post(restOptions: options);
+      RestResponse response = await restOperation.response;
+      Map<String, dynamic> body = json.decode(response.body);
+      List<dynamic> items = body['Items'];
+      for (dynamic item in items) {
+        resultList.add(item['title'] as String);
+      }
+      resultList.sort((a, b) => b.compareTo(a));
+      // ignore: avoid_print
+      print('POST call (/backupsets) succeeded');
+    } catch (e) {
+      // ignore: avoid_print
+      print('POST call (/backupsets) failed: $e');
+    }
+    return resultList;
+  }
+
+  // Symbol 情報をリストア
+  Future<void> _restoreRecords(String backupTitle) async {
+    final List<SymbolInfoWithLatLng> restoreList =
+        await _fetchBackupSymbolInfos(backupTitle);
+    for (SymbolInfoWithLatLng infoLatLng in restoreList) {
+      await _addRecordWithId(infoLatLng);
+    }
+  }
+
+  // Symbol 情報リストを AWS から取得
+  Future<List<SymbolInfoWithLatLng>> _fetchBackupSymbolInfos(
+      String backupTitle) async {
+    List<SymbolInfoWithLatLng> resultList = [];
+    try {
+      final RestOptions options = RestOptions(
+          path: '/backupsymbolinfos',
+          body: const Utf8Encoder().convert(('{"OperationType": "LIST"'
+              ', "Keys": {"backupTitle": "$backupTitle"}}')));
+      final RestOperation restOperation =
+          _amplify.API.post(restOptions: options);
+      final RestResponse response = await restOperation.response;
+      final Map<String, dynamic> body = json.decode(response.body);
+      final List<dynamic> items = body['Items'];
+      for (dynamic item in items) {
+        final SymbolInfo info = SymbolInfo(
+          item['title'] as String,
+          item['describe'] as String,
+          DateTime.fromMillisecondsSinceEpoch(item['dateTime'] as int,
+              isUtc: false),
+          PrefMuni(
+              item['prefecture'] as String, item['municipalities'] as String),
+        );
+        final LatLng latLng =
+            LatLng(item['latitude'] as double, item['longtitude'] as double);
+        final SymbolInfoWithLatLng infoLatLng =
+            SymbolInfoWithLatLng(item['id'] as int, info, latLng);
+        resultList.add(infoLatLng);
+      }
+      // ignore: avoid_print
+      print('POST call (/backupsymbolinfos) succeeded');
+    } catch (e) {
+      // ignore: avoid_print
+      print('POST call (/backupsymbolinfos) failed: $e');
+    }
+    return resultList;
+  }
+
+  // 画像情報をリストア
+  Future<void> _restorePictureRecords(String backupTitle) async {
+    final List<Picture> restoreList = await _fetchBackupPictures(backupTitle);
+    for (Picture picture in restoreList) {
+      await _addPictureRecordWithId(picture);
+      await _downloadS3(picture);
+    }
+  }
+
+  // 画像情報リストを AWS から取得
+  Future<List<Picture>> _fetchBackupPictures(String backupTitle) async {
+    List<Picture> resultList = [];
+    try {
+      final RestOptions options = RestOptions(
+          path: '/backuppictures',
+          body: const Utf8Encoder().convert(('{"OperationType": "LIST"'
+              ', "Keys": {"backupTitle": "$backupTitle"}}')));
+      final RestOperation restOperation =
+          _amplify.API.post(restOptions: options);
+      final RestResponse response = await restOperation.response;
+      final Map<String, dynamic> body = json.decode(response.body);
+      final List<dynamic> items = body['Items'];
+      for (dynamic item in items) {
+        final Picture picture = Picture(
+          item['id'] as int,
+          item['symbolId'] as int,
+          item['comment'] as String,
+          DateTime.fromMillisecondsSinceEpoch(item['dateTime'] as int,
+              isUtc: false),
+          item['filePath'] as String,
+          item['cloudPath'] as String,
+        );
+        resultList.add(picture);
+      }
+      // ignore: avoid_print
+      print('POST call (/backuppictures) succeeded');
+    } catch (e) {
+      // ignore: avoid_print
+      print('POST call (/backuppictures) failed: $e');
+    }
+    return resultList;
+  }
+
+  // 画像ファイルを S3 からダウンロード
+  Future<void> _downloadS3(Picture picture) async {
+    final String cloudPath = picture.cloudPath;
+    if (cloudPath == '') {
+      return;
+    }
+    final File? file = _localFile(picture);
+    if (file != null) {
+      // ローカルファイルが存在する場合はスキップ
+      return;
+    }
+    final String filePath = '$_imagePath/$cloudPath';
+    try {
+      final stream = await _minio.getObject(_s3Bucket, cloudPath);
+      await stream.pipe(File(filePath).openWrite());
+      // ignore: avoid_print
+      print('S3 download $cloudPath succeeded');
+    } catch (e) {
+      // ignore: avoid_print
+      print('S3 download $cloudPath failed: $e');
+    }
+    return;
+  }
+
+  // 画像ファイル取得
+  File? _localFile(Picture picture) {
+    // filePath がパス付きの場合はファイル名のみを抽出
+    final int pathIndexOf = picture.filePath.lastIndexOf('/');
+    final String fileName = (pathIndexOf == -1
+        ? picture.filePath
+        : picture.filePath.substring(pathIndexOf + 1));
+    final String filePath = '$_imagePath/$fileName';
+    try {
+      if (File(filePath).existsSync()) {
+        return File(filePath);
+      }
+      return null;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  // 地図上の Symbol を全消去
+  Future<void> _clearSymbols() async {
+    setState(() {
+      _symbolAllSet = false;
+      _symbolInfoMap.clear();
+    });
+    _controller.future.then((mapboxMap) async {
+      await mapboxMap.clearSymbols();
+    });
+  }
+
+  // DB 全行削除
+  Future<void> _removeAllTables() async {
+    await _removeAllRecords();
+    await _removeAllPictureRecords();
   }
 }

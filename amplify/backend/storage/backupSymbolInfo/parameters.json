@@ -1,0 +1,7 @@
+{
+    "tableName": "backupSymbolInfo",
+    "partitionKeyName": "backupTitle",
+    "partitionKeyType": "S",
+    "sortKeyName": "id",
+    "sortKeyType": "N"
+}

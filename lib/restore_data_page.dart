@@ -10,9 +10,10 @@ class RestoreDataPage extends StatefulWidget {
 }
 
 class _RestoreDataPageState extends State<RestoreDataPage> {
-  List<String> _backupSetList = [];
+  List<BackupSet> _backupSetList = [];
   bool _symbolSet = false;
   Function? _restoreData;
+  Function? _removeBackup;
 
   @override
   Widget build(BuildContext context) {
@@ -20,6 +21,7 @@ class _RestoreDataPageState extends State<RestoreDataPage> {
     _backupSetList = args.backupSetList;
     _symbolSet = args.symbolSet;
     _restoreData = args.restoreData;
+    _removeBackup = args.removeBackup;
 
     return Scaffold(
       appBar: AppBar(
@@ -54,25 +56,40 @@ class _RestoreDataPageState extends State<RestoreDataPage> {
   }
 
   // 項目表示ウィジェット
-  Widget _item(String title) {
+  Widget _item(BackupSet backupSet) {
+    String describe = (backupSet.describe ?? '');
     return Card(
       child: Container(
         decoration: BoxDecoration(
           border: Border.all(width: 1.0, color: Colors.blue),
         ),
         child: ListTile(
-          leading: (const Icon(
+          visualDensity: VisualDensity.comfortable,
+          leading: const Icon(
             Icons.backup_table,
             size: 30.0,
-          )),
-          title: Text(title),
+          ),
+          title: Text(
+            '''${backupSet.title}
+$describe''',
+            style: const TextStyle(fontSize: 14),
+          ),
           onTap: () {
             if (_symbolSet) {
-              _overwriteConfirmDialog(title);
+              _overwriteConfirmDialog(backupSet.title);
             } else {
-              _restore(title);
+              _restore(backupSet.title);
             }
           },
+          trailing: IconButton(
+            icon: const Icon(
+              Icons.delete,
+              size: 20.0,
+            ),
+            onPressed: () {
+              _deleteConfirmDialog(backupSet.title);
+            },
+          ),
         ),
       ),
     );
@@ -115,12 +132,40 @@ class _RestoreDataPageState extends State<RestoreDataPage> {
       context: context,
       builder: (BuildContext context) => AlertDialog(
         title: const Text('完了'),
-        content: Text('$backupTitle のリストアが完了しました。'),
+        content: Text('''$backupTitle
+のリストアが完了しました。'''),
         actions: <Widget>[
           TextButton(
             child: const Text('OK'),
             onPressed: () {
               Navigator.popUntil(context, ModalRoute.withName('/'));
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  // 既存データ上書き（確認ダイアログ）
+  void _deleteConfirmDialog(String backupTitle) async {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) => AlertDialog(
+        title: const Text('確認'),
+        content: Text('''バックアップデータ
+$backupTitle
+を削除してもよろしいですか？'''),
+        actions: <Widget>[
+          TextButton(
+            child: const Text('いいえ'),
+            onPressed: () {
+              Navigator.pop(context);
+            },
+          ),
+          TextButton(
+            child: const Text('はい'),
+            onPressed: () {
+              _removeBackup!(backupTitle);
             },
           ),
         ],

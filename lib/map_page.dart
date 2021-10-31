@@ -69,6 +69,14 @@ class Picture {
       this.cloudPath);
 }
 
+// バックアップ情報
+class BackupSet {
+  String title;
+  String? describe;
+
+  BackupSet(this.title, this.describe);
+}
+
 // Symbol 情報表示画面に渡す内容一式
 class FullSymbolInfo {
   int symbolId;
@@ -122,11 +130,13 @@ class FullSearchKeyword {
 
 // データリストア画面に渡す内容一式
 class FullRestoreData {
-  List<String> backupSetList;
+  List<BackupSet> backupSetList;
   bool symbolSet;
   Function restoreData;
+  Function removeBackup;
 
-  FullRestoreData(this.backupSetList, this.symbolSet, this.restoreData);
+  FullRestoreData(
+      this.backupSetList, this.symbolSet, this.restoreData, this.removeBackup);
 }
 
 // ボタン表示のタイプ
@@ -1207,26 +1217,34 @@ class _MapPageState extends State<MapPage> {
       _backupNow = true;
     });
     bool result = false;
+    String describe = '';
     final String backupTitle = DateTime.now().toString().substring(0, 19);
-    final bool pictureSave = await _backupPictures(backupTitle);
-    if (pictureSave) {
-      final bool infoSave = await _backupSymbolInfos(backupTitle);
-      if (infoSave) {
-        result = await _backupSets(backupTitle);
+    final int? countPicture = await _backupPictures(backupTitle);
+    if (countPicture != null) {
+      final int? countSymbol = await _backupSymbolInfos(backupTitle);
+      if (countSymbol != null) {
+        describe = '(ピン $countSymbol / 画像 $countPicture)';
+        result = await _backupSet(backupTitle, describe);
       }
     }
     setState(() {
       _backupNow = false;
     });
-    _showBackupResult(backupTitle, result);
+    _showBackupResult(backupTitle, describe, result);
   }
 
   // バックアップ完了・失敗表示
-  void _showBackupResult(String backupTitle, bool result) {
-    final String message = (result ? 'バックアップ成功 : $backupTitle' : 'バックアップ失敗');
+  void _showBackupResult(String backupTitle, String describe, bool result) {
+    final String message = (result
+        ? '''バックアップ成功
+
+$backupTitle
+$describe'''
+        : 'バックアップ失敗');
     showDialog(
       context: context,
       builder: (BuildContext context) => AlertDialog(
+        title: const Text('バックアップ'),
         content: Text(
           message,
           textAlign: TextAlign.center,
@@ -1244,12 +1262,15 @@ class _MapPageState extends State<MapPage> {
   }
 
   // バックアップ情報を登録
-  Future<bool> _backupSets(String backupTitle) async {
+  Future<bool> _backupSet(String backupTitle, String describe) async {
     try {
       final RestOptions options = RestOptions(
           path: '/backupsets',
-          body: const Utf8Encoder().convert(
-              ('{"OperationType": "PUT", "Keys": {"title": ${jsonEncode(backupTitle)}}}')));
+          body: const Utf8Encoder()
+              .convert(('{"OperationType": "PUT", "Keys": {"items": ['
+                  ' {"title": ${jsonEncode(backupTitle)}'
+                  ', "describe": ${jsonEncode(describe)}}'
+                  ']}}')));
       final RestOperation restOperation =
           _amplify.API.post(restOptions: options);
       await restOperation.response;
@@ -1264,7 +1285,7 @@ class _MapPageState extends State<MapPage> {
   }
 
   // Symbol 情報をバックアップ
-  Future<bool> _backupSymbolInfos(String backupTitle) async {
+  Future<int?> _backupSymbolInfos(String backupTitle) async {
     final List<SymbolInfoWithLatLng> records = await _fetchRecords();
     String body = '';
     for (SymbolInfoWithLatLng record in records) {
@@ -1288,7 +1309,7 @@ class _MapPageState extends State<MapPage> {
       if (body.length > 10000) {
         final bool infoSave = await _backupSymbolInfoApi(body);
         if (!infoSave) {
-          return false;
+          return null;
         }
         body = '';
       }
@@ -1296,10 +1317,10 @@ class _MapPageState extends State<MapPage> {
     if (body != '') {
       final bool infoSave = await _backupSymbolInfoApi(body);
       if (!infoSave) {
-        return false;
+        return null;
       }
     }
-    return true;
+    return records.length;
   }
 
   // Symbol 情報バックアップ API 呼び出し
@@ -1325,7 +1346,7 @@ class _MapPageState extends State<MapPage> {
   }
 
   // 画像情報をバックアップ
-  Future<bool> _backupPictures(String backupTitle) async {
+  Future<int?> _backupPictures(String backupTitle) async {
     final List<Picture> records = await _fetchAllPictureRecords();
     String body = '';
     for (Picture record in records) {
@@ -1338,7 +1359,7 @@ class _MapPageState extends State<MapPage> {
       if (cloudPath == '') {
         final fileName = await _uploadS3(record);
         if (fileName is! String) {
-          return false;
+          return null;
         }
         cloudPath = fileName;
         final Picture newRecord = Picture(
@@ -1357,7 +1378,7 @@ class _MapPageState extends State<MapPage> {
       if (body.length > 10000) {
         final bool pictureSave = await _backupPictureApi(body);
         if (!pictureSave) {
-          return false;
+          return null;
         }
         body = '';
       }
@@ -1365,10 +1386,10 @@ class _MapPageState extends State<MapPage> {
     if (body != '') {
       final bool pictureSave = await _backupPictureApi(body);
       if (!pictureSave) {
-        return false;
+        return null;
       }
     }
-    return true;
+    return records.length;
   }
 
   // 画像バックアップ API 呼び出し
@@ -1414,13 +1435,13 @@ class _MapPageState extends State<MapPage> {
 
   // AWS からデータリストア（確認画面）
   void _restoreDataConfirm() async {
-    List<String> backupSetList = await _fetchBackupSets();
+    List<BackupSet> backupSetList = await _fetchBackupSets();
     if (backupSetList.isEmpty) {
       return;
     }
     await Navigator.of(navigatorKey.currentContext!).pushNamed('/restoreData',
-        arguments: FullRestoreData(
-            backupSetList, (_symbolInfoMap.isNotEmpty), _restoreData));
+        arguments: FullRestoreData(backupSetList, (_symbolInfoMap.isNotEmpty),
+            _restoreData, _removeBackup));
   }
 
   // AWS からデータリストア（実行）
@@ -1438,21 +1459,21 @@ class _MapPageState extends State<MapPage> {
   }
 
   // バックアップ情報リストを AWS から取得
-  Future<List<String>> _fetchBackupSets() async {
-    List<String> resultList = [];
+  Future<List<BackupSet>> _fetchBackupSets() async {
+    List<BackupSet> resultList = [];
     try {
       final RestOptions options = RestOptions(
           path: '/backupsets',
           body: const Utf8Encoder().convert(('{"OperationType": "SCAN"}')));
       final RestOperation restOperation =
           _amplify.API.post(restOptions: options);
-      RestResponse response = await restOperation.response;
-      Map<String, dynamic> body = json.decode(response.body);
-      List<dynamic> items = body['Items'];
+      final RestResponse response = await restOperation.response;
+      final Map<String, dynamic> body = json.decode(response.body);
+      final List<dynamic> items = body['Items'];
       for (dynamic item in items) {
-        resultList.add(item['title'] as String);
+        resultList.add(BackupSet(item['title'] as String, item['describe']));
       }
-      resultList.sort((a, b) => b.compareTo(a));
+      resultList.sort((a, b) => b.title.compareTo(a.title));
       // ignore: avoid_print
       print('POST call (/backupsets) succeeded');
     } catch (e) {
@@ -1609,5 +1630,112 @@ class _MapPageState extends State<MapPage> {
   Future<void> _removeAllTables() async {
     await _removeAllRecords();
     await _removeAllPictureRecords();
+  }
+
+  // AWS バックアップデータを削除
+  void _removeBackup(String backupTitle) async {
+    bool result = false;
+    final bool removePictures = await _removeBackupPictures(backupTitle);
+    if (removePictures) {
+      final bool removeSymbolInfos =
+          await _removeBackupSymbolInfos(backupTitle);
+      if (removeSymbolInfos) {
+        result = await _removeBackupSet(backupTitle);
+      }
+    }
+    _showRemoveBackupResult(backupTitle, result);
+  }
+
+  // バックアップデータ削除完了・失敗表示
+  void _showRemoveBackupResult(String backupTitle, bool result) {
+    final String message = (result
+        ? '''削除成功
+
+$backupTitle'''
+        : '削除失敗');
+    showDialog(
+      context: context,
+      builder: (BuildContext context) => AlertDialog(
+        title: const Text('バックアップデータ削除'),
+        content: Text(
+          message,
+          textAlign: TextAlign.center,
+        ),
+        actions: <Widget>[
+          TextButton(
+            child: const Text('戻る'),
+            onPressed: () {
+              Navigator.popUntil(context, ModalRoute.withName('/'));
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  // AWS バックアップ情報を削除
+  Future<bool> _removeBackupSet(backupTitle) async {
+    try {
+      final RestOptions options = RestOptions(
+          path: '/backupsets',
+          body:
+              const Utf8Encoder().convert(('{"OperationType": "DELETE", "Keys":'
+                  ' {"title": ${jsonEncode(backupTitle)}'
+                  '}}')));
+      final RestOperation restOperation =
+          _amplify.API.post(restOptions: options);
+      await restOperation.response;
+      // ignore: avoid_print
+      print('POST call (/backupsets) succeeded');
+      return true;
+    } on ApiException catch (e) {
+      // ignore: avoid_print
+      print('POST call (/backupsets) failed: $e');
+      return false;
+    }
+  }
+
+  // AWS Symbol 情報を削除
+  Future<bool> _removeBackupSymbolInfos(backupTitle) async {
+    try {
+      final RestOptions options = RestOptions(
+          path: '/backupsymbolinfos',
+          body: const Utf8Encoder()
+              .convert(('{"OperationType": "DELETE_LIST", "Keys":'
+                  ' {"backupTitle": ${jsonEncode(backupTitle)}'
+                  '}}')));
+      final RestOperation restOperation =
+          _amplify.API.post(restOptions: options);
+      await restOperation.response;
+      // ignore: avoid_print
+      print('POST call (/backupsymbolinfos) succeeded');
+      return true;
+    } on ApiException catch (e) {
+      // ignore: avoid_print
+      print('POST call (/backupsymbolinfos) failed: $e');
+      return false;
+    }
+  }
+
+  // AWS 画像情報を削除（画像ファイルは削除しない）
+  Future<bool> _removeBackupPictures(backupTitle) async {
+    try {
+      final RestOptions options = RestOptions(
+          path: '/backuppictures',
+          body: const Utf8Encoder()
+              .convert(('{"OperationType": "DELETE_LIST", "Keys":'
+                  ' {"backupTitle": ${jsonEncode(backupTitle)}'
+                  '}}')));
+      final RestOperation restOperation =
+          _amplify.API.post(restOptions: options);
+      await restOperation.response;
+      // ignore: avoid_print
+      print('POST call (/backuppictures) succeeded');
+      return true;
+    } on ApiException catch (e) {
+      // ignore: avoid_print
+      print('POST call (/backuppictures) failed: $e');
+      return false;
+    }
   }
 }

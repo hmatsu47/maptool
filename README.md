@@ -17,13 +17,15 @@
  - Reverse Geocoding.（逆ジオコーディング：画面の中心位置の地名表示・ピンの都道府県名＋市区町村名表示）
  - Geocoding.（ジオコーディング：地名検索）
  - Add picture(s) from Image garelly.（ギャラリーからの写真・画像追加）
+ - Backup data to AWS.（AWS へデータバックアップ）
+   - DB data to DynamoDB.（ピンの詳細情報）
+   - Photographs / Pictures to S3 Bucket.（写真・画像）
+ - Restore data from AWS.（AWS からデータリストア）
+ - Remove backup data on AWS.（不要バックアップデータ削除）
 
 **In development:**（開発中の機能）
 
- - Backup data to AWS.（AWS へデータバックアップ）※β版実装済み
-   - DB data to DynamoDB.（ピンの詳細情報）
-   - Photographs / Pictures to S3 Bucket.（写真・画像）
- - Restore data from AWS.（AWS からデータリストア）※β版実装済み
+ - Improve configuration handling.（外部 API などの設定管理の改善）
 
 ![画面例](map_image.png "画面例")
 

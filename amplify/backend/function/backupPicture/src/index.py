@@ -1,3 +1,4 @@
+import decimal
 import json
 import boto3
 
@@ -8,44 +9,58 @@ table = dynamodb.Table("backupPicture-maptool")
 
 # テーブルスキャン
 def operation_scan():
-    scanData = table.scan()
-    items=scanData['Items']
-    print(items)
-    return scanData
+    try:
+        scanData = table.scan()
+        items=scanData['Items']
+        print(items)
+        return scanData
+    except Exception as e:
+        print("Error Exception.")
+        print(e)        
 
 # リスト検索
 def operation_query_list(partitionKey):
-    queryData = table.query(
-        KeyConditionExpression = Key("backupTitle").eq(partitionKey) 
-    )
-    items=queryData['Items']
-    print(items)
-    return queryData
+    try:
+        queryData = table.query(
+            KeyConditionExpression = Key("backupTitle").eq(partitionKey)
+        )
+        items=queryData['Items']
+        print(items)
+        return queryData
+    except Exception as e:
+        print("Error Exception.")
+        print(e)        
 
 # レコード検索
 def operation_query(partitionKey, sortKey):
-    queryData = table.query(
-        KeyConditionExpression = Key("backupTitle").eq(partitionKey) & Key("id").eq(sortKey)
-    )
-    items=queryData['Items']
-    print(items)
-    return queryData
+    try:
+        queryData = table.query(
+            KeyConditionExpression = Key("backupTitle").eq(partitionKey) & Key("id").eq(sortKey)
+        )
+        items=queryData['Items']
+        print(items)
+        return queryData
+    except Exception as e:
+        print("Error Exception.")
+        print(e)        
 
 # レコード追加・更新
 def operation_put(items):
     try:
         with table.batch_writer() as batch:
             for item in items:
+                baseItem={
+                    'backupTitle': item['backupTitle'],
+                    'id': item['id'],
+                    'symbolId': item['symbolId'],
+                    'comment': item['comment'],
+                    'dateTime': item['dateTime'],
+                    'filePath': item['filePath'],
+                    'cloudPath': item['cloudPath']
+                }
+                convItem = json.loads(json.dumps(baseItem), parse_float=decimal.Decimal)
                 batch.put_item(
-                    Item={
-                        'backupTitle': item['backupTitle'],
-                        'id': item['id'],
-                        'symbolId': item['symbolId'],
-                        'comment': item['comment'],
-                        'dateTime': item['dateTime'],
-                        'filePath': item['filePath'],
-                        'cloudPath': item['cloudPath']
-                    }
+                    Item=convItem
                 )
         print('PUT Successed.')
         return 'PUT Successed.'
@@ -55,17 +70,36 @@ def operation_put(items):
 
 # レコード削除
 def operation_delete(partitionKey, sortKey):
-    delResponse = table.delete_item(
-       key={
-           'backupTitle': partitionKey,
-           'id': sortKey
-       }
-    )
-    if delResponse['ResponseMetadata']['HTTPStatusCode'] != 200:
-        print(delResponse)
-    else:
-        print('DEL Successed.')
-    return delResponse
+    try:
+        delResponse = table.delete_item(
+            Key={
+                'backupTitle': partitionKey,
+                'id': sortKey
+            }
+        )
+        if delResponse['ResponseMetadata']['HTTPStatusCode'] != 200:
+            print(delResponse)
+        else:
+            print('DEL Successed.')
+        return delResponse
+    except Exception as e:
+        print("Error Exception.")
+        print(e)
+
+# レコード一括削除（同一パーティションキー）
+def operation_delete_list(partitionKey):
+    try:
+        queryData = table.query(
+            KeyConditionExpression = Key("backupTitle").eq(partitionKey)
+        )
+        items=queryData['Items']
+        print(items)
+        for item in items:
+            operation_delete(partitionKey=partitionKey, sortKey=item['id'])
+        return queryData
+    except Exception as e:
+        print("Error Exception.")
+        print(e)
 
 def lambda_handler(event, context):
     print("Received event: " + json.dumps(event))
@@ -80,13 +114,16 @@ def lambda_handler(event, context):
             PartitionKey = event['Keys']['backupTitle']
             SortKey = event['Keys']['id']
             return operation_query(PartitionKey, SortKey)
-        elif OperationType == 'PUT':
+        if OperationType == 'PUT':
             items = event['Keys']['items']
             return operation_put(items)
-        elif OperationType == 'DELETE':
+        if OperationType == 'DELETE':
             PartitionKey = event['Keys']['backupTitle']
             SortKey = event['Keys']['id']
             return operation_delete(PartitionKey, SortKey)
+        if OperationType == 'DELETE_LIST':
+            PartitionKey = event['Keys']['backupTitle']
+            return operation_delete_list(PartitionKey)
     except Exception as e:
         print("Error Exception.")
         print(e)

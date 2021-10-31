@@ -8,45 +8,62 @@ table = dynamodb.Table("backupSet-maptool")
 
 # テーブルスキャン
 def operation_scan():
-    scanData = table.scan()
-    items=scanData['Items']
-    print(items)
-    return scanData
+    try:
+        scanData = table.scan()
+        items=scanData['Items']
+        print(items)
+        return scanData
+    except Exception as e:
+        print("Error Exception.")
+        print(e)
 
 # レコード検索
 def operation_query(partitionKey):
-    queryData = table.query(
-        KeyConditionExpression = Key("title").eq(partitionKey)
-    )
-    items=queryData['Items']
-    print(items)
-    return queryData
+    try:
+        queryData = table.query(
+            KeyConditionExpression = Key("title").eq(partitionKey)
+        )
+        items=queryData['Items']
+        print(items)
+        return queryData
+    except Exception as e:
+        print("Error Exception.")
+        print(e)
 
 # レコード追加・更新
-def operation_put(partitionKey):
-    putResponse = table.put_item(
-        Item={
-            'title': partitionKey,
-        }
-    )
-    if putResponse['ResponseMetadata']['HTTPStatusCode'] != 200:
-        print(putResponse)
-    else:
-        print('PUT Successed.')
-    return putResponse
+def operation_put(items):
+    try:
+        putResponse = table.put_item(
+            Item={
+                'title': items[0]['title'],
+                'describe' : items[0]['describe'],
+            }
+        )
+        if putResponse['ResponseMetadata']['HTTPStatusCode'] != 200:
+            print(putResponse)
+        else:
+            print('PUT Successed.')
+        return putResponse
+    except Exception as e:
+        print("Error Exception.")
+        print(e)
 
 # レコード削除
 def operation_delete(partitionKey):
-    delResponse = table.delete_item(
-       key={
-           'title': partitionKey
-       }
-    )
-    if delResponse['ResponseMetadata']['HTTPStatusCode'] != 200:
-        print(delResponse)
-    else:
-        print('DEL Successed.')
-    return delResponse
+    try:
+        delResponse = table.delete_item(
+            Key={
+                'title': partitionKey
+            }
+        )
+        if delResponse['ResponseMetadata']['HTTPStatusCode'] != 200:
+            print(delResponse)
+        else:
+            print('DEL Successed.')
+        return delResponse
+    except Exception as e:
+        print("Error Exception.")
+        print(e)
 
 def lambda_handler(event, context):
     print("Received event: " + json.dumps(event))
@@ -54,12 +71,13 @@ def lambda_handler(event, context):
     try:
         if OperationType == 'SCAN':
             return operation_scan()
+        if OperationType == 'PUT':
+            Items = event['Keys']['items']
+            return operation_put(Items)
         PartitionKey = event['Keys']['title']
         if OperationType == 'QUERY':
             return operation_query(PartitionKey)
-        elif OperationType == 'PUT':
-            return operation_put(PartitionKey)
-        elif OperationType == 'DELETE':
+        if OperationType == 'DELETE':
             return operation_delete(PartitionKey)
     except Exception as e:
         print("Error Exception.")

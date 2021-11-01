@@ -408,3 +408,6 @@ amplify push
 
  - **Add Amplify application config**
    - [lib/amplifyconfiguration.dart](lib/amplifyconfiguration.dart)
+     - Endpoint
+     - Stage
+     - API Gateway Key

@@ -147,6 +147,8 @@ class _MapPageState extends State<MapPage> {
   final Location _locationService = Location();
   // 設定ファイル名
   final String _configFileName = 'maptool.conf';
+  // 設定ファイルを読み込むことができた？
+  bool _configSet = false;
   // 地図スタイル用 Mapbox URL
   String _style = '';
   // S3 アクセスキー
@@ -232,6 +234,9 @@ class _MapPageState extends State<MapPage> {
   void _configureApplication() async {
     final localPath = (await getApplicationDocumentsDirectory()).path;
     final File configFile = File('$localPath/$_configFileName');
+    if (!configFile.existsSync()) {
+      return;
+    }
     final List<String> config = configFile.readAsLinesSync();
     for (String line in config) {
       final int position = line.indexOf('=');
@@ -253,6 +258,14 @@ class _MapPageState extends State<MapPage> {
             break;
         }
       }
+    }
+    if (_style != '' &&
+        _s3AccessKey != '' &&
+        _s3SecretKey != '' &&
+        _s3Bucket != '') {
+      setState(() {
+        _configSet = true;
+      });
     }
     // 画像パス
     _imagePath = localPath;
@@ -390,6 +403,12 @@ class _MapPageState extends State<MapPage> {
 
   // 地図ウィジェット
   Widget _makeMapboxMap() {
+    if (!_configSet) {
+      // 未設定（仮でロード中画面を表示→初期設定画面表示に要書き換え）
+      return const Center(
+        child: CircularProgressIndicator(),
+      );
+    }
     if (_yourLocation == null) {
       // 現在位置が取れるまではロード中画面を表示
       return const Center(

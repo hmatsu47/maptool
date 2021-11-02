@@ -139,6 +139,18 @@ class FullRestoreData {
       this.backupSetList, this.symbolSet, this.restoreData, this.removeBackup);
 }
 
+// 設定管理画面に渡す内容一式
+class FullConfigData {
+  String style;
+  String s3AccessKey;
+  String s3SecretKey;
+  String s3Bucket;
+  Function configureSave;
+
+  FullConfigData(this.style, this.s3AccessKey, this.s3SecretKey, this.s3Bucket,
+      this.configureSave);
+}
+
 // ボタン表示のタイプ
 enum ButtonType { invisible, add }
 
@@ -147,7 +159,7 @@ class _MapPageState extends State<MapPage> {
   final Location _locationService = Location();
   // 設定ファイル名
   final String _configFileName = 'maptool.conf';
-  // 設定ファイルを読み込むことができた？
+  // 設定ファイル読み込み完了？
   bool _configSet = false;
   // 地図スタイル用 Mapbox URL
   String _style = '';
@@ -230,12 +242,24 @@ class _MapPageState extends State<MapPage> {
     });
   }
 
+  // 設定ファイルに保存
+  void _configureSave(FullConfigData configData) async {
+    final localPath = (await getApplicationDocumentsDirectory()).path;
+    final File configFile = File('$localPath/$_configFileName');
+    configFile.writeAsStringSync('''style=${configData.style}
+s3AccessKey=${configData.s3AccessKey}
+s3SecretKey=${configData.s3SecretKey}
+s3Bucket=${configData.s3Bucket}
+''', mode: FileMode.writeOnly);
+  }
+
   // 設定ファイル読み込み
   void _configureApplication() async {
     final localPath = (await getApplicationDocumentsDirectory()).path;
-    final File configFile = File('$localPath/$_configFileName');
+    File configFile = File('$localPath/$_configFileName');
     if (!configFile.existsSync()) {
-      return;
+      await _editConfigPage();
+      configFile = File('$localPath/$_configFileName');
     }
     final List<String> config = configFile.readAsLinesSync();
     for (String line in config) {
@@ -259,16 +283,18 @@ class _MapPageState extends State<MapPage> {
         }
       }
     }
-    if (_style != '' &&
-        _s3AccessKey != '' &&
-        _s3SecretKey != '' &&
-        _s3Bucket != '') {
-      setState(() {
-        _configSet = true;
-      });
-    }
     // 画像パス
     _imagePath = localPath;
+    setState(() {
+      _configSet = true;
+    });
+  }
+
+  // 設定画面呼び出し
+  _editConfigPage() async {
+    await Navigator.of(navigatorKey.currentContext!).pushNamed('/editConfig',
+        arguments: FullConfigData(
+            _style, _s3AccessKey, _s3SecretKey, _s3Bucket, _configureSave));
   }
 
   // Amplify
@@ -403,14 +429,8 @@ class _MapPageState extends State<MapPage> {
 
   // 地図ウィジェット
   Widget _makeMapboxMap() {
-    if (!_configSet) {
-      // 未設定（仮でロード中画面を表示→初期設定画面表示に要書き換え）
-      return const Center(
-        child: CircularProgressIndicator(),
-      );
-    }
-    if (_yourLocation == null) {
-      // 現在位置が取れるまではロード中画面を表示
+    if (!_configSet || _yourLocation == null) {
+      // 設定ファイルの読み込みが完了し現在位置が取れるまではロード中画面を表示
       return const Center(
         child: CircularProgressIndicator(),
       );
@@ -457,6 +477,25 @@ class _MapPageState extends State<MapPage> {
   // フローティングアイコンウィジェット
   Widget _makeFloatingIcons() {
     return Column(mainAxisSize: MainAxisSize.min, children: [
+      Visibility(
+        child: FloatingActionButton(
+          heroTag: 'editConfigPage',
+          backgroundColor: Colors.blue,
+          onPressed: () {
+            // 画面の中心の座標で写真を撮ってマーク（ピン）を立てる
+            _editConfigPage();
+          },
+          child: Icon(_symbolAllSet && !_backupNow
+              ? Icons.settings
+              : Icons.settings_outlined),
+          mini: true,
+        ),
+        visible: _buttonType == ButtonType.add,
+      ),
+      Visibility(
+        child: const Gap(18),
+        visible: _buttonType == ButtonType.add,
+      ),
       Visibility(
         child: FloatingActionButton(
           heroTag: 'addPictureFromCameraAndMark',

@@ -29,10 +29,10 @@ class PictureInfo {
 class _DisplaySymbolInfoPageState extends State<DisplaySymbolInfoPage> {
   int _symbolId = 0;
   Symbol? _symbol;
-  String _title = "";
+  String _title = '';
   PrefMuni? _prefMuni;
   DateTime _dateTime = DateTime.now();
-  String _describe = "";
+  String _describe = '';
   List<Picture> _pictures = [];
   Function? _addPictureFromCamera;
   Function? _addPicturesFromGarelly;

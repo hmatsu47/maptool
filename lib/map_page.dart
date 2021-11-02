@@ -139,18 +139,34 @@ class FullRestoreData {
       this.backupSetList, this.symbolSet, this.restoreData, this.removeBackup);
 }
 
+// 設定管理画面に渡す内容一式
+class FullConfigData {
+  String style;
+  String s3AccessKey;
+  String s3SecretKey;
+  String s3Bucket;
+  Function configureSave;
+
+  FullConfigData(this.style, this.s3AccessKey, this.s3SecretKey, this.s3Bucket,
+      this.configureSave);
+}
+
 // ボタン表示のタイプ
 enum ButtonType { invisible, add }
 
 class _MapPageState extends State<MapPage> {
   final Completer<MapboxMapController> _controller = Completer();
   final Location _locationService = Location();
+  // 設定ファイル名
+  final String _configFileName = 'maptool.conf';
+  // 設定ファイル読み込み完了？
+  bool _configSet = false;
   // 地図スタイル用 Mapbox URL
-  final String _style = '[Mapbox Style URL]';
+  String _style = '';
   // S3 アクセスキー
-  final String _s3AccessKey = '[S3 Access Key]';
-  final String _s3SecretKey = '[S3 Secret Key]';
-  final String _s3Bucket = '[S3 Bucket Name]';
+  String _s3AccessKey = '';
+  String _s3SecretKey = '';
+  String _s3Bucket = '';
   // Location で緯度経度が取れなかったときのデフォルト値
   final double _initialLat = 35.6895014;
   final double _initialLong = 139.6917337;
@@ -193,13 +209,7 @@ class _MapPageState extends State<MapPage> {
   final _amplify = Amplify;
 
   // Minio(S3)
-  late final _minio = Minio(
-    endPoint: 's3-ap-northeast-1.amazonaws.com',
-    region: 'ap-northeast-1',
-    accessKey: _s3AccessKey,
-    secretKey: _s3SecretKey,
-    useSSL: true,
-  );
+  Minio? _minio;
 
   // データバックアップ中？
   bool _backupNow = false;
@@ -208,8 +218,14 @@ class _MapPageState extends State<MapPage> {
   void initState() {
     super.initState();
 
+    // 設定ファイル読み込み
+    _configureApplication();
+
     // Amplify
     _configureAmplify();
+
+    // Minio
+    _configureMinio();
 
     // 現在位置の取得
     _getLocation();
@@ -226,6 +242,61 @@ class _MapPageState extends State<MapPage> {
     });
   }
 
+  // 設定ファイルに保存
+  void _configureSave(FullConfigData configData) async {
+    final localPath = (await getApplicationDocumentsDirectory()).path;
+    final File configFile = File('$localPath/$_configFileName');
+    configFile.writeAsStringSync('''style=${configData.style}
+s3AccessKey=${configData.s3AccessKey}
+s3SecretKey=${configData.s3SecretKey}
+s3Bucket=${configData.s3Bucket}
+''', mode: FileMode.writeOnly);
+  }
+
+  // 設定ファイル読み込み
+  void _configureApplication() async {
+    final localPath = (await getApplicationDocumentsDirectory()).path;
+    File configFile = File('$localPath/$_configFileName');
+    if (!configFile.existsSync()) {
+      await _editConfigPage();
+      configFile = File('$localPath/$_configFileName');
+    }
+    final List<String> config = configFile.readAsLinesSync();
+    for (String line in config) {
+      final int position = line.indexOf('=');
+      if (position != -1) {
+        final String itemName = line.substring(0, position);
+        final String itemValue = line.substring(position + 1);
+        switch (itemName) {
+          case 'style':
+            _style = itemValue;
+            break;
+          case 's3AccessKey':
+            _s3AccessKey = itemValue;
+            break;
+          case 's3SecretKey':
+            _s3SecretKey = itemValue;
+            break;
+          case 's3Bucket':
+            _s3Bucket = itemValue;
+            break;
+        }
+      }
+    }
+    // 画像パス
+    _imagePath = localPath;
+    setState(() {
+      _configSet = true;
+    });
+  }
+
+  // 設定画面呼び出し
+  _editConfigPage() async {
+    await Navigator.of(navigatorKey.currentContext!).pushNamed('/editConfig',
+        arguments: FullConfigData(
+            _style, _s3AccessKey, _s3SecretKey, _s3Bucket, _configureSave));
+  }
+
   // Amplify
   void _configureAmplify() async {
     AmplifyAPI apiPlugin = AmplifyAPI();
@@ -240,6 +311,17 @@ class _MapPageState extends State<MapPage> {
       print(
           "Tried to reconfigure Amplify; this can occur when your app restarts on Android.");
     }
+  }
+
+  // Minio
+  void _configureMinio() {
+    _minio = Minio(
+      endPoint: 's3-ap-northeast-1.amazonaws.com',
+      region: 'ap-northeast-1',
+      accessKey: _s3AccessKey,
+      secretKey: _s3SecretKey,
+      useSSL: true,
+    );
   }
 
   @override
@@ -347,8 +429,8 @@ class _MapPageState extends State<MapPage> {
 
   // 地図ウィジェット
   Widget _makeMapboxMap() {
-    if (_yourLocation == null) {
-      // 現在位置が取れるまではロード中画面を表示
+    if (!_configSet || _yourLocation == null) {
+      // 設定ファイルの読み込みが完了し現在位置が取れるまではロード中画面を表示
       return const Center(
         child: CircularProgressIndicator(),
       );
@@ -367,8 +449,8 @@ class _MapPageState extends State<MapPage> {
       ),
       onMapCreated: (MapboxMapController controller) {
         _controller.complete(controller);
-        _createDatabase().then((value) =>
-            {_addSymbols(), _createIndex(), _setImagePath(), _makeMuniMap()});
+        _createDatabase()
+            .then((value) => {_addSymbols(), _createIndex(), _makeMuniMap()});
         _controller.future.then((mapboxMap) {
           mapboxMap.onSymbolTapped.add(_onSymbolTap);
         });
@@ -395,6 +477,25 @@ class _MapPageState extends State<MapPage> {
   // フローティングアイコンウィジェット
   Widget _makeFloatingIcons() {
     return Column(mainAxisSize: MainAxisSize.min, children: [
+      Visibility(
+        child: FloatingActionButton(
+          heroTag: 'editConfigPage',
+          backgroundColor: Colors.blue,
+          onPressed: () {
+            // 画面の中心の座標で写真を撮ってマーク（ピン）を立てる
+            _editConfigPage();
+          },
+          child: Icon(_symbolAllSet && !_backupNow
+              ? Icons.settings
+              : Icons.settings_outlined),
+          mini: true,
+        ),
+        visible: _buttonType == ButtonType.add,
+      ),
+      Visibility(
+        child: const Gap(18),
+        visible: _buttonType == ButtonType.add,
+      ),
       Visibility(
         child: FloatingActionButton(
           heroTag: 'addPictureFromCameraAndMark',
@@ -441,11 +542,6 @@ class _MapPageState extends State<MapPage> {
               ? Icons.menu
               : Icons.close)))),
     ]);
-  }
-
-  // 画像パス
-  void _setImagePath() async {
-    _imagePath = (await getApplicationDocumentsDirectory()).path;
   }
 
   // DB から Symbol 情報を読み込んで地図に表示する
@@ -1422,7 +1518,7 @@ $describe'''
         : picture.filePath.substring(pathIndexOf + 1));
     final String filePath = '$_imagePath/$fileName';
     try {
-      await _minio.fPutObject(_s3Bucket, fileName, filePath);
+      await _minio!.fPutObject(_s3Bucket, fileName, filePath);
       // ignore: avoid_print
       print('S3 upload $fileName succeeded');
       return fileName;
@@ -1586,7 +1682,7 @@ $describe'''
     }
     final String filePath = '$_imagePath/$cloudPath';
     try {
-      final stream = await _minio.getObject(_s3Bucket, cloudPath);
+      final stream = await _minio!.getObject(_s3Bucket, cloudPath);
       await stream.pipe(File(filePath).openWrite());
       // ignore: avoid_print
       print('S3 download $cloudPath succeeded');

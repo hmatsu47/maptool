@@ -25,7 +25,7 @@
 
 **In development:**（開発中の機能）
 
- - Improve configuration handling.（外部 API などの設定管理の改善）
+ - Improve configuration handling.（外部 API などの設定管理の改善）※β版実装済み
 
 ![画面例](map_image.png "画面例")
 
@@ -408,3 +408,6 @@ amplify push
 
  - **Add Amplify application config**
    - [lib/amplifyconfiguration.dart](lib/amplifyconfiguration.dart)
+     - Endpoint
+     - Stage
+     - API Gateway Key

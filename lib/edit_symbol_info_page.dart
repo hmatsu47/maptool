@@ -4,17 +4,17 @@ import 'package:gap/gap.dart';
 
 import 'package:maptool/map_page.dart';
 
-class CreateSymbolInfoPage extends StatefulWidget {
-  const CreateSymbolInfoPage({Key? key}) : super(key: key);
+class EditSymbolInfoPage extends StatefulWidget {
+  const EditSymbolInfoPage({Key? key}) : super(key: key);
 
   @override
-  _CreateSymbolInfoPageState createState() => _CreateSymbolInfoPageState();
+  _EditSymbolInfoPageState createState() => _EditSymbolInfoPageState();
 }
 
-class _CreateSymbolInfoPageState extends State<CreateSymbolInfoPage> {
-  String _title = "";
+class _EditSymbolInfoPageState extends State<EditSymbolInfoPage> {
+  String _title = '';
   PrefMuni? _prefMuni;
-  String _describe = "";
+  String _describe = '';
   DateTime _dateTime = DateTime.now();
 
   bool _isError = false;

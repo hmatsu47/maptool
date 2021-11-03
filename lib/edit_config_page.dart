@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:gap/gap.dart';
 
 import 'package:maptool/map_page.dart';
@@ -23,7 +25,7 @@ class _EditConfigPageState extends State<EditConfigPage> {
   bool _isS3AccessKeyError = false;
   bool _isS3SecretKeyError = false;
   bool _isS3BucketError = false;
-
+  bool _hidePassword = true;
   @override
   Widget build(BuildContext context) {
     final args = ModalRoute.of(context)!.settings.arguments as FullConfigData;
@@ -45,7 +47,7 @@ class _EditConfigPageState extends State<EditConfigPage> {
   // 入力フォームウィジェット
   Widget _makeInputForm() {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 20.0),
+      padding: const EdgeInsets.symmetric(horizontal: 10.0),
       child: Wrap(
         children: <Widget>[
           Align(
@@ -91,11 +93,24 @@ class _EditConfigPageState extends State<EditConfigPage> {
                   ),
                 ),
                 TextFormField(
+                  obscureText: _hidePassword,
                   style: const TextStyle(fontSize: 12),
                   initialValue: _s3SecretKey,
                   maxLength: 50,
                   maxLengthEnforcement: MaxLengthEnforcement.none,
-                  decoration: const InputDecoration(
+                  decoration: InputDecoration(
+                    suffixIcon: IconButton(
+                        icon: Icon(
+                            !_hidePassword
+                                ? FontAwesomeIcons.solidEye
+                                : FontAwesomeIcons.solidEyeSlash,
+                            size: 20,
+                            color: Colors.blue),
+                        onPressed: () {
+                          setState(() {
+                            _hidePassword = !_hidePassword;
+                          });
+                        }),
                     hintText: 'AWSシークレットキーを入力してください',
                     // labelText: 'AWSシークレットキー *',
                   ),

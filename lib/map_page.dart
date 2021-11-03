@@ -218,28 +218,8 @@ class _MapPageState extends State<MapPage> {
   void initState() {
     super.initState();
 
-    // 設定ファイル読み込み
+    // 設定読み込み
     _configureApplication();
-
-    // Amplify
-    _configureAmplify();
-
-    // Minio
-    _configureMinio();
-
-    // 現在位置の取得
-    _getLocation();
-
-    // 現在位置の変化を監視
-    _locationChangedListen =
-        _locationService.onLocationChanged.listen((LocationData result) async {
-      setState(() {
-        _yourLocation = result;
-      });
-    });
-    setState(() {
-      _gpsTracking = true;
-    });
   }
 
   // 設定ファイルに保存
@@ -287,6 +267,26 @@ s3Bucket=${configData.s3Bucket}
     _imagePath = localPath;
     setState(() {
       _configSet = true;
+    });
+
+    // Amplify
+    _configureAmplify();
+
+    // Minio
+    _configureMinio();
+
+    // 現在位置の取得
+    _getLocation();
+
+    // 現在位置の変化を監視
+    _locationChangedListen =
+        _locationService.onLocationChanged.listen((LocationData result) async {
+      setState(() {
+        _yourLocation = result;
+      });
+    });
+    setState(() {
+      _gpsTracking = true;
     });
   }
 

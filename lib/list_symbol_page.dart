@@ -129,7 +129,8 @@ class _ListSymbolPageState extends State<ListSymbolPage> {
               .toLowerCase()
               .contains(_keyword.toLowerCase()) ||
           _infoList[i].symbolInfo.prefMuni.prefecture.contains(_keyword) ||
-          _infoList[i].symbolInfo.prefMuni.municipalities.contains(_keyword)) {
+          _infoList[i].symbolInfo.prefMuni.municipalities.contains(_keyword) ||
+          _infoList[i].symbolInfo.prefMuni.getPrefMuni().contains(_keyword)) {
         filtered.add(_infoList[i]);
       }
     }

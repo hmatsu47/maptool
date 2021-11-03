@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 import 'package:mapbox_gl/mapbox_gl.dart';
 
+import 'package:maptool/db_access.dart';
 import 'package:maptool/map_page.dart';
 
 class DisplaySymbolInfoPage extends StatefulWidget {
@@ -33,13 +34,11 @@ class _DisplaySymbolInfoPageState extends State<DisplaySymbolInfoPage> {
   PrefMuni? _prefMuni;
   DateTime _dateTime = DateTime.now();
   String _describe = '';
+  Map<String, int> _symbolInfoMap = {};
   List<Picture> _pictures = [];
   Function? _addPictureFromCamera;
   Function? _addPicturesFromGarelly;
   Function? _removeMark;
-  Function? _modifyRecord;
-  Function? _modifyPictureRecord;
-  Function? _removePictureRecord;
   Function? _formatLabel;
   Function? _getPrefMuni;
   Function? _localFile;
@@ -54,13 +53,11 @@ class _DisplaySymbolInfoPageState extends State<DisplaySymbolInfoPage> {
     _prefMuni = args.symbolInfo.prefMuni;
     _dateTime = args.symbolInfo.dateTime;
     _describe = args.symbolInfo.describe;
+    _symbolInfoMap = args.symbolInfoMap;
     _pictures = args.pictures;
     _addPictureFromCamera = args.addPictureFromCamera;
     _addPicturesFromGarelly = args.addPicturesFromGarelly;
     _removeMark = args.removeMark;
-    _modifyRecord = args.modifyRecord;
-    _modifyPictureRecord = args.modifyPictureRecord;
-    _removePictureRecord = args.removePictureRecord;
     _formatLabel = args.formatLabel;
     _getPrefMuni = args.getPrefMuni;
     _localFile = args.localFile;
@@ -216,7 +213,7 @@ class _DisplaySymbolInfoPageState extends State<DisplaySymbolInfoPage> {
     if (symbolInfo is SymbolInfo) {
       // 変更を反映（都道府県＋市区町村は都度更新）
       symbolInfo.prefMuni = await _getPrefMuni!(_symbol!.options.geometry!);
-      await _modifyRecord!(_symbol, symbolInfo);
+      await modifyRecord(_symbol!, symbolInfo, _symbolInfoMap);
       await _controller!.future.then((mapboxMap) async {
         await mapboxMap!.updateSymbol(
             _symbol!,
@@ -274,7 +271,7 @@ class _DisplaySymbolInfoPageState extends State<DisplaySymbolInfoPage> {
 
   // 画像の登録情報を編集
   void _modifyPicture(int indexOf, Picture picture) async {
-    await _modifyPictureRecord!(picture);
+    await modifyPictureRecord(picture);
     setState(() {
       _pictures[indexOf] = picture;
     });
@@ -287,7 +284,7 @@ class _DisplaySymbolInfoPageState extends State<DisplaySymbolInfoPage> {
       file.deleteSync();
     }
     // DB 画像行削除
-    await _removePictureRecord!(picture);
+    await removePictureRecord(picture);
     setState(() {
       _pictures.remove(picture);
     });

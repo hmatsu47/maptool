@@ -26,7 +26,7 @@
 
 **In development:**（開発中の機能など）
 
- - Refactoring source code.（`map_page.dart` に地図ページ以外の実装が増えたのでソースコードを整理）
+ - Switch map styles.（地図スタイル切り替え）
 
 ![画面例](map_image.png "画面例")
 

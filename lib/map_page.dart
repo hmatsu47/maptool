@@ -18,9 +18,9 @@ import 'package:maptool/amplifyconfiguration.dart';
 import 'package:minio/io.dart';
 import 'package:minio/minio.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:sqflite/sqflite.dart';
 
 import 'main.dart';
+import 'package:maptool/db_access.dart';
 
 class MapPage extends StatefulWidget {
   const MapPage({Key? key}) : super(key: key);
@@ -54,6 +54,10 @@ class PrefMuni {
   String municipalities;
 
   PrefMuni(this.prefecture, this.municipalities);
+
+  String getPrefMuni() {
+    return prefecture + municipalities;
+  }
 }
 
 // 画像の登録情報
@@ -82,12 +86,10 @@ class FullSymbolInfo {
   int symbolId;
   Symbol symbol;
   SymbolInfo symbolInfo;
+  Map<String, int> symbolInfoMap;
   Function addPictureFromCamera;
   Function addPicturesFromGarelly;
   Function removeMark;
-  Function modifyRecord;
-  Function modifyPictureRecord;
-  Function removePictureRecord;
   Function formatLabel;
   Function getPrefMuni;
   Function localFile;
@@ -98,12 +100,10 @@ class FullSymbolInfo {
     this.symbolId,
     this.symbol,
     this.symbolInfo,
+    this.symbolInfoMap,
     this.addPictureFromCamera,
     this.addPicturesFromGarelly,
     this.removeMark,
-    this.modifyRecord,
-    this.modifyPictureRecord,
-    this.removePictureRecord,
     this.formatLabel,
     this.getPrefMuni,
     this.localFile,
@@ -184,8 +184,6 @@ class _MapPageState extends State<MapPage> {
   bool _gpsTracking = false;
   // 画面上に全てのマーク（ピン）を立て終えた？
   bool _symbolAllSet = false;
-  // DB
-  late Database _database;
   // スマホカメラ
   final ImagePicker _picker = ImagePicker();
   // 画像保存パス
@@ -331,7 +329,7 @@ s3Bucket=${configData.s3Bucket}
     // 監視を終了
     _locationChangedListen?.cancel();
     // DB クローズ
-    _closeDatabase();
+    closeDatabase();
   }
 
   @override
@@ -339,6 +337,7 @@ s3Bucket=${configData.s3Bucket}
     return Scaffold(
       appBar: _makeAppBar(),
       extendBodyBehindAppBar: true,
+      drawer: _makeDrawer(),
       body: _makeMapboxMap(),
       floatingActionButton: _makeFloatingIcons(),
     );
@@ -350,27 +349,6 @@ s3Bucket=${configData.s3Bucket}
         backgroundColor: Colors.white.withOpacity(0.5),
         toolbarHeight: 40.0,
         actions: <Widget>[
-          IconButton(
-            icon: Icon(_symbolInfoMap.isNotEmpty && !_backupNow
-                ? Icons.cloud_upload
-                : Icons.cloud_upload_outlined),
-            color: Colors.orange[900],
-            onPressed: () {
-              // AWS にデータバックアップ
-              _backupData();
-            },
-          ),
-          IconButton(
-            icon: Icon(_symbolAllSet && !_backupNow
-                ? Icons.cloud_download
-                : Icons.cloud_download_outlined),
-            color: Colors.orange[900],
-            onPressed: () {
-              // AWS からデータリストア
-              _restoreDataConfirm();
-            },
-          ),
-          const Gap(12),
           IconButton(
             icon: Icon(_symbolInfoMap.isNotEmpty && !_backupNow
                 ? Icons.view_list
@@ -427,6 +405,55 @@ s3Bucket=${configData.s3Bucket}
         ]);
   }
 
+  // ドロワーメニュー
+  Drawer _makeDrawer() {
+    return Drawer(
+        child: ListView(children: <Widget>[
+      const DrawerHeader(
+        child: Text(
+          '設定・管理',
+          style: TextStyle(
+            fontSize: 18,
+            color: Colors.white,
+          ),
+        ),
+        decoration: BoxDecoration(
+          color: Colors.blue,
+        ),
+      ),
+      ListTile(
+        title: const Text('基本設定管理'),
+        onTap: () {
+          _editConfigPage();
+        },
+      ),
+      ListTile(
+        title: Text('データバックアップ',
+            style: TextStyle(
+                color: _symbolAllSet && !_backupNow
+                    ? Colors.orange[900]
+                    : Colors.grey)),
+        onTap: () {
+          if (_symbolInfoMap.isNotEmpty && !_backupNow) {
+            _backupData();
+          }
+        },
+      ),
+      ListTile(
+        title: Text('データリストア',
+            style: TextStyle(
+                color: _symbolInfoMap.isNotEmpty && !_backupNow
+                    ? Colors.orange[900]
+                    : Colors.grey)),
+        onTap: () {
+          if (_symbolInfoMap.isNotEmpty && !_backupNow) {
+            _restoreDataConfirm();
+          }
+        },
+      ),
+    ]));
+  }
+
   // 地図ウィジェット
   Widget _makeMapboxMap() {
     if (!_configSet || _yourLocation == null) {
@@ -449,8 +476,8 @@ s3Bucket=${configData.s3Bucket}
       ),
       onMapCreated: (MapboxMapController controller) {
         _controller.complete(controller);
-        _createDatabase()
-            .then((value) => {_addSymbols(), _createIndex(), _makeMuniMap()});
+        createDatabase()
+            .then((value) => {_addSymbols(), createIndex(), _makeMuniMap()});
         _controller.future.then((mapboxMap) {
           mapboxMap.onSymbolTapped.add(_onSymbolTap);
         });
@@ -477,25 +504,6 @@ s3Bucket=${configData.s3Bucket}
   // フローティングアイコンウィジェット
   Widget _makeFloatingIcons() {
     return Column(mainAxisSize: MainAxisSize.min, children: [
-      Visibility(
-        child: FloatingActionButton(
-          heroTag: 'editConfigPage',
-          backgroundColor: Colors.blue,
-          onPressed: () {
-            // 画面の中心の座標で写真を撮ってマーク（ピン）を立てる
-            _editConfigPage();
-          },
-          child: Icon(_symbolAllSet && !_backupNow
-              ? Icons.settings
-              : Icons.settings_outlined),
-          mini: true,
-        ),
-        visible: _buttonType == ButtonType.add,
-      ),
-      Visibility(
-        child: const Gap(18),
-        visible: _buttonType == ButtonType.add,
-      ),
       Visibility(
         child: FloatingActionButton(
           heroTag: 'addPictureFromCameraAndMark',
@@ -539,14 +547,14 @@ s3Bucket=${configData.s3Bucket}
             _buttonChange();
           },
           child: (Icon((_buttonType == ButtonType.invisible
-              ? Icons.menu
+              ? Icons.add
               : Icons.close)))),
     ]);
   }
 
   // DB から Symbol 情報を読み込んで地図に表示する
   Future<void> _addSymbols() async {
-    final List<SymbolInfoWithLatLng> infoList = await _fetchRecords();
+    final List<SymbolInfoWithLatLng> infoList = await fetchRecords();
     _controller.future.then((mapboxMap) async {
       final List<Symbol> symbolList =
           await mapboxMap.addSymbols(_convertToSymbolOptions(infoList));
@@ -583,303 +591,6 @@ s3Bucket=${configData.s3Bucket}
       optionsList.add(options);
     }
     return optionsList;
-  }
-
-  // DB 作成
-  Future<void> _createDatabase() async {
-    const String createSymbolInfo = 'CREATE TABLE IF NOT EXISTS symbol_info ('
-        '  id INTEGER PRIMARY KEY AUTOINCREMENT,'
-        '  title TEXT NOT NULL,'
-        '  describe TEXT NOT NULL,'
-        '  date_time INTEGER NOT NULL,'
-        '  latitude REAL NOT NULL,'
-        '  longtitude REAL NOT NULL,'
-        '  prefecture TEXT NOT NULL DEFAULT "",'
-        '  municipalities TEXT NOT NULL DEFAULT ""'
-        ')';
-    const String createPictures = 'CREATE TABLE IF NOT EXISTS pictures ('
-        '  id INTEGER PRIMARY KEY AUTOINCREMENT,'
-        '  symbol_id INTEGER NOT NULL,'
-        '  comment TEXT NOT NULL,'
-        '  date_time INTEGER NOT NULL,'
-        '  file_path TEXT NOT NULL,'
-        '  cloud_path TEXT NOT NULL'
-        ')';
-    // DB テーブル作成
-    _database = await openDatabase('maptool.db', version: 6,
-        onCreate: (db, version) async {
-      await db.execute(
-        createSymbolInfo,
-      );
-      await db.execute(
-        createPictures,
-      );
-    }, onUpgrade: (db, oldVersion, newVersion) async {
-      await db.execute(
-        createSymbolInfo,
-      );
-      await db.execute(
-        createPictures,
-      );
-      if (oldVersion < 4) {
-        await db.execute(
-          'ALTER TABLE symbol_info ADD COLUMN '
-          '  prefecture TEXT NOT NULL DEFAULT ""'
-          '  municipalities TEXT NOT NULL DEFAULT ""',
-        );
-        // ignore: avoid_print
-        print('alter table add column (symbol_info)');
-      }
-    });
-  }
-
-  // INDEX 作成
-  Future<void> _createIndex() async {
-    await _database.execute('CREATE INDEX IF NOT EXISTS pictures_symbol_id'
-        '  ON pictures (symbol_id)');
-  }
-
-  // DB クローズ
-  Future<void> _closeDatabase() async {
-    await _database.close();
-  }
-
-  // DB 全行取得
-  Future<List<SymbolInfoWithLatLng>> _fetchRecords() async {
-    final List<Map<String, Object?>> maps = await _database.query(
-      'symbol_info',
-      columns: [
-        'id',
-        'title',
-        'describe',
-        'date_time',
-        'latitude',
-        'longtitude',
-        'prefecture',
-        'municipalities',
-      ],
-      orderBy: 'id ASC',
-    );
-    List<SymbolInfoWithLatLng> symbolInfoWithLatLngs = [];
-    for (Map map in maps) {
-      final SymbolInfo symbolInfo = SymbolInfo(
-          map['title'],
-          map['describe'],
-          DateTime.fromMillisecondsSinceEpoch(map['date_time'], isUtc: false),
-          PrefMuni(map['prefecture'], map['municipalities']));
-      final LatLng latLng = LatLng(map['latitude'], map['longtitude']);
-      final SymbolInfoWithLatLng symbolInfoWithLatLng =
-          SymbolInfoWithLatLng(map['id'], symbolInfo, latLng);
-      symbolInfoWithLatLngs.add(symbolInfoWithLatLng);
-    }
-    return symbolInfoWithLatLngs;
-  }
-
-  // DB 行取得（詳細情報のみ）
-  Future<SymbolInfo> _fetchRecord(Symbol symbol) async {
-    final int id = _symbolInfoMap[symbol.id]!;
-    final List<Map<String, Object?>> maps = await _database.query(
-      'symbol_info',
-      columns: [
-        'title',
-        'describe',
-        'date_time',
-        'prefecture',
-        'municipalities'
-      ],
-      where: 'id = ?',
-      whereArgs: [id],
-    );
-    Map map = maps.first;
-    return SymbolInfo(
-        map['title'],
-        map['describe'],
-        DateTime.fromMillisecondsSinceEpoch(map['date_time'], isUtc: false),
-        PrefMuni(map['prefecture'], map['municipalities']));
-  }
-
-  // DB 行追加
-  Future<int> _addRecord(SymbolInfoWithLatLng symbolInfoWithLatLng) async {
-    return await _database.insert(
-      'symbol_info',
-      {
-        'title': symbolInfoWithLatLng.symbolInfo.title,
-        'describe': symbolInfoWithLatLng.symbolInfo.describe,
-        'date_time':
-            symbolInfoWithLatLng.symbolInfo.dateTime.millisecondsSinceEpoch,
-        'latitude': symbolInfoWithLatLng.latLng.latitude,
-        'longtitude': symbolInfoWithLatLng.latLng.longitude,
-        'prefecture': symbolInfoWithLatLng.symbolInfo.prefMuni.prefecture,
-        'municipalities':
-            symbolInfoWithLatLng.symbolInfo.prefMuni.municipalities
-      },
-    );
-  }
-
-  // DB 行追加（id あり）
-  Future<int> _addRecordWithId(
-      SymbolInfoWithLatLng symbolInfoWithLatLng) async {
-    return await _database.insert(
-      'symbol_info',
-      {
-        'id': symbolInfoWithLatLng.id,
-        'title': symbolInfoWithLatLng.symbolInfo.title,
-        'describe': symbolInfoWithLatLng.symbolInfo.describe,
-        'date_time':
-            symbolInfoWithLatLng.symbolInfo.dateTime.millisecondsSinceEpoch,
-        'latitude': symbolInfoWithLatLng.latLng.latitude,
-        'longtitude': symbolInfoWithLatLng.latLng.longitude,
-        'prefecture': symbolInfoWithLatLng.symbolInfo.prefMuni.prefecture,
-        'municipalities':
-            symbolInfoWithLatLng.symbolInfo.prefMuni.municipalities
-      },
-    );
-  }
-
-  // DB 行更新
-  Future<int> _modifyRecord(Symbol symbol, SymbolInfo symbolInfo) async {
-    final int id = _symbolInfoMap[symbol.id]!;
-    return await _database.update(
-      'symbol_info',
-      {
-        'title': symbolInfo.title,
-        'describe': symbolInfo.describe,
-        'prefecture': symbolInfo.prefMuni.prefecture,
-        'municipalities': symbolInfo.prefMuni.municipalities
-      },
-      where: 'id = ?',
-      whereArgs: [id],
-    );
-  }
-
-  // DB 全削除
-  Future<int> _removeAllRecords() async {
-    await _database.delete('symbol_info');
-    return await _database.delete('sqlite_sequence',
-        where: 'name = ?', whereArgs: ['symbol_info']);
-  }
-
-  // DB 行削除
-  Future<int> _removeRecord(Symbol symbol) async {
-    final int id = _symbolInfoMap[symbol.id]!;
-    return await _database
-        .delete('symbol_info', where: 'id = ?', whereArgs: [id]);
-  }
-
-  // DB 画像行全取得
-  Future<List<Picture>> _fetchAllPictureRecords() async {
-    final List<Map<String, Object?>> maps = await _database.query(
-      'pictures',
-      columns: [
-        'id',
-        'symbol_id',
-        'comment',
-        'date_time',
-        'file_path',
-        'cloud_path'
-      ],
-      orderBy: 'id ASC',
-    );
-    List<Picture> pictures = [];
-    for (Map map in maps) {
-      final Picture picture = Picture(
-          map['id'],
-          map['symbol_id'],
-          map['comment'],
-          DateTime.fromMillisecondsSinceEpoch(map['date_time'], isUtc: false),
-          map['file_path'],
-          map['cloud_path']);
-      pictures.add(picture);
-    }
-    return pictures;
-  }
-
-  // DB 画像行取得（対象 Symbol の）
-  Future<List<Picture>> _fetchPictureRecords(Symbol symbol) async {
-    final int id = _symbolInfoMap[symbol.id]!;
-    final List<Map<String, Object?>> maps = await _database.query(
-      'pictures',
-      columns: [
-        'id',
-        'symbol_id',
-        'comment',
-        'date_time',
-        'file_path',
-        'cloud_path'
-      ],
-      where: 'symbol_id = ?',
-      whereArgs: [id],
-    );
-    List<Picture> pictures = [];
-    for (Map map in maps) {
-      final Picture picture = Picture(
-          map['id'],
-          map['symbol_id'],
-          map['comment'],
-          DateTime.fromMillisecondsSinceEpoch(map['date_time'], isUtc: false),
-          map['file_path'],
-          map['cloud_path']);
-      pictures.add(picture);
-    }
-    return pictures;
-  }
-
-  // DB 画像行追加
-  Future<int> _addPictureRecord(Picture picture) async {
-    return await _database.insert(
-      'pictures',
-      {
-        'symbol_id': picture.symbolId,
-        'comment': picture.comment,
-        'date_time': picture.dateTime.millisecondsSinceEpoch,
-        'file_path': picture.filePath,
-        'cloud_path': picture.cloudPath,
-      },
-    );
-  }
-
-  // DB 画像行追加（id あり）
-  Future<int> _addPictureRecordWithId(Picture picture) async {
-    return await _database.insert(
-      'pictures',
-      {
-        'id': picture.id,
-        'symbol_id': picture.symbolId,
-        'comment': picture.comment,
-        'date_time': picture.dateTime.millisecondsSinceEpoch,
-        'file_path': picture.filePath,
-        'cloud_path': picture.cloudPath,
-      },
-    );
-  }
-
-  // DB 画像行更新
-  Future<int> _modifyPictureRecord(Picture picture) async {
-    return await _database.update(
-      'pictures',
-      {
-        'symbol_id': picture.symbolId,
-        'comment': picture.comment,
-        'date_time': picture.dateTime.millisecondsSinceEpoch,
-        'file_path': picture.filePath,
-        'cloud_path': picture.cloudPath,
-      },
-      where: 'id = ?',
-      whereArgs: [picture.id],
-    );
-  }
-
-  // DB 画像行全削除
-  Future<int> _removeAllPictureRecords() async {
-    await _database.delete('pictures');
-    return await _database
-        .delete('sqlite_sequence', where: 'name = ?', whereArgs: ['pictures']);
-  }
-
-  // DB 画像行削除
-  Future<int> _removePictureRecord(Picture picture) async {
-    return await _database
-        .delete('pictures', where: 'id = ?', whereArgs: [picture.id]);
   }
 
   // ボタンの表示（非表示）入れ替え
@@ -932,7 +643,7 @@ s3Bucket=${configData.s3Bucket}
     if (_symbolInfoMap.isEmpty || _backupNow) {
       return;
     }
-    final List<SymbolInfoWithLatLng> infoList = await _fetchRecords();
+    final List<SymbolInfoWithLatLng> infoList = await fetchRecords();
     final latLng = await Navigator.of(navigatorKey.currentContext!).pushNamed(
         '/listSymbol',
         arguments: FullSymbolList(infoList, _formatLabel));
@@ -1022,7 +733,7 @@ s3Bucket=${configData.s3Bucket}
       // DB に行追加
       final SymbolInfoWithLatLng symbolInfoWithLatLng =
           SymbolInfoWithLatLng(0, symbolInfo, tapPoint); // id はダミー
-      final int id = await _addRecord(symbolInfoWithLatLng);
+      final int id = await addRecord(symbolInfoWithLatLng);
       // Map に DB の id を追加
       _symbolInfoMap[symbol.id] = id;
       symbolId = id;
@@ -1041,19 +752,18 @@ s3Bucket=${configData.s3Bucket}
       return;
     }
     final int symbolId = _symbolInfoMap[symbol.id]!;
-    final List<Picture> pictures = await _fetchPictureRecords(symbol);
-    final SymbolInfo symbolInfo = await _fetchRecord(symbol);
+    final List<Picture> pictures =
+        await fetchPictureRecords(symbol, _symbolInfoMap);
+    final SymbolInfo symbolInfo = await fetchRecord(symbol, _symbolInfoMap);
     Navigator.of(navigatorKey.currentContext!).pushNamed('/displaySymbol',
         arguments: FullSymbolInfo(
           symbolId,
           symbol,
           symbolInfo,
+          _symbolInfoMap,
           _addPictureFromCamera,
           _addPicturesFromGarelly,
           _removeMark,
-          _modifyRecord,
-          _modifyPictureRecord,
-          _removePictureRecord,
           _formatLabel,
           _getPrefMuni,
           _localFile,
@@ -1067,7 +777,7 @@ s3Bucket=${configData.s3Bucket}
     await _controller.future.then((mapboxMap) {
       mapboxMap.removeSymbol(symbol);
     });
-    await _removeRecord(symbol);
+    await removeRecord(symbol, _symbolInfoMap);
     _symbolInfoMap.remove(symbol.id);
   }
 
@@ -1169,7 +879,7 @@ s3Bucket=${configData.s3Bucket}
       XFile photo, int symbolId, String filePath) async {
     final Picture picture =
         Picture(0, symbolId, '', DateTime.now(), filePath, '');
-    final int id = await _addPictureRecord(picture);
+    final int id = await addPictureRecord(picture);
     return Picture(id, symbolId, '', DateTime.now(), filePath, '');
   }
 
@@ -1382,7 +1092,7 @@ $describe'''
 
   // Symbol 情報をバックアップ
   Future<int?> _backupSymbolInfos(String backupTitle) async {
-    final List<SymbolInfoWithLatLng> records = await _fetchRecords();
+    final List<SymbolInfoWithLatLng> records = await fetchRecords();
     String body = '';
     for (SymbolInfoWithLatLng record in records) {
       final int id = record.id;
@@ -1443,7 +1153,7 @@ $describe'''
 
   // 画像情報をバックアップ
   Future<int?> _backupPictures(String backupTitle) async {
-    final List<Picture> records = await _fetchAllPictureRecords();
+    final List<Picture> records = await fetchAllPictureRecords();
     String body = '';
     for (Picture record in records) {
       final int id = record.id;
@@ -1462,7 +1172,7 @@ $describe'''
             id, symbolId, comment, record.dateTime, filePath, cloudPath);
         // ignore: avoid_print
         print(newRecord.cloudPath);
-        await _modifyPictureRecord(newRecord);
+        await modifyPictureRecord(newRecord);
       }
       body += '{"backupTitle": ${jsonEncode(backupTitle)}'
           ', "id": ${jsonEncode(id)}, "symbolId": ${jsonEncode(symbolId)}'
@@ -1584,7 +1294,7 @@ $describe'''
     final List<SymbolInfoWithLatLng> restoreList =
         await _fetchBackupSymbolInfos(backupTitle);
     for (SymbolInfoWithLatLng infoLatLng in restoreList) {
-      await _addRecordWithId(infoLatLng);
+      await addRecordWithId(infoLatLng);
     }
   }
 
@@ -1630,7 +1340,7 @@ $describe'''
   Future<void> _restorePictureRecords(String backupTitle) async {
     final List<Picture> restoreList = await _fetchBackupPictures(backupTitle);
     for (Picture picture in restoreList) {
-      await _addPictureRecordWithId(picture);
+      await addPictureRecordWithId(picture);
       await _downloadS3(picture);
     }
   }
@@ -1724,8 +1434,8 @@ $describe'''
 
   // DB 全行削除
   Future<void> _removeAllTables() async {
-    await _removeAllRecords();
-    await _removeAllPictureRecords();
+    await removeAllRecords();
+    await removeAllPictureRecords();
   }
 
   // AWS バックアップデータを削除

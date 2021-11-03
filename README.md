@@ -22,10 +22,11 @@
    - Photographs / Pictures to S3 Bucket.（写真・画像）
  - Restore data from AWS.（AWS からデータリストア）
  - Remove backup data on AWS.（不要バックアップデータ削除）
+ - Improve configuration handling.（外部 API などの設定管理の改善）
 
-**In development:**（開発中の機能）
+**In development:**（開発中の機能など）
 
- - Improve configuration handling.（外部 API などの設定管理の改善）※β版実装済み
+ - Refactoring source code.（`map_page.dart` に地図ページ以外の実装が増えたのでソースコードを整理）
 
 ![画面例](map_image.png "画面例")
 

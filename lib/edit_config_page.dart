@@ -37,7 +37,7 @@ class _EditConfigPageState extends State<EditConfigPage> {
     _configureSave = args.configureSave;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('設定管理'),
+        title: const Text('基本設定管理'),
         automaticallyImplyLeading: (_isConfigChange ? true : false),
       ),
       body: _makeInputForm(),
@@ -223,7 +223,6 @@ class _EditConfigPageState extends State<EditConfigPage> {
             child: const Text('はい（保存）'),
             onPressed: () {
               _saveConfig(context);
-              Navigator.popUntil(context, ModalRoute.withName('/'));
             },
           ),
         ],
@@ -238,6 +237,8 @@ class _EditConfigPageState extends State<EditConfigPage> {
     await _configureSave!(configData);
     if (!_isConfigChange) {
       Navigator.pop(context);
+    } else {
+      Navigator.popUntil(context, ModalRoute.withName('/'));
     }
   }
 }

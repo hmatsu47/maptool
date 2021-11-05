@@ -23,10 +23,11 @@
  - Restore data from AWS.（AWS からデータリストア）
  - Remove backup data on AWS.（不要バックアップデータ削除）
  - Improve configuration handling.（外部 API などの設定管理の改善）
+ - Switch map styles.（地図スタイル切り替え）
 
 **In development:**（開発中の機能など）
 
- - Switch map styles.（地図スタイル切り替え）
+ - Refactoring source code.（ソースコードの整理）
 
 ![画面例](map_image.png "画面例")
 

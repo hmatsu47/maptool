@@ -151,6 +151,14 @@ class FullConfigData {
       this.configureSave);
 }
 
+// 追加設定管理画面に渡す内容一式
+class FullConfigExtStyleData {
+  String extStyles;
+  Function configureExtStyleSave;
+
+  FullConfigExtStyleData(this.extStyles, this.configureExtStyleSave);
+}
+
 // ボタン表示のタイプ
 enum ButtonType { invisible, add }
 
@@ -159,10 +167,14 @@ class _MapPageState extends State<MapPage> {
   final Location _locationService = Location();
   // 設定ファイル名
   final String _configFileName = 'maptool.conf';
+  final String _configExtFileName = 'maptool_ext.conf';
   // 設定ファイル読み込み完了？
   bool _configSet = false;
   // 地図スタイル用 Mapbox URL
-  String _style = '';
+  final List<String> _style = [];
+  int _styleNo = 0;
+  // 地図の言語
+  final String _mapLanguage = 'name_ja';
   // S3 アクセスキー
   String _s3AccessKey = '';
   String _s3SecretKey = '';
@@ -247,7 +259,10 @@ s3Bucket=${configData.s3Bucket}
         final String itemValue = line.substring(position + 1);
         switch (itemName) {
           case 'style':
-            _style = itemValue;
+            _style.add(itemValue);
+            // 渋滞状況マップ
+            _style.add(MapboxStyles.TRAFFIC_DAY);
+            _styleNo = 0;
             break;
           case 's3AccessKey':
             _s3AccessKey = itemValue;
@@ -261,6 +276,8 @@ s3Bucket=${configData.s3Bucket}
         }
       }
     }
+    // 追加設定ファイル
+    await _configureExtStyles(localPath);
     // 画像パス
     _imagePath = localPath;
     setState(() {
@@ -292,7 +309,40 @@ s3Bucket=${configData.s3Bucket}
   _editConfigPage() async {
     await Navigator.of(navigatorKey.currentContext!).pushNamed('/editConfig',
         arguments: FullConfigData(
-            _style, _s3AccessKey, _s3SecretKey, _s3Bucket, _configureSave));
+            _style[0], _s3AccessKey, _s3SecretKey, _s3Bucket, _configureSave));
+  }
+
+  // 追加設定ファイルに保存
+  void _configureExtStyleSave(String extStyles) async {
+    final localPath = (await getApplicationDocumentsDirectory()).path;
+    final File configFile = File('$localPath/$_configExtFileName');
+    configFile.writeAsStringSync(extStyles, mode: FileMode.writeOnly);
+  }
+
+  // 追加設定ファイル読み込み
+  Future<void> _configureExtStyles(localPath) async {
+    File configFile = File('$localPath/$_configExtFileName');
+    if (!configFile.existsSync()) {
+      return;
+    }
+    final List<String> config = configFile.readAsLinesSync();
+    for (String line in config) {
+      if (line != '') {
+        _style.add(line);
+      }
+    }
+  }
+
+  // 追加設定画面呼び出し
+  _editExtConfigStylePage() async {
+    final localPath = (await getApplicationDocumentsDirectory()).path;
+    File configFile = File('$localPath/$_configExtFileName');
+    String extStyles = '';
+    if (configFile.existsSync()) {
+      extStyles = configFile.readAsStringSync();
+    }
+    await Navigator.of(navigatorKey.currentContext!).pushNamed('/editExtConfig',
+        arguments: FullConfigExtStyleData(extStyles, _configureExtStyleSave));
   }
 
   // Amplify
@@ -401,6 +451,16 @@ s3Bucket=${configData.s3Bucket}
               _gpsToggle();
             },
           ),
+          IconButton(
+            icon: const Icon(
+              Icons.layers,
+            ),
+            color: Colors.black87,
+            onPressed: () {
+              // 地図の切り替え
+              _changeStyle();
+            },
+          ),
           const Gap(4),
         ]);
   }
@@ -425,6 +485,12 @@ s3Bucket=${configData.s3Bucket}
         title: const Text('基本設定管理'),
         onTap: () {
           _editConfigPage();
+        },
+      ),
+      ListTile(
+        title: const Text('追加設定管理'),
+        onTap: () {
+          _editExtConfigStylePage();
         },
       ),
       ListTile(
@@ -467,7 +533,7 @@ s3Bucket=${configData.s3Bucket}
     // Mapbox ウィジェットを返す
     return MapboxMap(
       // 地図（スタイル）を指定
-      styleString: _style,
+      styleString: _style[_styleNo],
       // 初期表示される位置情報を現在位置から設定
       initialCameraPosition: CameraPosition(
         target: LatLng(_yourLocation!.latitude ?? _initialLat,
@@ -476,12 +542,13 @@ s3Bucket=${configData.s3Bucket}
       ),
       onMapCreated: (MapboxMapController controller) {
         _controller.complete(controller);
-        createDatabase()
-            .then((value) => {_addSymbols(), createIndex(), _makeMuniMap()});
+        createDatabase().then((value) =>
+            {_addSymbols(), _setLanguage(), createIndex(), _makeMuniMap()});
         _controller.future.then((mapboxMap) {
           mapboxMap.onSymbolTapped.add(_onSymbolTap);
         });
       },
+      onStyleLoadedCallback: () => {_addSymbols(), _setLanguage()},
       compassEnabled: true,
       compassViewMargins: const Point(20.0, 100.0),
       // 現在位置を表示する
@@ -544,7 +611,7 @@ s3Bucket=${configData.s3Bucket}
           heroTag: 'buttonToggle',
           backgroundColor: Colors.blue,
           onPressed: () {
-            _buttonChange();
+            _changeButton();
           },
           child: (Icon((_buttonType == ButtonType.invisible
               ? Icons.add
@@ -593,8 +660,29 @@ s3Bucket=${configData.s3Bucket}
     return optionsList;
   }
 
+  // 地図の言語設定
+  Future<void> _setLanguage() async {
+    _controller.future.then((mapboxMap) async {
+      await mapboxMap.setMapLanguage(_mapLanguage);
+    });
+  }
+
+  // 地図の切り替え
+  void _changeStyle() {
+    if (_style.isEmpty) {
+      return;
+    }
+    setState(() {
+      if ((_style.length - 1) <= _styleNo) {
+        _styleNo = 0;
+      } else {
+        _styleNo += 1;
+      }
+    });
+  }
+
   // ボタンの表示（非表示）入れ替え
-  void _buttonChange() {
+  void _changeButton() {
     setState(() {
       switch (_buttonType) {
         case ButtonType.invisible:

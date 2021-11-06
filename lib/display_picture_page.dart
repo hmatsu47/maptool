@@ -4,8 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:gap/gap.dart';
 
+import 'package:maptool/class_definition.dart';
 import 'package:maptool/display_symbol_info_page.dart';
-import 'package:maptool/map_page.dart';
 
 class DisplayPicturePage extends StatefulWidget {
   const DisplayPicturePage({Key? key}) : super(key: key);

@@ -4,7 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:gap/gap.dart';
 
-import 'package:maptool/map_page.dart';
+import 'package:maptool/class_definition.dart';
 
 class EditConfigPage extends StatefulWidget {
   const EditConfigPage({Key? key}) : super(key: key);
@@ -18,6 +18,7 @@ class _EditConfigPageState extends State<EditConfigPage> {
   String _s3AccessKey = '';
   String _s3SecretKey = '';
   String _s3Bucket = '';
+  String _s3Region = '';
   Function? _configureSave;
 
   bool _isConfigChange = false;
@@ -25,6 +26,7 @@ class _EditConfigPageState extends State<EditConfigPage> {
   bool _isS3AccessKeyError = false;
   bool _isS3SecretKeyError = false;
   bool _isS3BucketError = false;
+  bool _isS3RegionError = false;
   bool _hidePassword = true;
   @override
   Widget build(BuildContext context) {
@@ -34,6 +36,7 @@ class _EditConfigPageState extends State<EditConfigPage> {
     _s3AccessKey = args.s3AccessKey;
     _s3SecretKey = args.s3SecretKey;
     _s3Bucket = args.s3Bucket;
+    _s3Region = args.s3Region;
     _configureSave = args.configureSave;
     return Scaffold(
       appBar: AppBar(
@@ -56,7 +59,7 @@ class _EditConfigPageState extends State<EditConfigPage> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 TextFormField(
-                  style: const TextStyle(fontSize: 12),
+                  style: const TextStyle(fontSize: 10.5),
                   initialValue: _style,
                   autofocus: true,
                   maxLength: 60,
@@ -75,7 +78,7 @@ class _EditConfigPageState extends State<EditConfigPage> {
                   ),
                 ),
                 TextFormField(
-                  style: const TextStyle(fontSize: 12),
+                  style: const TextStyle(fontSize: 10.5),
                   initialValue: _s3AccessKey,
                   maxLength: 30,
                   maxLengthEnforcement: MaxLengthEnforcement.none,
@@ -94,7 +97,7 @@ class _EditConfigPageState extends State<EditConfigPage> {
                 ),
                 TextFormField(
                   obscureText: _hidePassword,
-                  style: const TextStyle(fontSize: 12),
+                  style: const TextStyle(fontSize: 10.5),
                   initialValue: _s3SecretKey,
                   maxLength: 50,
                   maxLengthEnforcement: MaxLengthEnforcement.none,
@@ -104,7 +107,7 @@ class _EditConfigPageState extends State<EditConfigPage> {
                             !_hidePassword
                                 ? FontAwesomeIcons.solidEye
                                 : FontAwesomeIcons.solidEyeSlash,
-                            size: 20,
+                            size: 18,
                             color: Colors.blue),
                         onPressed: () {
                           setState(() {
@@ -124,7 +127,7 @@ class _EditConfigPageState extends State<EditConfigPage> {
                   ),
                 ),
                 TextFormField(
-                  style: const TextStyle(fontSize: 12),
+                  style: const TextStyle(fontSize: 10.5),
                   initialValue: _s3Bucket,
                   maxLength: 20,
                   maxLengthEnforcement: MaxLengthEnforcement.none,
@@ -138,6 +141,24 @@ class _EditConfigPageState extends State<EditConfigPage> {
                 Center(
                   child: Text(
                     (_isS3BucketError ? 'S3バケット名を入力してください' : '　'),
+                    style: const TextStyle(color: Colors.red, fontSize: 8),
+                  ),
+                ),
+                TextFormField(
+                  style: const TextStyle(fontSize: 10.5),
+                  initialValue: _s3Region,
+                  maxLength: 20,
+                  maxLengthEnforcement: MaxLengthEnforcement.none,
+                  decoration: const InputDecoration(
+                    hintText: 'S3リージョンを入力してください',
+                    // labelText: 'S3リージョン *',
+                  ),
+                  maxLines: 1,
+                  onChanged: (String text) => _s3Region = text,
+                ),
+                Center(
+                  child: Text(
+                    (_isS3RegionError ? 'S3リージョンを入力してください' : '　'),
                     style: const TextStyle(color: Colors.red, fontSize: 8),
                   ),
                 ),
@@ -199,10 +220,16 @@ class _EditConfigPageState extends State<EditConfigPage> {
         _isS3BucketError = true;
       });
     }
+    if (_s3Region == '') {
+      setState(() {
+        _isS3RegionError = true;
+      });
+    }
     if (_isStyleError ||
         _isS3AccessKeyError ||
         _isS3SecretKeyError ||
-        _isS3BucketError) {
+        _isS3BucketError ||
+        _isS3RegionError) {
       return;
     }
     // 確認
@@ -232,8 +259,8 @@ class _EditConfigPageState extends State<EditConfigPage> {
 
   // 保存
   void _saveConfig(BuildContext context) async {
-    final FullConfigData configData = FullConfigData(
-        _style, _s3AccessKey, _s3SecretKey, _s3Bucket, _configureSave!);
+    final FullConfigData configData = FullConfigData(_style, _s3AccessKey,
+        _s3SecretKey, _s3Bucket, _s3Region, _configureSave!);
     await _configureSave!(configData);
     if (!_isConfigChange) {
       Navigator.pop(context);

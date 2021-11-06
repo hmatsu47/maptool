@@ -20,6 +20,7 @@ import 'package:minio/minio.dart';
 import 'package:path_provider/path_provider.dart';
 
 import 'main.dart';
+import 'package:maptool/class_definition.dart';
 import 'package:maptool/db_access.dart';
 
 class MapPage extends StatefulWidget {
@@ -27,136 +28,6 @@ class MapPage extends StatefulWidget {
 
   @override
   _MapPageState createState() => _MapPageState();
-}
-
-// マーク（ピン）の登録情報
-class SymbolInfo {
-  String title;
-  String describe;
-  DateTime dateTime;
-  PrefMuni prefMuni;
-
-  SymbolInfo(this.title, this.describe, this.dateTime, this.prefMuni);
-}
-
-// マーク（ピン）の登録情報（DB の id・緯度・経度つき）
-class SymbolInfoWithLatLng {
-  int id;
-  SymbolInfo symbolInfo;
-  LatLng latLng;
-
-  SymbolInfoWithLatLng(this.id, this.symbolInfo, this.latLng);
-}
-
-// 都道府県＋市区町村
-class PrefMuni {
-  String prefecture;
-  String municipalities;
-
-  PrefMuni(this.prefecture, this.municipalities);
-
-  String getPrefMuni() {
-    return prefecture + municipalities;
-  }
-}
-
-// 画像の登録情報
-class Picture {
-  int id;
-  int symbolId;
-  String comment;
-  DateTime dateTime;
-  String filePath;
-  String cloudPath;
-
-  Picture(this.id, this.symbolId, this.comment, this.dateTime, this.filePath,
-      this.cloudPath);
-}
-
-// バックアップ情報
-class BackupSet {
-  String title;
-  String? describe;
-
-  BackupSet(this.title, this.describe);
-}
-
-// Symbol 情報表示画面に渡す内容一式
-class FullSymbolInfo {
-  int symbolId;
-  Symbol symbol;
-  SymbolInfo symbolInfo;
-  Map<String, int> symbolInfoMap;
-  Function addPictureFromCamera;
-  Function addPicturesFromGarelly;
-  Function removeMark;
-  Function formatLabel;
-  Function getPrefMuni;
-  Function localFile;
-  Completer<MapboxMapController> controller;
-  List<Picture> pictures;
-
-  FullSymbolInfo(
-    this.symbolId,
-    this.symbol,
-    this.symbolInfo,
-    this.symbolInfoMap,
-    this.addPictureFromCamera,
-    this.addPicturesFromGarelly,
-    this.removeMark,
-    this.formatLabel,
-    this.getPrefMuni,
-    this.localFile,
-    this.controller,
-    this.pictures,
-  );
-}
-
-// Symbol 一覧表示画面に渡す内容一式
-class FullSymbolList {
-  List<SymbolInfoWithLatLng> infoList;
-  Function formatLabel;
-
-  FullSymbolList(this.infoList, this.formatLabel);
-}
-
-// 地名検索画面に渡す内容一式
-class FullSearchKeyword {
-  Map<int, PrefMuni> prefMuniMap;
-  Function formatLabel;
-
-  FullSearchKeyword(this.prefMuniMap, this.formatLabel);
-}
-
-// データリストア画面に渡す内容一式
-class FullRestoreData {
-  List<BackupSet> backupSetList;
-  bool symbolSet;
-  Function restoreData;
-  Function removeBackup;
-
-  FullRestoreData(
-      this.backupSetList, this.symbolSet, this.restoreData, this.removeBackup);
-}
-
-// 設定管理画面に渡す内容一式
-class FullConfigData {
-  String style;
-  String s3AccessKey;
-  String s3SecretKey;
-  String s3Bucket;
-  Function configureSave;
-
-  FullConfigData(this.style, this.s3AccessKey, this.s3SecretKey, this.s3Bucket,
-      this.configureSave);
-}
-
-// 追加設定管理画面に渡す内容一式
-class FullConfigExtStyleData {
-  String extStyles;
-  Function configureExtStyleSave;
-
-  FullConfigExtStyleData(this.extStyles, this.configureExtStyleSave);
 }
 
 // ボタン表示のタイプ
@@ -179,6 +50,7 @@ class _MapPageState extends State<MapPage> {
   String _s3AccessKey = '';
   String _s3SecretKey = '';
   String _s3Bucket = '';
+  String _s3Region = 'ap-northeast-1';
   // Location で緯度経度が取れなかったときのデフォルト値
   final double _initialLat = 35.6895014;
   final double _initialLong = 139.6917337;
@@ -240,6 +112,7 @@ class _MapPageState extends State<MapPage> {
 s3AccessKey=${configData.s3AccessKey}
 s3SecretKey=${configData.s3SecretKey}
 s3Bucket=${configData.s3Bucket}
+s3Region=${configData.s3Region}
 ''', mode: FileMode.writeOnly);
   }
 
@@ -260,7 +133,7 @@ s3Bucket=${configData.s3Bucket}
         switch (itemName) {
           case 'style':
             _style.add(itemValue);
-            // 渋滞状況マップ
+            // 渋滞状況マップはデフォルトで実装
             _style.add(MapboxStyles.TRAFFIC_DAY);
             _styleNo = 0;
             break;
@@ -272,6 +145,9 @@ s3Bucket=${configData.s3Bucket}
             break;
           case 's3Bucket':
             _s3Bucket = itemValue;
+            break;
+          case 's3Region':
+            _s3Region = itemValue;
             break;
         }
       }
@@ -308,18 +184,18 @@ s3Bucket=${configData.s3Bucket}
   // 設定画面呼び出し
   _editConfigPage() async {
     await Navigator.of(navigatorKey.currentContext!).pushNamed('/editConfig',
-        arguments: FullConfigData(
-            _style[0], _s3AccessKey, _s3SecretKey, _s3Bucket, _configureSave));
+        arguments: FullConfigData(_style[0], _s3AccessKey, _s3SecretKey,
+            _s3Bucket, _s3Region, _configureSave));
   }
 
-  // 追加設定ファイルに保存
+  // 追加地図設定ファイルに保存
   void _configureExtStyleSave(String extStyles) async {
     final localPath = (await getApplicationDocumentsDirectory()).path;
     final File configFile = File('$localPath/$_configExtFileName');
     configFile.writeAsStringSync(extStyles, mode: FileMode.writeOnly);
   }
 
-  // 追加設定ファイル読み込み
+  // 追加地図設定ファイル読み込み
   Future<void> _configureExtStyles(localPath) async {
     File configFile = File('$localPath/$_configExtFileName');
     if (!configFile.existsSync()) {
@@ -333,7 +209,7 @@ s3Bucket=${configData.s3Bucket}
     }
   }
 
-  // 追加設定画面呼び出し
+  // 追加地図設定画面呼び出し
   _editExtConfigStylePage() async {
     final localPath = (await getApplicationDocumentsDirectory()).path;
     File configFile = File('$localPath/$_configExtFileName');
@@ -364,8 +240,12 @@ s3Bucket=${configData.s3Bucket}
   // Minio
   void _configureMinio() {
     _minio = Minio(
-      endPoint: 's3-ap-northeast-1.amazonaws.com',
-      region: 'ap-northeast-1',
+      endPoint: (_s3Region == 'us-east-1'
+          ? 's3.amazonaws.com'
+          : (_s3Region == 'cn-north-1'
+              ? 's3.cn-north-1.amazonaws.com.cn'
+              : 's3-$_s3Region.amazonaws.com')),
+      region: _s3Region,
       accessKey: _s3AccessKey,
       secretKey: _s3SecretKey,
       useSSL: true,
@@ -488,7 +368,7 @@ s3Bucket=${configData.s3Bucket}
         },
       ),
       ListTile(
-        title: const Text('追加設定管理'),
+        title: const Text('追加地図設定管理'),
         onTap: () {
           _editExtConfigStylePage();
         },

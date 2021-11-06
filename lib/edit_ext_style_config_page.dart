@@ -3,7 +3,7 @@ import 'package:flutter/services.dart';
 
 import 'package:gap/gap.dart';
 
-import 'package:maptool/map_page.dart';
+import 'package:maptool/class_definition.dart';
 
 class EditExtStyleConfigPage extends StatefulWidget {
   const EditExtStyleConfigPage({Key? key}) : super(key: key);
@@ -24,7 +24,7 @@ class _EditExtStyleConfigPageState extends State<EditExtStyleConfigPage> {
     _configureExtStyleSave = args.configureExtStyleSave;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('追加設定管理'),
+        title: const Text('追加地図設定管理'),
       ),
       body: _makeInputForm(),
     );

@@ -4,7 +4,6 @@ import 'dart:io';
 import 'dart:math';
 import 'dart:typed_data';
 
-import 'package:amplify_api/amplify_api.dart';
 import 'package:amplify_flutter/amplify.dart';
 import 'package:cross_file/cross_file.dart';
 import 'package:flutter/material.dart';
@@ -14,12 +13,11 @@ import 'package:image_gallery_saver/image_gallery_saver.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:location/location.dart';
 import 'package:mapbox_gl/mapbox_gl.dart';
-import 'package:maptool/amplifyconfiguration.dart';
-import 'package:minio/io.dart';
 import 'package:minio/minio.dart';
 import 'package:path_provider/path_provider.dart';
 
 import 'main.dart';
+import 'package:maptool/aws_access.dart';
 import 'package:maptool/class_definition.dart';
 import 'package:maptool/db_access.dart';
 
@@ -121,6 +119,8 @@ s3Region=${configData.s3Region}
     final localPath = (await getApplicationDocumentsDirectory()).path;
     File configFile = File('$localPath/$_configFileName');
     if (!configFile.existsSync()) {
+      _style.add('');
+      _styleNo = 0;
       await _editConfigPage();
       configFile = File('$localPath/$_configFileName');
     }
@@ -161,10 +161,10 @@ s3Region=${configData.s3Region}
     });
 
     // Amplify
-    _configureAmplify();
+    configureAmplify(_amplify);
 
     // Minio
-    _configureMinio();
+    _minio = configureMinio(_s3Region, _s3AccessKey, _s3SecretKey);
 
     // 現在位置の取得
     _getLocation();
@@ -219,37 +219,6 @@ s3Region=${configData.s3Region}
     }
     await Navigator.of(navigatorKey.currentContext!).pushNamed('/editExtConfig',
         arguments: FullConfigExtStyleData(extStyles, _configureExtStyleSave));
-  }
-
-  // Amplify
-  void _configureAmplify() async {
-    AmplifyAPI apiPlugin = AmplifyAPI();
-    await _amplify.addPlugins([apiPlugin]);
-
-    // Once Plugins are added, configure Amplify
-    // Note: Amplify can only be configured once.
-    try {
-      await _amplify.configure(amplifyconfig);
-    } on AmplifyAlreadyConfiguredException {
-      // ignore: avoid_print
-      print(
-          "Tried to reconfigure Amplify; this can occur when your app restarts on Android.");
-    }
-  }
-
-  // Minio
-  void _configureMinio() {
-    _minio = Minio(
-      endPoint: (_s3Region == 'us-east-1'
-          ? 's3.amazonaws.com'
-          : (_s3Region == 'cn-north-1'
-              ? 's3.cn-north-1.amazonaws.com.cn'
-              : 's3-$_s3Region.amazonaws.com')),
-      region: _s3Region,
-      accessKey: _s3AccessKey,
-      secretKey: _s3SecretKey,
-      useSSL: true,
-    );
   }
 
   @override
@@ -420,15 +389,14 @@ s3Region=${configData.s3Region}
             _yourLocation!.longitude ?? _initialLong),
         zoom: _initialZoom,
       ),
-      onMapCreated: (MapboxMapController controller) {
+      onMapCreated: (MapboxMapController controller) async {
         _controller.complete(controller);
-        createDatabase().then((value) =>
+        await createDatabase().then((value) =>
             {_addSymbols(), _setLanguage(), createIndex(), _makeMuniMap()});
-        _controller.future.then((mapboxMap) {
-          mapboxMap.onSymbolTapped.add(_onSymbolTap);
-        });
+        await _enableSymbolTap();
       },
-      onStyleLoadedCallback: () => {_addSymbols(), _setLanguage()},
+      onStyleLoadedCallback: () =>
+          (_symbolAllSet ? {_addSymbols(), _setLanguage()} : _setLanguage()),
       compassEnabled: true,
       compassViewMargins: const Point(20.0, 100.0),
       // 現在位置を表示する
@@ -497,6 +465,13 @@ s3Region=${configData.s3Region}
               ? Icons.add
               : Icons.close)))),
     ]);
+  }
+
+  // マークのタップを有効化
+  Future<void> _enableSymbolTap() async {
+    _controller.future.then((mapboxMap) {
+      mapboxMap.onSymbolTapped.add(_onSymbolTap);
+    });
   }
 
   // DB から Symbol 情報を読み込んで地図に表示する
@@ -993,12 +968,13 @@ s3Region=${configData.s3Region}
     bool result = false;
     String describe = '';
     final String backupTitle = DateTime.now().toString().substring(0, 19);
-    final int? countPicture = await _backupPictures(backupTitle);
+    final int? countPicture = await backupPictures(
+        _amplify, _minio!, backupTitle, _imagePath, _s3Bucket);
     if (countPicture != null) {
-      final int? countSymbol = await _backupSymbolInfos(backupTitle);
+      final int? countSymbol = await backupSymbolInfos(_amplify, backupTitle);
       if (countSymbol != null) {
         describe = '(ピン $countSymbol / 画像 $countPicture)';
-        result = await _backupSet(backupTitle, describe);
+        result = await backupSet(_amplify, backupTitle, describe);
       }
     }
     setState(() {
@@ -1035,181 +1011,9 @@ $describe'''
     );
   }
 
-  // バックアップ情報を登録
-  Future<bool> _backupSet(String backupTitle, String describe) async {
-    try {
-      final RestOptions options = RestOptions(
-          path: '/backupsets',
-          body: const Utf8Encoder()
-              .convert(('{"OperationType": "PUT", "Keys": {"items": ['
-                  ' {"title": ${jsonEncode(backupTitle)}'
-                  ', "describe": ${jsonEncode(describe)}}'
-                  ']}}')));
-      final RestOperation restOperation =
-          _amplify.API.post(restOptions: options);
-      await restOperation.response;
-      // ignore: avoid_print
-      print('POST call (/backupsets) succeeded');
-      return true;
-    } on ApiException catch (e) {
-      // ignore: avoid_print
-      print('POST call (/backupsets) failed: $e');
-      return false;
-    }
-  }
-
-  // Symbol 情報をバックアップ
-  Future<int?> _backupSymbolInfos(String backupTitle) async {
-    final List<SymbolInfoWithLatLng> records = await fetchRecords();
-    String body = '';
-    for (SymbolInfoWithLatLng record in records) {
-      final int id = record.id;
-      final String title = record.symbolInfo.title;
-      final String describe = record.symbolInfo.describe;
-      final int dateTime = record.symbolInfo.dateTime.millisecondsSinceEpoch;
-      final double latitude = record.latLng.latitude;
-      final double longtitude = record.latLng.longitude;
-      final String prefecture = record.symbolInfo.prefMuni.prefecture;
-      final String municipalities = record.symbolInfo.prefMuni.municipalities;
-      body += '{"backupTitle": ${jsonEncode(backupTitle)}'
-          ', "id": ${jsonEncode(id)}, "title": ${jsonEncode(title)}'
-          ', "describe": ${jsonEncode(describe)}'
-          ', "dateTime": ${jsonEncode(dateTime)}'
-          ', "latitude": ${jsonEncode(latitude)}'
-          ', "longtitude": ${jsonEncode(longtitude)}'
-          ', "prefecture": ${jsonEncode(prefecture)}'
-          ', "municipalities": ${jsonEncode(municipalities)}'
-          '}, ';
-      if (body.length > 10000) {
-        final bool infoSave = await _backupSymbolInfoApi(body);
-        if (!infoSave) {
-          return null;
-        }
-        body = '';
-      }
-    }
-    if (body != '') {
-      final bool infoSave = await _backupSymbolInfoApi(body);
-      if (!infoSave) {
-        return null;
-      }
-    }
-    return records.length;
-  }
-
-  // Symbol 情報バックアップ API 呼び出し
-  Future<bool> _backupSymbolInfoApi(String body) async {
-    final RestOptions options = RestOptions(
-        path: '/backupsymbolinfos',
-        body: const Utf8Encoder().convert('{"OperationType": "PUT"'
-                ', "Keys": {"items": [' +
-            (body.substring(0, body.length - 2)) +
-            ']}}'));
-    try {
-      final RestOperation restOperation =
-          _amplify.API.post(restOptions: options);
-      await restOperation.response;
-      // ignore: avoid_print
-      print('POST call (/backupsymbolinfos) succeeded');
-      return true;
-    } on ApiException catch (e) {
-      // ignore: avoid_print
-      print('POST call (/backupsymbolinfos) failed: $e');
-      return false;
-    }
-  }
-
-  // 画像情報をバックアップ
-  Future<int?> _backupPictures(String backupTitle) async {
-    final List<Picture> records = await fetchAllPictureRecords();
-    String body = '';
-    for (Picture record in records) {
-      final int id = record.id;
-      final int symbolId = record.symbolId;
-      final String comment = record.comment;
-      final int dateTime = record.dateTime.millisecondsSinceEpoch;
-      final String filePath = record.filePath;
-      String cloudPath = record.cloudPath;
-      if (cloudPath == '') {
-        final fileName = await _uploadS3(record);
-        if (fileName is! String) {
-          return null;
-        }
-        cloudPath = fileName;
-        final Picture newRecord = Picture(
-            id, symbolId, comment, record.dateTime, filePath, cloudPath);
-        // ignore: avoid_print
-        print(newRecord.cloudPath);
-        await modifyPictureRecord(newRecord);
-      }
-      body += '{"backupTitle": ${jsonEncode(backupTitle)}'
-          ', "id": ${jsonEncode(id)}, "symbolId": ${jsonEncode(symbolId)}'
-          ', "comment": ${jsonEncode(comment)}'
-          ', "dateTime": $dateTime'
-          ', "filePath": ${jsonEncode(filePath)}'
-          ', "cloudPath": ${jsonEncode(cloudPath)}'
-          '}, ';
-      if (body.length > 10000) {
-        final bool pictureSave = await _backupPictureApi(body);
-        if (!pictureSave) {
-          return null;
-        }
-        body = '';
-      }
-    }
-    if (body != '') {
-      final bool pictureSave = await _backupPictureApi(body);
-      if (!pictureSave) {
-        return null;
-      }
-    }
-    return records.length;
-  }
-
-  // 画像バックアップ API 呼び出し
-  Future<bool> _backupPictureApi(String body) async {
-    final RestOptions options = RestOptions(
-        path: '/backuppictures',
-        body: const Utf8Encoder().convert('{"OperationType": "PUT"'
-                ', "Keys": {"items": [' +
-            (body.substring(0, body.length - 2)) +
-            ']}}'));
-    try {
-      final RestOperation restOperation =
-          _amplify.API.post(restOptions: options);
-      await restOperation.response;
-      // ignore: avoid_print
-      print('POST call (/backuppictures) succeeded');
-      return true;
-    } on ApiException catch (e) {
-      // ignore: avoid_print
-      print('POST call (/backuppictures) failed: $e');
-      return false;
-    }
-  }
-
-  // 画像ファイルを S3 アップロード
-  _uploadS3(Picture picture) async {
-    final int pathIndexOf = picture.filePath.lastIndexOf('/');
-    final String fileName = (pathIndexOf == -1
-        ? picture.filePath
-        : picture.filePath.substring(pathIndexOf + 1));
-    final String filePath = '$_imagePath/$fileName';
-    try {
-      await _minio!.fPutObject(_s3Bucket, fileName, filePath);
-      // ignore: avoid_print
-      print('S3 upload $fileName succeeded');
-      return fileName;
-    } catch (e) {
-      // ignore: avoid_print
-      print('S3 upload $fileName failed: $e');
-      return false;
-    }
-  }
-
   // AWS からデータリストア（確認画面）
   void _restoreDataConfirm() async {
-    List<BackupSet> backupSetList = await _fetchBackupSets();
+    List<BackupSet> backupSetList = await fetchBackupSets(_amplify);
     if (backupSetList.isEmpty) {
       return;
     }
@@ -1226,167 +1030,11 @@ $describe'''
       await _removeAllTables();
     }
     // AWS からバックアップデータを取得してリストア
-    await _restoreRecords(backupTitle);
-    await _restorePictureRecords(backupTitle);
+    await restoreRecords(_amplify, backupTitle);
+    await restorePictureRecords(
+        _amplify, _minio!, backupTitle, _imagePath, _s3Bucket, _localFile);
     // リストアした DB から Symbol 情報を読み込んで地図に表示する
     await _addSymbols();
-  }
-
-  // バックアップ情報リストを AWS から取得
-  Future<List<BackupSet>> _fetchBackupSets() async {
-    List<BackupSet> resultList = [];
-    try {
-      final RestOptions options = RestOptions(
-          path: '/backupsets',
-          body: const Utf8Encoder().convert(('{"OperationType": "SCAN"}')));
-      final RestOperation restOperation =
-          _amplify.API.post(restOptions: options);
-      final RestResponse response = await restOperation.response;
-      final Map<String, dynamic> body = json.decode(response.body);
-      final List<dynamic> items = body['Items'];
-      for (dynamic item in items) {
-        resultList.add(BackupSet(item['title'] as String, item['describe']));
-      }
-      resultList.sort((a, b) => b.title.compareTo(a.title));
-      // ignore: avoid_print
-      print('POST call (/backupsets) succeeded');
-    } catch (e) {
-      // ignore: avoid_print
-      print('POST call (/backupsets) failed: $e');
-    }
-    return resultList;
-  }
-
-  // Symbol 情報をリストア
-  Future<void> _restoreRecords(String backupTitle) async {
-    final List<SymbolInfoWithLatLng> restoreList =
-        await _fetchBackupSymbolInfos(backupTitle);
-    for (SymbolInfoWithLatLng infoLatLng in restoreList) {
-      await addRecordWithId(infoLatLng);
-    }
-  }
-
-  // Symbol 情報リストを AWS から取得
-  Future<List<SymbolInfoWithLatLng>> _fetchBackupSymbolInfos(
-      String backupTitle) async {
-    List<SymbolInfoWithLatLng> resultList = [];
-    try {
-      final RestOptions options = RestOptions(
-          path: '/backupsymbolinfos',
-          body: const Utf8Encoder().convert(('{"OperationType": "LIST"'
-              ', "Keys": {"backupTitle": "$backupTitle"}}')));
-      final RestOperation restOperation =
-          _amplify.API.post(restOptions: options);
-      final RestResponse response = await restOperation.response;
-      final Map<String, dynamic> body = json.decode(response.body);
-      final List<dynamic> items = body['Items'];
-      for (dynamic item in items) {
-        final SymbolInfo info = SymbolInfo(
-          item['title'] as String,
-          item['describe'] as String,
-          DateTime.fromMillisecondsSinceEpoch(item['dateTime'] as int,
-              isUtc: false),
-          PrefMuni(
-              item['prefecture'] as String, item['municipalities'] as String),
-        );
-        final LatLng latLng =
-            LatLng(item['latitude'] as double, item['longtitude'] as double);
-        final SymbolInfoWithLatLng infoLatLng =
-            SymbolInfoWithLatLng(item['id'] as int, info, latLng);
-        resultList.add(infoLatLng);
-      }
-      // ignore: avoid_print
-      print('POST call (/backupsymbolinfos) succeeded');
-    } catch (e) {
-      // ignore: avoid_print
-      print('POST call (/backupsymbolinfos) failed: $e');
-    }
-    return resultList;
-  }
-
-  // 画像情報をリストア
-  Future<void> _restorePictureRecords(String backupTitle) async {
-    final List<Picture> restoreList = await _fetchBackupPictures(backupTitle);
-    for (Picture picture in restoreList) {
-      await addPictureRecordWithId(picture);
-      await _downloadS3(picture);
-    }
-  }
-
-  // 画像情報リストを AWS から取得
-  Future<List<Picture>> _fetchBackupPictures(String backupTitle) async {
-    List<Picture> resultList = [];
-    try {
-      final RestOptions options = RestOptions(
-          path: '/backuppictures',
-          body: const Utf8Encoder().convert(('{"OperationType": "LIST"'
-              ', "Keys": {"backupTitle": "$backupTitle"}}')));
-      final RestOperation restOperation =
-          _amplify.API.post(restOptions: options);
-      final RestResponse response = await restOperation.response;
-      final Map<String, dynamic> body = json.decode(response.body);
-      final List<dynamic> items = body['Items'];
-      for (dynamic item in items) {
-        final Picture picture = Picture(
-          item['id'] as int,
-          item['symbolId'] as int,
-          item['comment'] as String,
-          DateTime.fromMillisecondsSinceEpoch(item['dateTime'] as int,
-              isUtc: false),
-          item['filePath'] as String,
-          item['cloudPath'] as String,
-        );
-        resultList.add(picture);
-      }
-      // ignore: avoid_print
-      print('POST call (/backuppictures) succeeded');
-    } catch (e) {
-      // ignore: avoid_print
-      print('POST call (/backuppictures) failed: $e');
-    }
-    return resultList;
-  }
-
-  // 画像ファイルを S3 からダウンロード
-  Future<void> _downloadS3(Picture picture) async {
-    final String cloudPath = picture.cloudPath;
-    if (cloudPath == '') {
-      return;
-    }
-    final File? file = _localFile(picture);
-    if (file != null) {
-      // ローカルファイルが存在する場合はスキップ
-      return;
-    }
-    final String filePath = '$_imagePath/$cloudPath';
-    try {
-      final stream = await _minio!.getObject(_s3Bucket, cloudPath);
-      await stream.pipe(File(filePath).openWrite());
-      // ignore: avoid_print
-      print('S3 download $cloudPath succeeded');
-    } catch (e) {
-      // ignore: avoid_print
-      print('S3 download $cloudPath failed: $e');
-    }
-    return;
-  }
-
-  // 画像ファイル取得
-  File? _localFile(Picture picture) {
-    // filePath がパス付きの場合はファイル名のみを抽出
-    final int pathIndexOf = picture.filePath.lastIndexOf('/');
-    final String fileName = (pathIndexOf == -1
-        ? picture.filePath
-        : picture.filePath.substring(pathIndexOf + 1));
-    final String filePath = '$_imagePath/$fileName';
-    try {
-      if (File(filePath).existsSync()) {
-        return File(filePath);
-      }
-      return null;
-    } catch (e) {
-      return null;
-    }
   }
 
   // 地図上の Symbol を全消去
@@ -1409,12 +1057,13 @@ $describe'''
   // AWS バックアップデータを削除
   void _removeBackup(String backupTitle) async {
     bool result = false;
-    final bool removePictures = await _removeBackupPictures(backupTitle);
+    final bool removePictures =
+        await removeBackupPictures(_amplify, backupTitle);
     if (removePictures) {
       final bool removeSymbolInfos =
-          await _removeBackupSymbolInfos(backupTitle);
+          await removeBackupSymbolInfos(_amplify, backupTitle);
       if (removeSymbolInfos) {
-        result = await _removeBackupSet(backupTitle);
+        result = await removeBackupSet(_amplify, backupTitle);
       }
     }
     _showRemoveBackupResult(backupTitle, result);
@@ -1447,69 +1096,21 @@ $backupTitle'''
     );
   }
 
-  // AWS バックアップ情報を削除
-  Future<bool> _removeBackupSet(backupTitle) async {
+  // 画像ファイル取得
+  File? _localFile(Picture picture) {
+    // filePath がパス付きの場合はファイル名のみを抽出
+    final int pathIndexOf = picture.filePath.lastIndexOf('/');
+    final String fileName = (pathIndexOf == -1
+        ? picture.filePath
+        : picture.filePath.substring(pathIndexOf + 1));
+    final String filePath = '$_imagePath/$fileName';
     try {
-      final RestOptions options = RestOptions(
-          path: '/backupsets',
-          body:
-              const Utf8Encoder().convert(('{"OperationType": "DELETE", "Keys":'
-                  ' {"title": ${jsonEncode(backupTitle)}'
-                  '}}')));
-      final RestOperation restOperation =
-          _amplify.API.post(restOptions: options);
-      await restOperation.response;
-      // ignore: avoid_print
-      print('POST call (/backupsets) succeeded');
-      return true;
-    } on ApiException catch (e) {
-      // ignore: avoid_print
-      print('POST call (/backupsets) failed: $e');
-      return false;
-    }
-  }
-
-  // AWS Symbol 情報を削除
-  Future<bool> _removeBackupSymbolInfos(backupTitle) async {
-    try {
-      final RestOptions options = RestOptions(
-          path: '/backupsymbolinfos',
-          body: const Utf8Encoder()
-              .convert(('{"OperationType": "DELETE_LIST", "Keys":'
-                  ' {"backupTitle": ${jsonEncode(backupTitle)}'
-                  '}}')));
-      final RestOperation restOperation =
-          _amplify.API.post(restOptions: options);
-      await restOperation.response;
-      // ignore: avoid_print
-      print('POST call (/backupsymbolinfos) succeeded');
-      return true;
-    } on ApiException catch (e) {
-      // ignore: avoid_print
-      print('POST call (/backupsymbolinfos) failed: $e');
-      return false;
-    }
-  }
-
-  // AWS 画像情報を削除（画像ファイルは削除しない）
-  Future<bool> _removeBackupPictures(backupTitle) async {
-    try {
-      final RestOptions options = RestOptions(
-          path: '/backuppictures',
-          body: const Utf8Encoder()
-              .convert(('{"OperationType": "DELETE_LIST", "Keys":'
-                  ' {"backupTitle": ${jsonEncode(backupTitle)}'
-                  '}}')));
-      final RestOperation restOperation =
-          _amplify.API.post(restOptions: options);
-      await restOperation.response;
-      // ignore: avoid_print
-      print('POST call (/backuppictures) succeeded');
-      return true;
-    } on ApiException catch (e) {
-      // ignore: avoid_print
-      print('POST call (/backuppictures) failed: $e');
-      return false;
+      if (File(filePath).existsSync()) {
+        return File(filePath);
+      }
+      return null;
+    } catch (e) {
+      return null;
     }
   }
 }

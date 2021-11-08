@@ -140,7 +140,7 @@ packages:
       name: cupertino_icons
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "1.0.3"
+    version: "1.0.4"
   date_time_format:
     dependency: transitive
     description:
@@ -246,7 +246,7 @@ packages:
       name: image_picker
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.8.4+3"
+    version: "0.8.4+4"
   image_picker_for_web:
     dependency: transitive
     description:

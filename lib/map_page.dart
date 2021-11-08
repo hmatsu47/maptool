@@ -962,6 +962,7 @@ s3Region=${configData.s3Region}
     if (_symbolInfoMap.isEmpty || _backupNow) {
       return;
     }
+    _showCircularProgressIndicator();
     setState(() {
       _backupNow = true;
     });
@@ -1003,7 +1004,7 @@ $describe'''
           TextButton(
             child: const Text('戻る'),
             onPressed: () {
-              Navigator.pop(context);
+              Navigator.popUntil(context, ModalRoute.withName('/'));
             },
           ),
         ],
@@ -1024,6 +1025,7 @@ $describe'''
 
   // AWS からデータリストア（実行）
   void _restoreData(String backupTitle) async {
+    _showCircularProgressIndicator();
     if (_symbolInfoMap.isNotEmpty) {
       // 古いデータを消去
       await _clearSymbols();
@@ -1056,6 +1058,7 @@ $describe'''
 
   // AWS バックアップデータを削除
   void _removeBackup(String backupTitle) async {
+    _showCircularProgressIndicator();
     bool result = false;
     final bool removePictures =
         await removeBackupPictures(_amplify, backupTitle);
@@ -1112,5 +1115,20 @@ $backupTitle'''
     } catch (e) {
       return null;
     }
+  }
+
+  // 暗幕表示
+  void _showCircularProgressIndicator() {
+    showGeneralDialog(
+        context: context,
+        barrierDismissible: false,
+        transitionDuration: const Duration(milliseconds: 250),
+        barrierColor: Colors.black.withOpacity(0.5),
+        pageBuilder: (BuildContext context, Animation animation,
+            Animation secondaryAnimation) {
+          return const Center(
+            child: CircularProgressIndicator(),
+          );
+        });
   }
 }

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'package:connectivity/connectivity.dart';
+
 import 'package:maptool/class_definition.dart';
 
 class RestoreDataPage extends StatefulWidget {
@@ -95,13 +97,20 @@ $describe''',
     );
   }
 
-  // 既存データ上書き（確認ダイアログ）
+  // 確認ダイアログ（既存データ上書き・モバイル通信でのリストア）
   void _overwriteConfirmDialog(String backupTitle) async {
+    final ConnectivityResult connectivityResult =
+        await (Connectivity().checkConnectivity());
+    final String message = (connectivityResult == ConnectivityResult.mobile
+        ? '''現在モバイル通信中です。
+本当にリストアしますか？
+（既存データは上書きされます）'''
+        : '既存データを上書きしてもよろしいですか？');
     showDialog(
       context: context,
       builder: (BuildContext context) => AlertDialog(
         title: const Text('確認'),
-        content: const Text('既存データを上書きしてもよろしいですか？'),
+        content: Text(message),
         actions: <Widget>[
           TextButton(
             child: const Text('いいえ'),
@@ -110,7 +119,7 @@ $describe''',
             },
           ),
           TextButton(
-            child: const Text('はい'),
+            child: const Text('はい（リストア）'),
             onPressed: () {
               _restore(backupTitle);
             },
@@ -146,7 +155,7 @@ $describe''',
     );
   }
 
-  // 既存データ上書き（確認ダイアログ）
+  // 既存データ削除（確認ダイアログ）
   void _deleteConfirmDialog(String backupTitle) async {
     showDialog(
       context: context,

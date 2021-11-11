@@ -27,7 +27,7 @@
 
 **In development:**（開発中の機能など）
 
- - Refactoring source code.（ソースコードの整理）
+ - Add external API call.（外部 API 呼び出し）
 
 ![画面例](map_image.png "画面例")
 
@@ -57,6 +57,8 @@ dependencies:
   amplify_flutter: ^0.2.6
   amplify_api: ^0.2.6
   minio: ^3.0.0
+  font_awesome_flutter: ^9.2.0
+  connectivity: ^3.0.6
 ```
 
  - **Edit '`android/build.gradle`'** ( for Android / in `allprojects` -> `repositories` )

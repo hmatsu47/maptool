@@ -5,6 +5,7 @@ import 'dart:math';
 import 'dart:typed_data';
 
 import 'package:amplify_flutter/amplify.dart';
+import 'package:connectivity/connectivity.dart';
 import 'package:cross_file/cross_file.dart';
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
@@ -962,6 +963,41 @@ s3Region=${configData.s3Region}
     if (_symbolInfoMap.isEmpty || _backupNow) {
       return;
     }
+    final ConnectivityResult connectivityResult =
+        await (Connectivity().checkConnectivity());
+    if (connectivityResult != ConnectivityResult.mobile) {
+      await _backupToAWS();
+      return;
+    }
+    // モバイル接続中なら確認メッセージ表示
+    showDialog(
+      context: context,
+      builder: (BuildContext context) => AlertDialog(
+        title: const Text('確認'),
+        content: const Text(
+          '''現在モバイル通信中です。
+本当にバックアップしますか？''',
+          textAlign: TextAlign.center,
+        ),
+        actions: <Widget>[
+          TextButton(
+            child: const Text('いいえ'),
+            onPressed: () {
+              Navigator.pop(context);
+            },
+          ),
+          TextButton(
+            child: const Text('はい（バックアップ）'),
+            onPressed: () {
+              _backupToAWS();
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _backupToAWS() async {
     _showCircularProgressIndicator();
     setState(() {
       _backupNow = true;

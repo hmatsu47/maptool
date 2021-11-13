@@ -1,48 +1,51 @@
 PODS:
-  - Amplify (1.15.3):
-    - Amplify/Default (= 1.15.3)
-  - Amplify/Default (1.15.3)
+  - Amplify (1.15.5):
+    - Amplify/Default (= 1.15.5)
+  - Amplify/Default (1.15.5)
   - amplify_api (0.0.1):
-    - Amplify (~> 1.15.3)
+    - Amplify (~> 1.15.5)
     - amplify_core
-    - AmplifyPlugins/AWSAPIPlugin (~> 1.15.3)
+    - AmplifyPlugins/AWSAPIPlugin (~> 1.15.5)
     - Flutter
   - amplify_core (0.0.1):
     - Flutter
   - amplify_flutter (0.0.1):
-    - Amplify (~> 1.15.3)
+    - Amplify (~> 1.15.5)
     - amplify_core
-    - AmplifyPlugins/AWSCognitoAuthPlugin (~> 1.15.3)
-    - AWSPluginsCore (~> 1.15.3)
+    - AmplifyPlugins/AWSCognitoAuthPlugin (~> 1.15.5)
+    - AWSPluginsCore (~> 1.15.5)
     - Flutter
-  - AmplifyPlugins/AWSAPIPlugin (1.15.3):
+  - AmplifyPlugins/AWSAPIPlugin (1.15.5):
     - AppSyncRealTimeClient (~> 1.4)
     - AWSCore (~> 2.26.1)
-    - AWSPluginsCore (= 1.15.3)
-  - AmplifyPlugins/AWSCognitoAuthPlugin (1.15.3):
+    - AWSPluginsCore (= 1.15.5)
+  - AmplifyPlugins/AWSCognitoAuthPlugin (1.15.5):
     - AWSAuthCore (~> 2.26.1)
     - AWSCognitoIdentityProvider (~> 2.26.1)
     - AWSCognitoIdentityProviderASF (~> 2.26.1)
     - AWSCore (~> 2.26.1)
     - AWSMobileClient (~> 2.26.1)
-    - AWSPluginsCore (= 1.15.3)
-  - AppSyncRealTimeClient (1.5.0):
+    - AWSPluginsCore (= 1.15.5)
+  - AppSyncRealTimeClient (1.6.0):
     - Starscream (~> 3.1.1)
-  - AWSAuthCore (2.26.3):
-    - AWSCore (= 2.26.3)
-  - AWSCognitoIdentityProvider (2.26.3):
-    - AWSCognitoIdentityProviderASF (= 2.26.3)
-    - AWSCore (= 2.26.3)
-  - AWSCognitoIdentityProviderASF (2.26.3)
-  - AWSCore (2.26.3)
-  - AWSMobileClient (2.26.3):
-    - AWSAuthCore (= 2.26.3)
-    - AWSCognitoIdentityProvider (= 2.26.3)
-    - AWSCognitoIdentityProviderASF (= 2.26.3)
-    - AWSCore (= 2.26.3)
-  - AWSPluginsCore (1.15.3):
-    - Amplify (= 1.15.3)
+  - AWSAuthCore (2.26.4):
+    - AWSCore (= 2.26.4)
+  - AWSCognitoIdentityProvider (2.26.4):
+    - AWSCognitoIdentityProviderASF (= 2.26.4)
+    - AWSCore (= 2.26.4)
+  - AWSCognitoIdentityProviderASF (2.26.4)
+  - AWSCore (2.26.4)
+  - AWSMobileClient (2.26.4):
+    - AWSAuthCore (= 2.26.4)
+    - AWSCognitoIdentityProvider (= 2.26.4)
+    - AWSCognitoIdentityProviderASF (= 2.26.4)
+    - AWSCore (= 2.26.4)
+  - AWSPluginsCore (1.15.5):
+    - Amplify (= 1.15.5)
     - AWSCore (~> 2.26.1)
+  - connectivity (0.0.1):
+    - Flutter
+    - Reachability
   - Flutter (1.0.0)
   - FMDB (2.7.5):
     - FMDB/standard (= 2.7.5)
@@ -64,6 +67,7 @@ PODS:
   - MapboxMobileEvents (0.10.13)
   - path_provider (0.0.1):
     - Flutter
+  - Reachability (3.2)
   - sqflite (0.0.2):
     - Flutter
     - FMDB (>= 2.7.5)
@@ -73,6 +77,7 @@ DEPENDENCIES:
   - amplify_api (from `.symlinks/plugins/amplify_api/ios`)
   - amplify_core (from `.symlinks/plugins/amplify_core/ios`)
   - amplify_flutter (from `.symlinks/plugins/amplify_flutter/ios`)
+  - connectivity (from `.symlinks/plugins/connectivity/ios`)
   - Flutter (from `Flutter`)
   - image_gallery_saver (from `.symlinks/plugins/image_gallery_saver/ios`)
   - image_picker (from `.symlinks/plugins/image_picker/ios`)
@@ -96,6 +101,7 @@ SPEC REPOS:
     - Mapbox-iOS-SDK
     - MapboxAnnotationExtension
     - MapboxMobileEvents
+    - Reachability
     - Starscream
 
 EXTERNAL SOURCES:
@@ -105,6 +111,8 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/amplify_core/ios"
   amplify_flutter:
     :path: ".symlinks/plugins/amplify_flutter/ios"
+  connectivity:
+    :path: ".symlinks/plugins/connectivity/ios"
   Flutter:
     :path: Flutter
   image_gallery_saver:
@@ -121,18 +129,19 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/sqflite/ios"
 
 SPEC CHECKSUMS:
-  Amplify: 0f1289c87ce5950d3c76d0e8e0ebbddbcda3cd30
-  amplify_api: 6e6ac528daddba276acc1a2c61a79a1ead007b64
+  Amplify: 4d248001a7fe2fe3707cb280c8961fe5cb55ae65
+  amplify_api: d2e245623799af22ef371b9bcc960277c965ebb4
   amplify_core: 8b38d20089fe4f225c14db6892f586bd03824a42
-  amplify_flutter: d6dab5d246a6d607af75617d1acf1134ed91b201
-  AmplifyPlugins: c2e983fcde04092101425cbebf1c1dddf9c04123
-  AppSyncRealTimeClient: 2b4482b1770a3e5cf64f9714a6d198550017b5a2
-  AWSAuthCore: ce2089f8af1680aa433f6302b028ac786632cc5b
-  AWSCognitoIdentityProvider: a7e5caaade68cc93a92e3a888db30053dc167ee0
-  AWSCognitoIdentityProviderASF: ddcd5b1d919dccc15422b040ba4f99f5fbe85d9f
-  AWSCore: 7077ecff07ae3b184e65e2fa9855f6da048f9ae7
-  AWSMobileClient: 32f38bdb37ee29b2ac2c81739054f95bf3265f66
-  AWSPluginsCore: 7a1acaf5c6224bf6c2b678c24800c16563a76361
+  amplify_flutter: 372e5d0210d6de0cbf7be025dbd20cc21831ab24
+  AmplifyPlugins: 829c1ef5ed5d05e35d9cad3a9f0a9565913da411
+  AppSyncRealTimeClient: 8b5ec94085b8ee9bb6fb9d9d76a157beb538ec6f
+  AWSAuthCore: 10fdd6eccf789389d32fc00790e605627e359e8f
+  AWSCognitoIdentityProvider: 677c7fdd1554d1ac66ebcd515047f626883cf2f9
+  AWSCognitoIdentityProviderASF: 2f1f5aa9f69244a88839f128ced10782b19b2717
+  AWSCore: ee7217d84a3ec7f6748462e7f765a794d47f23c6
+  AWSMobileClient: f1ad9a17ff292fbb673689c3442b72fce5467b86
+  AWSPluginsCore: f56a627f972d2ee9557f6a367e9875746b989b43
+  connectivity: c4130b2985d4ef6fd26f9702e886bd5260681467
   Flutter: 50d75fe2f02b26cc09d224853bb45737f8b3214a
   FMDB: 2ce00b547f966261cd18927a3ddb07cb6f3db82a
   image_gallery_saver: 259eab68fb271cfd57d599904f7acdc7832e7ef2
@@ -143,6 +152,7 @@ SPEC CHECKSUMS:
   MapboxAnnotationExtension: 4eee6c26349ef6d909f1a23a7eae2d0f7ca5fa7d
   MapboxMobileEvents: e78db24b348f48e41e5895be7dc16e5b1bb43562
   path_provider: d1e9807085df1f9cc9318206cd649dc0b76be3de
+  Reachability: 33e18b67625424e47b6cde6d202dce689ad7af96
   sqflite: 6d358c025f5b867b29ed92fc697fd34924e11904
   Starscream: 4bb2f9942274833f7b4d296a55504dcfc7edb7b0
 

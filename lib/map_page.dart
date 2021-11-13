@@ -396,8 +396,9 @@ s3Region=${configData.s3Region}
             {_addSymbols(), _setLanguage(), createIndex(), _makeMuniMap()});
         await _enableSymbolTap();
       },
-      onStyleLoadedCallback: () =>
-          (_symbolAllSet ? {_addSymbols(), _setLanguage()} : _setLanguage()),
+      onStyleLoadedCallback: () => ((Platform.isIOS && _symbolAllSet)
+          ? {_addSymbols(), _setLanguage()}
+          : _setLanguage()),
       compassEnabled: true,
       compassViewMargins: const Point(20.0, 100.0),
       // 現在位置を表示する

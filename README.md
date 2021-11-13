@@ -28,6 +28,7 @@
 **In development:**（開発中の機能など）
 
  - Add external API call.（外部 API 呼び出し）
+ - Support `mapbox_gl 0.14.0`.（最新の `mapbox_gl` ライブラリへの対応←地図スタイルの切り替えで不具合あり）
 
 ![画面例](map_image.png "画面例")
 
@@ -54,8 +55,8 @@ dependencies:
   image_gallery_saver: ^1.7.1
   path_provider: ^2.0.6
   http: ^0.13.4
-  amplify_flutter: ^0.2.6
-  amplify_api: ^0.2.6
+  amplify_flutter: ^0.2.8
+  amplify_api: ^0.2.8
   minio: ^3.0.0
   font_awesome_flutter: ^9.2.0
   connectivity: ^3.0.6

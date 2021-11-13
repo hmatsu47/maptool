@@ -44,6 +44,9 @@ class _DisplaySymbolInfoPageState extends State<DisplaySymbolInfoPage> {
   Function? _localFile;
   Completer<MapboxMapController?>? _controller;
 
+  // タイマ
+  Timer? _timer;
+
   @override
   Widget build(BuildContext context) {
     final args = ModalRoute.of(context)!.settings.arguments as FullSymbolInfo;
@@ -188,10 +191,29 @@ class _DisplaySymbolInfoPageState extends State<DisplaySymbolInfoPage> {
 
   // 撮影（写真追加）
   void _addPicture() async {
-    final Picture? picture = await _addPictureFromCamera!(_symbolId);
-    if (picture != null) {
+    Picture? picture = await _addPictureFromCamera!(_symbolId);
+    while (picture != null) {
       setState(() {
-        _pictures.add(picture);
+        _pictures.add(picture!);
+      });
+      File? file = _localFile!(picture!);
+      await showDialog(
+          context: context,
+          builder: (BuildContext builderContext) {
+            _timer = Timer(const Duration(seconds: 1), () async {
+              picture = await _addPictureFromCamera!(_symbolId);
+              Navigator.of(context).pop();
+            });
+            return AlertDialog(
+              actionsAlignment: MainAxisAlignment.center,
+              content: SingleChildScrollView(
+                child: Image.file(file!, width: 240.0, fit: BoxFit.scaleDown),
+              ),
+            );
+          }).then((val) {
+        if (_timer!.isActive) {
+          _timer!.cancel();
+        }
       });
     }
   }

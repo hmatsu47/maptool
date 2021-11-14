@@ -56,11 +56,11 @@ PODS:
     - Flutter
   - location (0.0.1):
     - Flutter
-  - Mapbox-iOS-SDK (6.3.0):
-    - MapboxMobileEvents (~> 0.10.4)
+  - Mapbox-iOS-SDK (6.4.1):
+    - MapboxMobileEvents (~> 0.10.12)
   - mapbox_gl (0.0.1):
     - Flutter
-    - Mapbox-iOS-SDK (~> 6.3.0)
+    - Mapbox-iOS-SDK (~> 6.4.0)
     - MapboxAnnotationExtension (~> 0.0.1-beta.1)
   - MapboxAnnotationExtension (0.0.1-beta.2):
     - Mapbox-iOS-SDK (~> 6.0)
@@ -147,8 +147,8 @@ SPEC CHECKSUMS:
   image_gallery_saver: 259eab68fb271cfd57d599904f7acdc7832e7ef2
   image_picker: 9aa50e1d8cdacdbed739e925b7eea16d014367e6
   location: 3a2eed4dd2fab25e7b7baf2a9efefe82b512d740
-  Mapbox-iOS-SDK: 2563ed87ead6ec08f1c2090873977b8a7be335a8
-  mapbox_gl: 4b91045a7fefc61a8813bad5248f54a8bd8bd1e5
+  Mapbox-iOS-SDK: f870f83cbdc7aa4a74afcee143aafb0dae390c82
+  mapbox_gl: 33c5ab6306cbfa72289bb3606d2cd2e8baee9ff0
   MapboxAnnotationExtension: 4eee6c26349ef6d909f1a23a7eae2d0f7ca5fa7d
   MapboxMobileEvents: e78db24b348f48e41e5895be7dc16e5b1bb43562
   path_provider: d1e9807085df1f9cc9318206cd649dc0b76be3de

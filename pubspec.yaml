@@ -29,7 +29,7 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  mapbox_gl: ^0.13.0
+  mapbox_gl: ^0.14.0
   location: ^4.3.0
   gap: ^2.0.0
   sqflite: ^2.0.0+4

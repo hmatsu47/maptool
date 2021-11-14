@@ -79,6 +79,10 @@ class _MapPageState extends State<MapPage> {
   String _prefMuni = '';
   // 前回の逆ジオコーディング時の位置
   LatLng? _lastLatLng;
+  // 地図を再表示する？
+  bool _refreshMap = false;
+  // Symbol を再表示する？
+  bool _refreshSymbols = false;
 
   // アイコンボタンの表示状態（0:非表示／1:追加）
   ButtonType _buttonType = ButtonType.invisible;
@@ -302,13 +306,15 @@ s3Region=${configData.s3Region}
             },
           ),
           IconButton(
-            icon: const Icon(
-              Icons.layers,
+            icon: Icon(
+              Platform.isIOS ? Icons.layers : Icons.layers_outlined,
             ),
             color: Colors.black87,
             onPressed: () {
-              // 地図の切り替え
-              _changeStyle();
+              // 地図の切り替え（iOSのみ）
+              if (Platform.isIOS) {
+                _changeStyle();
+              }
             },
           ),
           const Gap(4),
@@ -378,9 +384,22 @@ s3Region=${configData.s3Region}
         child: CircularProgressIndicator(),
       );
     }
+    if (Platform.isIOS && !_refreshMap && _refreshSymbols) {
+      setState(() {
+        _symbolAllSet = false;
+      });
+      _addSymbols();
+      _setLanguage();
+      setState(() {
+        _refreshSymbols = false;
+      });
+    }
     // GPS 追従が ON かつ地図がロードされている→地図の中心を移動
     _moveCameraToGpsPoint();
     // Mapbox ウィジェットを返す
+    if (_refreshSymbols && _refreshMap) {
+      _refreshMap = false; // 画面更新を避けるためあえて setState しない
+    }
     return MapboxMap(
       // 地図（スタイル）を指定
       styleString: _style[_styleNo],
@@ -396,9 +415,6 @@ s3Region=${configData.s3Region}
             {_addSymbols(), _setLanguage(), createIndex(), _makeMuniMap()});
         await _enableSymbolTap();
       },
-      onStyleLoadedCallback: () => ((Platform.isIOS && _symbolAllSet)
-          ? {_addSymbols(), _setLanguage()}
-          : _setLanguage()),
       compassEnabled: true,
       compassViewMargins: const Point(20.0, 100.0),
       // 現在位置を表示する
@@ -526,7 +542,7 @@ s3Region=${configData.s3Region}
 
   // 地図の切り替え
   void _changeStyle() {
-    if (_style.isEmpty) {
+    if (_style.isEmpty || _refreshMap || _refreshSymbols) {
       return;
     }
     setState(() {
@@ -535,6 +551,8 @@ s3Region=${configData.s3Region}
       } else {
         _styleNo += 1;
       }
+      _refreshMap = true;
+      _refreshSymbols = true;
     });
   }
 

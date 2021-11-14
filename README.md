@@ -23,12 +23,11 @@
  - Restore data from AWS.（AWS からデータリストア）
  - Remove backup data on AWS.（不要バックアップデータ削除）
  - Improve configuration handling.（外部 API などの設定管理の改善）
- - Switch map styles.（地図スタイル切り替え）
+ - Switch map styles. (for iOS only)（地図スタイル切り替え／Android では不安定なので iOS のみ）
 
 **In development:**（開発中の機能など）
 
  - Add external API call.（外部 API 呼び出し）
- - Support `mapbox_gl 0.14.0`.（最新の `mapbox_gl` ライブラリへの対応←地図スタイルの切り替えで不具合あり）
 
 ![画面例](map_image.png "画面例")
 
@@ -46,7 +45,7 @@
 dependencies:
   flutter:
     sdk: flutter
-  mapbox_gl: ^0.13.0
+  mapbox_gl: ^0.14.0
   location: ^4.3.0
   gap: ^2.0.0
   sqflite: ^2.0.0+4

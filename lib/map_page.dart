@@ -83,6 +83,8 @@ class _MapPageState extends State<MapPage> {
   bool _refreshMap = false;
   // Symbol を再表示する？
   bool _refreshSymbols = false;
+  // Symbol タップ有効？
+  bool _tapEnabled = false;
 
   // アイコンボタンの表示状態（0:非表示／1:追加）
   ButtonType _buttonType = ButtonType.invisible;
@@ -307,12 +309,14 @@ s3Region=${configData.s3Region}
           ),
           IconButton(
             icon: Icon(
-              Platform.isIOS ? Icons.layers : Icons.layers_outlined,
+              _tapEnabled && Platform.isIOS
+                  ? Icons.layers
+                  : Icons.layers_outlined,
             ),
             color: Colors.black87,
             onPressed: () {
               // 地図の切り替え（iOSのみ）
-              if (Platform.isIOS) {
+              if (Platform.isIOS && _tapEnabled) {
                 _changeStyle();
               }
             },
@@ -384,7 +388,8 @@ s3Region=${configData.s3Region}
         child: CircularProgressIndicator(),
       );
     }
-    if (Platform.isIOS && !_refreshMap && _refreshSymbols) {
+    // if (Platform.isIOS && !_refreshMap && _refreshSymbols) {
+    if (!_refreshMap && _refreshSymbols) {
       setState(() {
         _symbolAllSet = false;
       });
@@ -395,7 +400,9 @@ s3Region=${configData.s3Region}
       });
     }
     // GPS 追従が ON かつ地図がロードされている→地図の中心を移動
-    _moveCameraToGpsPoint();
+    if (!_refreshMap && !_refreshSymbols) {
+      _moveCameraToGpsPoint();
+    }
     // Mapbox ウィジェットを返す
     if (_refreshSymbols && _refreshMap) {
       _refreshMap = false; // 画面更新を避けるためあえて setState しない
@@ -489,6 +496,9 @@ s3Region=${configData.s3Region}
   Future<void> _enableSymbolTap() async {
     _controller.future.then((mapboxMap) {
       mapboxMap.onSymbolTapped.add(_onSymbolTap);
+      setState(() {
+        _tapEnabled = true;
+      });
     });
   }
 

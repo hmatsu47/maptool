@@ -309,7 +309,7 @@ s3Region=${configData.s3Region}
           ),
           IconButton(
             icon: Icon(
-              _tapEnabled && Platform.isIOS
+              Platform.isIOS && _tapEnabled
                   ? Icons.layers
                   : Icons.layers_outlined,
             ),

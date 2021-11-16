@@ -416,6 +416,12 @@ amplify push
      - Stage
      - API Gateway Key
 
+ - **Create Supabase account & Project**
+   - Project name : maptool
+   - Database Password
+   - Database Extensions
+     - PostGIS 
+
  - **Create Tables on Supabase**
 
 ```sql:CREATE_TABLES

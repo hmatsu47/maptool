@@ -59,7 +59,7 @@ dependencies:
   minio: ^3.0.0
   font_awesome_flutter: ^9.2.0
   connectivity: ^3.0.6
-  postgrest: ^0.1.8
+  supabase: ^0.2.9
 ```
 
  - **Edit '`android/build.gradle`'** ( for Android / in `allprojects` -> `repositories` )

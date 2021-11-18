@@ -16,11 +16,13 @@ import 'package:location/location.dart';
 import 'package:mapbox_gl/mapbox_gl.dart';
 import 'package:minio/minio.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:supabase/supabase.dart';
 
 import 'main.dart';
 import 'package:maptool/aws_access.dart';
 import 'package:maptool/class_definition.dart';
 import 'package:maptool/db_access.dart';
+import 'package:maptool/supabase_access.dart';
 
 class MapPage extends StatefulWidget {
   const MapPage({Key? key}) : super(key: key);
@@ -38,6 +40,7 @@ class _MapPageState extends State<MapPage> {
   // 設定ファイル名
   final String _configFileName = 'maptool.conf';
   final String _configExtFileName = 'maptool_ext.conf';
+  final String _configSupabaseFileName = 'maptool_supabase.conf';
   // 設定ファイル読み込み完了？
   bool _configSet = false;
   // 地図スタイル用 Mapbox URL
@@ -97,6 +100,11 @@ class _MapPageState extends State<MapPage> {
 
   // Minio(S3)
   Minio? _minio;
+
+  // Supabase
+  SupabaseClient? _supabaseClient;
+  String _supabaseUrl = '';
+  String _supabaseKey = '';
 
   // データバックアップ中？
   bool _backupNow = false;
@@ -161,6 +169,7 @@ s3Region=${configData.s3Region}
     }
     // 追加設定ファイル
     await _configureExtStyles(localPath);
+    await _configureSupabase(localPath);
     // 画像パス
     _imagePath = localPath;
     setState(() {
@@ -172,6 +181,11 @@ s3Region=${configData.s3Region}
 
     // Minio
     _minio = configureMinio(_s3Region, _s3AccessKey, _s3SecretKey);
+
+    // Supabase（設定ファイルがある場合のみ）
+    if (_supabaseUrl != '' && _supabaseKey != '') {
+      _supabaseClient = getSupabaseClient(_supabaseUrl, _supabaseKey);
+    }
 
     // 現在位置の取得
     _getLocation();
@@ -226,6 +240,47 @@ s3Region=${configData.s3Region}
     }
     await Navigator.of(navigatorKey.currentContext!).pushNamed('/editExtConfig',
         arguments: FullConfigExtStyleData(extStyles, _configureExtStyleSave));
+  }
+
+  // Supabase 設定ファイルに保存
+  void _configureSupabaseSave(String supabaseUrl, String supabaseKey) async {
+    final localPath = (await getApplicationDocumentsDirectory()).path;
+    final File configFile = File('$localPath/$_configSupabaseFileName');
+    configFile.writeAsStringSync('''supabaseUrl=$supabaseUrl
+supabaseKey=$supabaseKey
+''', mode: FileMode.writeOnly);
+  }
+
+  // Supabase 設定ファイル読み込み
+  Future<void> _configureSupabase(localPath) async {
+    File configFile = File('$localPath/$_configSupabaseFileName');
+    if (!configFile.existsSync()) {
+      return;
+    }
+    final List<String> config = configFile.readAsLinesSync();
+    for (String line in config) {
+      final int position = line.indexOf('=');
+      if (position != -1) {
+        final String itemName = line.substring(0, position);
+        final String itemValue = line.substring(position + 1);
+        switch (itemName) {
+          case 'supabaseUrl':
+            _supabaseUrl = itemValue;
+            break;
+          case 'supabaseKey':
+            _supabaseKey = itemValue;
+            break;
+        }
+      }
+    }
+  }
+
+  // Supabase 設定画面呼び出し
+  _editConfigSupabasePage() async {
+    await Navigator.of(navigatorKey.currentContext!).pushNamed(
+        '/editConfigSupabase',
+        arguments: FullConfigSupabaseData(
+            _supabaseUrl, _supabaseKey, _configureSupabaseSave));
   }
 
   @override
@@ -351,6 +406,12 @@ s3Region=${configData.s3Region}
         title: const Text('追加地図設定管理'),
         onTap: () {
           _editExtConfigStylePage();
+        },
+      ),
+      ListTile(
+        title: const Text('Supabase設定管理'),
+        onTap: () {
+          _editConfigSupabasePage();
         },
       ),
       ListTile(

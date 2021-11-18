@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:maptool/edit_config_page.dart';
+import 'package:maptool/edit_config_supabase_page.dart';
 import 'package:maptool/edit_ext_style_config_page.dart';
 import 'package:maptool/edit_symbol_info_page.dart';
 import 'package:maptool/display_picture_page.dart';
@@ -29,6 +30,8 @@ MaterialApp _materialApp() {
       '/searchKeyword': (BuildContext context) => const SearchKeywordPage(),
       '/restoreData': (BuildContext context) => const RestoreDataPage(),
       '/editConfig': (BuildContext context) => const EditConfigPage(),
+      '/editConfigSupabase': (BuildContext context) =>
+          const EditConfigSupabasePage(),
       '/editExtConfig': (BuildContext context) =>
           const EditExtStyleConfigPage(),
     },

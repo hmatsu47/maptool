@@ -132,3 +132,13 @@ class FullConfigExtStyleData {
 
   FullConfigExtStyleData(this.extStyles, this.configureExtStyleSave);
 }
+
+// Supabase 設定管理画面に渡す内容一式
+class FullConfigSupabaseData {
+  String supabaseUrl;
+  String supabaseKey;
+  Function configureSupabaseSave;
+
+  FullConfigSupabaseData(
+      this.supabaseUrl, this.supabaseKey, this.configureSupabaseSave);
+}

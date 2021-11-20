@@ -49,6 +49,11 @@ def operation_put(items):
     try:
         with table.batch_writer() as batch:
             for item in items:
+                # カラム名 Typo の吸収
+                if 'longitude' in item:
+                    longitude = item['longitude']
+                else:
+                    longitude = item['longtitude']
                 baseItem={
                     'backupTitle': item['backupTitle'],
                     'id': item['id'],
@@ -56,7 +61,7 @@ def operation_put(items):
                     'describe': item['describe'],
                     'dateTime': item['dateTime'],
                     'latitude': item['latitude'],
-                    'longtitude': item['longtitude'],
+                    'longitude': longitude,
                     'prefecture': item['prefecture'],
                     'municipalities': item['municipalities']
                 }

@@ -23,7 +23,8 @@ Future<List<SpotData>> searchNearSpot(
         item['category_name'] as String,
         item['title'] as String,
         item['describe'] as String,
-        LatLng(item['latitude'] as double, item['longitude'] as double),
+        LatLng((item['latitude'] as num).toDouble(),
+            (item['longitude'] as num).toDouble()),
         PrefMuni(item['prefecture'] as String, item['municipality'] as String));
     resultList.add(spotData);
   }

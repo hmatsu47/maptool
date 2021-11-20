@@ -452,7 +452,7 @@ CREATE INDEX spot_pref_muni_idx ON spot_opendata (pref_muni);
 
 ```sql:CREATE FUNCTION
 CREATE OR REPLACE 
- FUNCTION get_spots(point_latitude double precision, point_longitude double precision, dest_limit int)
+ FUNCTION get_spots(point_latitude double precision, point_longitude double precision, dist_limit int)
 RETURNS TABLE (
   distance double precision,
   category_name text,
@@ -476,7 +476,7 @@ BEGIN
   FROM spot_opendata
   INNER JOIN category ON spot_opendata.category_id = category.id
   WHERE
-    ST_Transform(ST_SetSRID(ST_POINT(point_longitude, point_latitude), 4326), 2163) <-> ST_Transform(spot_opendata.location, 2163) <= dest_limit;
+    ST_Transform(ST_SetSRID(ST_POINT(point_longitude, point_latitude), 4326), 2163) <-> ST_Transform(spot_opendata.location, 2163) <= dist_limit;
 END;
 $$ LANGUAGE plpgsql;
 ```

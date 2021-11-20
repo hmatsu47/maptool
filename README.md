@@ -487,5 +487,5 @@ $$ LANGUAGE plpgsql;
    - [sampleData/supabase/insert_spot_opendata.sql](sampleData/supabase/insert_spot_opendata.sql)
    - Original data : '愛知県文化財マップ（ナビ愛知）' / Aichi prefecture / CC BY 2.1 JP
      - このサンプルデータは、以下の著作物を改変して利用しています。 
-       - 愛知県文化財マップ（ナビ愛知）、愛知県、【その他の著作権者】、クリエイティブ・コモンズ・ライセンス 表示２.１日本
+       - 愛知県文化財マップ（ナビ愛知）、愛知県、クリエイティブ・コモンズ・ライセンス 表示２.１日本
        - https://www.pref.aichi.jp/soshiki/joho/0000069385.html

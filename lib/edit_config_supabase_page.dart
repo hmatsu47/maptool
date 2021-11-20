@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 import 'package:gap/gap.dart';
 
@@ -16,6 +17,7 @@ class _EditConfigSupabasePageState extends State<EditConfigSupabasePage> {
   String _supabaseUrl = '';
   String _supabaseKey = '';
   Function? _configureSupabaseSave;
+  bool _hidePassword = true;
 
   @override
   Widget build(BuildContext context) {
@@ -56,12 +58,25 @@ class _EditConfigSupabasePageState extends State<EditConfigSupabasePage> {
                   onChanged: (String text) => _supabaseUrl = text,
                 ),
                 TextFormField(
+                  obscureText: _hidePassword,
                   style: const TextStyle(fontSize: 12),
                   initialValue: _supabaseKey,
                   autofocus: true,
                   maxLength: 160,
                   maxLengthEnforcement: MaxLengthEnforcement.none,
-                  decoration: const InputDecoration(
+                  decoration: InputDecoration(
+                    suffixIcon: IconButton(
+                        icon: Icon(
+                            !_hidePassword
+                                ? FontAwesomeIcons.solidEye
+                                : FontAwesomeIcons.solidEyeSlash,
+                            size: 18,
+                            color: Colors.blue),
+                        onPressed: () {
+                          setState(() {
+                            _hidePassword = !_hidePassword;
+                          });
+                        }),
                     hintText: 'Supabaseのキーがあれば入力してください',
                   ),
                   maxLines: 1,

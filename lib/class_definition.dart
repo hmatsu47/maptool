@@ -142,3 +142,24 @@ class FullConfigSupabaseData {
   FullConfigSupabaseData(
       this.supabaseUrl, this.supabaseKey, this.configureSupabaseSave);
 }
+
+// Supabase get_spots の内容
+class SpotData {
+  num distance;
+  String categoryName;
+  String title;
+  String describe;
+  LatLng latLng;
+  PrefMuni prefMuni;
+
+  SpotData(this.distance, this.categoryName, this.title, this.describe,
+      this.latLng, this.prefMuni);
+}
+
+// 近隣スポット一覧表示画面に渡す内容一式
+class NearSpotList {
+  List<SpotData> spotList;
+  Function formatLabel;
+
+  NearSpotList(this.spotList, this.formatLabel);
+}

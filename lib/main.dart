@@ -10,6 +10,7 @@ import 'package:maptool/list_symbol_page.dart';
 import 'package:maptool/map_page.dart';
 import 'package:maptool/restore_data_page.dart';
 import 'package:maptool/search_keyword_page.dart';
+import 'package:maptool/search_near_spot_page.dart';
 
 final navigatorKey = GlobalKey<NavigatorState>();
 
@@ -28,6 +29,7 @@ MaterialApp _materialApp() {
       '/displayPicture': (BuildContext context) => const DisplayPicturePage(),
       '/listSymbol': (BuildContext context) => const ListSymbolPage(),
       '/searchKeyword': (BuildContext context) => const SearchKeywordPage(),
+      '/searchNearSpot': (BuildContext context) => const SearchNearSpotPage(),
       '/restoreData': (BuildContext context) => const RestoreDataPage(),
       '/editConfig': (BuildContext context) => const EditConfigPage(),
       '/editConfigSupabase': (BuildContext context) =>

@@ -28,6 +28,7 @@
 **In development:**（開発中の機能など）
 
  - Add external API call.（外部 API 呼び出し）
+   - Search sightseeing spots etc.（近隣の観光スポット等検索）
 
 ![画面例](map_image.png "画面例")
 
@@ -423,7 +424,7 @@ amplify push
    - Database Extensions
      - PostGIS 
 
- - **Create Tables on Supabase**
+ - **Create Tables etc. on Supabase**
 
 ```sql:CREATE_TABLES
  CREATE TABLE category (
@@ -448,3 +449,46 @@ CREATE INDEX spot_pref_idx ON spot_opendata (prefecture);
 CREATE INDEX spot_muni_idx ON spot_opendata (municipality);
 CREATE INDEX spot_pref_muni_idx ON spot_opendata (pref_muni);
 ```
+
+```sql:CREATE FUNCTION
+CREATE OR REPLACE 
+ FUNCTION get_spots(point_latitude double precision, point_longitude double precision, dist_limit int)
+RETURNS TABLE (
+  distance double precision,
+  category_name text,
+  title text,
+  describe text,
+  latitude double precision,
+  longitude double precision,
+  prefecture text,
+  municipality text
+) AS $$
+BEGIN
+  RETURN QUERY
+  SELECT ((ST_Transform(ST_SetSRID(ST_POINT(point_longitude, point_latitude), 4326), 2163) <-> ST_Transform(spot_opendata.location, 2163)) / 1000),
+    category.category_name,
+    spot_opendata.title,
+    spot_opendata.describe,
+    ST_Y(spot_opendata.location),
+    ST_X(spot_opendata.location),
+    spot_opendata.prefecture,
+    spot_opendata.municipality
+  FROM spot_opendata
+  INNER JOIN category ON spot_opendata.category_id = category.id
+  WHERE
+    ST_Transform(ST_SetSRID(ST_POINT(point_longitude, point_latitude), 4326), 2163) <-> ST_Transform(spot_opendata.location, 2163) <= dist_limit
+  ORDER BY distance;
+END;
+$$ LANGUAGE plpgsql;
+```
+
+
+ - **Insert sample data to Supabase (PostgreSQL DB)**
+
+   - [sampleData/supabase/insert_category.sql](sampleData/supabase/insert_category.sql)
+   - [sampleData/supabase/insert_spot_opendata.sql](sampleData/supabase/insert_spot_opendata.sql)
+   - Original data : '愛知県文化財マップ（ナビ愛知）' / Aichi prefecture / CC BY 2.1 JP
+     - このサンプルデータは、以下の著作物を改変して利用しています。 
+       - 愛知県文化財マップ（ナビ愛知）、愛知県、【その他の著作権者】、クリエイティブ・コモンズ・ライセンス 表示２.１日本
+       - https://www.pref.aichi.jp/soshiki/joho/0000069385.html
+

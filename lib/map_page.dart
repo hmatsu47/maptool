@@ -297,10 +297,12 @@ supabaseKey=$supabaseKey
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: _makeAppBar(),
+      extendBody: true,
       extendBodyBehindAppBar: true,
       drawer: _makeDrawer(),
       body: _makeMapboxMap(),
       floatingActionButton: _makeFloatingIcons(),
+      bottomNavigationBar: _makeBottomAppBar(),
     );
   }
 
@@ -310,36 +312,6 @@ supabaseKey=$supabaseKey
         backgroundColor: Colors.white.withOpacity(0.5),
         toolbarHeight: 40.0,
         actions: <Widget>[
-          IconButton(
-            icon: Icon(_symbolInfoMap.isNotEmpty && !_backupNow
-                ? Icons.view_list
-                : Icons.view_list_outlined),
-            color: Colors.blue[700],
-            onPressed: () {
-              // 全 Symbol 一覧を表示して選択した Symbol の位置へ移動
-              _moveToSymbolPosition();
-            },
-          ),
-          IconButton(
-            icon: Icon(
-              _muniAllSet ? Icons.search : Icons.search_off,
-            ),
-            color: Colors.blue[700],
-            onPressed: () {
-              // 地名検索
-              _searchPlaceName();
-            },
-          ),
-          IconButton(
-            icon: Icon(
-              _muniAllSet ? Icons.info : Icons.info_outlined,
-            ),
-            color: Colors.blue[700],
-            onPressed: () {
-              // 画面中央の地名を表示
-              _checkMuni();
-            },
-          ),
           IconButton(
             icon: const Icon(Icons.adjust),
             color: Colors.black87,
@@ -553,6 +525,67 @@ supabaseKey=$supabaseKey
     ]);
   }
 
+  // ボトムナビゲーションバー
+  BottomAppBar _makeBottomAppBar() {
+    return BottomAppBar(
+        color: Colors.white.withOpacity(0.5),
+        // notchMargin: 1.0,
+        // shape: const AutomaticNotchedShape(
+        //   RoundedRectangleBorder(),
+        //   StadiumBorder(
+        //     side: BorderSide(),
+        //   ),
+        // ),
+        child: Row(
+            mainAxisSize: MainAxisSize.max,
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: <Widget>[
+              IconButton(
+                icon: Icon(_symbolInfoMap.isNotEmpty && !_backupNow
+                    ? Icons.view_list
+                    : Icons.view_list_outlined),
+                color: Colors.blue[700],
+                onPressed: () {
+                  // 全 Symbol 一覧を表示して選択した Symbol の位置へ移動
+                  _moveToSymbolPosition();
+                },
+              ),
+              IconButton(
+                icon: Icon(
+                  _supabaseClient != null
+                      ? Icons.not_listed_location
+                      : Icons.not_listed_location_outlined,
+                ),
+                color: Colors.blue[700],
+                onPressed: () {
+                  // 近隣スポット検索
+                  _searchNearSpot();
+                },
+              ),
+              IconButton(
+                icon: Icon(
+                  _muniAllSet ? Icons.search : Icons.search_off,
+                ),
+                color: Colors.blue[700],
+                onPressed: () {
+                  // 地名検索
+                  _searchPlaceName();
+                },
+              ),
+              IconButton(
+                icon: Icon(
+                  _muniAllSet ? Icons.info : Icons.info_outlined,
+                ),
+                color: Colors.blue[700],
+                onPressed: () {
+                  // 画面中央の地名を表示
+                  _checkMuni();
+                },
+              ),
+              const Gap(4),
+            ]));
+  }
+
   // マークのタップを有効化
   Future<void> _enableSymbolTap() async {
     _controller.future.then((mapboxMap) {
@@ -669,6 +702,26 @@ supabaseKey=$supabaseKey
               _yourLocation!.longitude ?? _initialLong)));
         }
       });
+    }
+  }
+
+  // 近隣スポットを検索して一覧表示
+  void _searchNearSpot() async {
+    if (_supabaseClient == null || _yourLocation == null) {
+      return;
+    }
+    final LatLng position =
+        LatLng(_yourLocation!.latitude!, _yourLocation!.longitude!);
+    final List<SpotData> spotList =
+        await searchNearSpot(_supabaseClient!, position, 10000);
+    final latLng = await Navigator.of(navigatorKey.currentContext!).pushNamed(
+        '/searchNearSpot',
+        arguments: NearSpotList(spotList, _formatLabel));
+    if (latLng is LatLng) {
+      setState(() {
+        _gpsTracking = false;
+      });
+      await _moveCameraToDetailPoint(latLng);
     }
   }
 
@@ -996,9 +1049,9 @@ supabaseKey=$supabaseKey
   // 画面の中心を逆ジオコーディング
   Future<String> _getReverseGeo(LatLng position) async {
     final String latitude = position.latitude.toString();
-    final String longtitude = position.longitude.toString();
+    final String longitude = position.longitude.toString();
     return await http.read(Uri.parse(
-        'https://mreversegeocoder.gsi.go.jp/reverse-geocoder/LonLatToAddress?lat=$latitude&lon=$longtitude'));
+        'https://mreversegeocoder.gsi.go.jp/reverse-geocoder/LonLatToAddress?lat=$latitude&lon=$longitude'));
   }
 
   // 都道府県＋市区町村名を表示する

@@ -60,6 +60,7 @@ class _MapPageState extends State<MapPage> {
   final double _initialZoom = 13.5;
   // Symbol 一覧から遷移したときのズーム値
   final double _detailZoom = 16.0;
+  // ズームの範囲
   // 方位のデフォルト値（北）
   final double _initialBearing = 0.0;
   // 全 Symbol 情報（DB 主キーへの変換マップ）
@@ -88,7 +89,8 @@ class _MapPageState extends State<MapPage> {
   bool _refreshSymbols = false;
   // Symbol タップ有効？
   bool _tapEnabled = false;
-
+  // スポット検索時の「近隣」の範囲（m）
+  final int _distLimit = 10000;
   // アイコンボタンの表示状態（0:非表示／1:追加）
   ButtonType _buttonType = ButtonType.invisible;
 
@@ -312,6 +314,22 @@ supabaseKey=$supabaseKey
         backgroundColor: Colors.white.withOpacity(0.5),
         toolbarHeight: 40.0,
         actions: <Widget>[
+          IconButton(
+            icon: const Icon(Icons.zoom_in),
+            color: Colors.black87,
+            onPressed: () {
+              // ズームイン
+              _zoomIn();
+            },
+          ),
+          IconButton(
+            icon: const Icon(Icons.zoom_out),
+            color: Colors.black87,
+            onPressed: () {
+              // ズームアウト
+              _zoomOut();
+            },
+          ),
           IconButton(
             icon: const Icon(Icons.adjust),
             color: Colors.black87,
@@ -713,7 +731,28 @@ supabaseKey=$supabaseKey
     final LatLng position =
         LatLng(_yourLocation!.latitude!, _yourLocation!.longitude!);
     final List<SpotData> spotList =
-        await searchNearSpot(_supabaseClient!, position, 10000);
+        await searchNearSpot(_supabaseClient!, position, _distLimit);
+    if (spotList.isEmpty) {
+      showDialog(
+        context: context,
+        builder: (BuildContext context) => AlertDialog(
+          title: const Text('対象なし'),
+          content: const Text(
+            '近隣スポットが見つかりませんでした。',
+            textAlign: TextAlign.center,
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('OK'),
+              onPressed: () {
+                Navigator.pop(context);
+              },
+            ),
+          ],
+        ),
+      );
+      return;
+    }
     final latLng = await Navigator.of(navigatorKey.currentContext!).pushNamed(
         '/searchNearSpot',
         arguments: NearSpotList(spotList, _formatLabel));
@@ -981,6 +1020,20 @@ supabaseKey=$supabaseKey
   void _resetZoom() {
     _controller.future.then((mapboxMap) {
       mapboxMap.moveCamera(CameraUpdate.zoomTo(_initialZoom));
+    });
+  }
+
+  // 地図をズームイン
+  void _zoomIn() {
+    _controller.future.then((mapboxMap) {
+      mapboxMap.moveCamera(CameraUpdate.zoomIn());
+    });
+  }
+
+  // 地図をズームアウト
+  void _zoomOut() {
+    _controller.future.then((mapboxMap) {
+      mapboxMap.moveCamera(CameraUpdate.zoomOut());
     });
   }
 

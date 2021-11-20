@@ -452,7 +452,7 @@ CREATE INDEX spot_pref_muni_idx ON spot_opendata (pref_muni);
 
 ```sql:CREATE FUNCTION
 CREATE OR REPLACE 
- FUNCTION get_spots(point_latitude double precision, point_longitude double precision, dist_limit int)
+ FUNCTION get_spots(point_latitude double precision, point_longitude double precision, dest_limit int)
 RETURNS TABLE (
   distance double precision,
   category_name text,
@@ -476,7 +476,7 @@ BEGIN
   FROM spot_opendata
   INNER JOIN category ON spot_opendata.category_id = category.id
   WHERE
-    ST_Transform(ST_SetSRID(ST_POINT(point_longitude, point_latitude), 4326), 2163) <-> ST_Transform(spot_opendata.location, 2163) <= dist_limit;
+    ST_Transform(ST_SetSRID(ST_POINT(point_longitude, point_latitude), 4326), 2163) <-> ST_Transform(spot_opendata.location, 2163) <= dest_limit;
 END;
 $$ LANGUAGE plpgsql;
 ```
@@ -487,5 +487,5 @@ $$ LANGUAGE plpgsql;
    - [sampleData/supabase/insert_spot_opendata.sql](sampleData/supabase/insert_spot_opendata.sql)
    - Original data : '愛知県文化財マップ（ナビ愛知）' / Aichi prefecture / CC BY 2.1 JP
      - このサンプルデータは、以下の著作物を改変して利用しています。 
-       - 愛知県文化財マップ（ナビ愛知）、愛知県、【その他の著作権者】、クリエイティブ・コモンズ・ライセンス 表示２.１日本
+       - 愛知県文化財マップ（ナビ愛知）、愛知県、クリエイティブ・コモンズ・ライセンス 表示２.１日本
        - https://www.pref.aichi.jp/soshiki/joho/0000069385.html

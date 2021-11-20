@@ -16,11 +16,13 @@ import 'package:location/location.dart';
 import 'package:mapbox_gl/mapbox_gl.dart';
 import 'package:minio/minio.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:supabase/supabase.dart';
 
 import 'main.dart';
 import 'package:maptool/aws_access.dart';
 import 'package:maptool/class_definition.dart';
 import 'package:maptool/db_access.dart';
+import 'package:maptool/supabase_access.dart';
 
 class MapPage extends StatefulWidget {
   const MapPage({Key? key}) : super(key: key);
@@ -38,6 +40,7 @@ class _MapPageState extends State<MapPage> {
   // 設定ファイル名
   final String _configFileName = 'maptool.conf';
   final String _configExtFileName = 'maptool_ext.conf';
+  final String _configSupabaseFileName = 'maptool_supabase.conf';
   // 設定ファイル読み込み完了？
   bool _configSet = false;
   // 地図スタイル用 Mapbox URL
@@ -97,6 +100,11 @@ class _MapPageState extends State<MapPage> {
 
   // Minio(S3)
   Minio? _minio;
+
+  // Supabase
+  SupabaseClient? _supabaseClient;
+  String _supabaseUrl = '';
+  String _supabaseKey = '';
 
   // データバックアップ中？
   bool _backupNow = false;
@@ -161,6 +169,7 @@ s3Region=${configData.s3Region}
     }
     // 追加設定ファイル
     await _configureExtStyles(localPath);
+    await _configureSupabase(localPath);
     // 画像パス
     _imagePath = localPath;
     setState(() {
@@ -172,6 +181,11 @@ s3Region=${configData.s3Region}
 
     // Minio
     _minio = configureMinio(_s3Region, _s3AccessKey, _s3SecretKey);
+
+    // Supabase（設定ファイルがある場合のみ）
+    if (_supabaseUrl != '' && _supabaseKey != '') {
+      _supabaseClient = getSupabaseClient(_supabaseUrl, _supabaseKey);
+    }
 
     // 現在位置の取得
     _getLocation();
@@ -228,6 +242,47 @@ s3Region=${configData.s3Region}
         arguments: FullConfigExtStyleData(extStyles, _configureExtStyleSave));
   }
 
+  // Supabase 設定ファイルに保存
+  void _configureSupabaseSave(String supabaseUrl, String supabaseKey) async {
+    final localPath = (await getApplicationDocumentsDirectory()).path;
+    final File configFile = File('$localPath/$_configSupabaseFileName');
+    configFile.writeAsStringSync('''supabaseUrl=$supabaseUrl
+supabaseKey=$supabaseKey
+''', mode: FileMode.writeOnly);
+  }
+
+  // Supabase 設定ファイル読み込み
+  Future<void> _configureSupabase(localPath) async {
+    File configFile = File('$localPath/$_configSupabaseFileName');
+    if (!configFile.existsSync()) {
+      return;
+    }
+    final List<String> config = configFile.readAsLinesSync();
+    for (String line in config) {
+      final int position = line.indexOf('=');
+      if (position != -1) {
+        final String itemName = line.substring(0, position);
+        final String itemValue = line.substring(position + 1);
+        switch (itemName) {
+          case 'supabaseUrl':
+            _supabaseUrl = itemValue;
+            break;
+          case 'supabaseKey':
+            _supabaseKey = itemValue;
+            break;
+        }
+      }
+    }
+  }
+
+  // Supabase 設定画面呼び出し
+  _editConfigSupabasePage() async {
+    await Navigator.of(navigatorKey.currentContext!).pushNamed(
+        '/editConfigSupabase',
+        arguments: FullConfigSupabaseData(
+            _supabaseUrl, _supabaseKey, _configureSupabaseSave));
+  }
+
   @override
   void dispose() {
     super.dispose();
@@ -242,10 +297,12 @@ s3Region=${configData.s3Region}
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: _makeAppBar(),
+      extendBody: true,
       extendBodyBehindAppBar: true,
       drawer: _makeDrawer(),
       body: _makeMapboxMap(),
       floatingActionButton: _makeFloatingIcons(),
+      bottomNavigationBar: _makeBottomAppBar(),
     );
   }
 
@@ -255,36 +312,6 @@ s3Region=${configData.s3Region}
         backgroundColor: Colors.white.withOpacity(0.5),
         toolbarHeight: 40.0,
         actions: <Widget>[
-          IconButton(
-            icon: Icon(_symbolInfoMap.isNotEmpty && !_backupNow
-                ? Icons.view_list
-                : Icons.view_list_outlined),
-            color: Colors.blue[700],
-            onPressed: () {
-              // 全 Symbol 一覧を表示して選択した Symbol の位置へ移動
-              _moveToSymbolPosition();
-            },
-          ),
-          IconButton(
-            icon: Icon(
-              _muniAllSet ? Icons.search : Icons.search_off,
-            ),
-            color: Colors.blue[700],
-            onPressed: () {
-              // 地名検索
-              _searchPlaceName();
-            },
-          ),
-          IconButton(
-            icon: Icon(
-              _muniAllSet ? Icons.info : Icons.info_outlined,
-            ),
-            color: Colors.blue[700],
-            onPressed: () {
-              // 画面中央の地名を表示
-              _checkMuni();
-            },
-          ),
           IconButton(
             icon: const Icon(Icons.adjust),
             color: Colors.black87,
@@ -351,6 +378,12 @@ s3Region=${configData.s3Region}
         title: const Text('追加地図設定管理'),
         onTap: () {
           _editExtConfigStylePage();
+        },
+      ),
+      ListTile(
+        title: const Text('Supabase設定管理'),
+        onTap: () {
+          _editConfigSupabasePage();
         },
       ),
       ListTile(
@@ -492,6 +525,67 @@ s3Region=${configData.s3Region}
     ]);
   }
 
+  // ボトムナビゲーションバー
+  BottomAppBar _makeBottomAppBar() {
+    return BottomAppBar(
+        color: Colors.white.withOpacity(0.5),
+        // notchMargin: 1.0,
+        // shape: const AutomaticNotchedShape(
+        //   RoundedRectangleBorder(),
+        //   StadiumBorder(
+        //     side: BorderSide(),
+        //   ),
+        // ),
+        child: Row(
+            mainAxisSize: MainAxisSize.max,
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: <Widget>[
+              IconButton(
+                icon: Icon(_symbolInfoMap.isNotEmpty && !_backupNow
+                    ? Icons.view_list
+                    : Icons.view_list_outlined),
+                color: Colors.blue[700],
+                onPressed: () {
+                  // 全 Symbol 一覧を表示して選択した Symbol の位置へ移動
+                  _moveToSymbolPosition();
+                },
+              ),
+              IconButton(
+                icon: Icon(
+                  _supabaseClient != null
+                      ? Icons.not_listed_location
+                      : Icons.not_listed_location_outlined,
+                ),
+                color: Colors.blue[700],
+                onPressed: () {
+                  // 近隣スポット検索
+                  _searchNearSpot();
+                },
+              ),
+              IconButton(
+                icon: Icon(
+                  _muniAllSet ? Icons.search : Icons.search_off,
+                ),
+                color: Colors.blue[700],
+                onPressed: () {
+                  // 地名検索
+                  _searchPlaceName();
+                },
+              ),
+              IconButton(
+                icon: Icon(
+                  _muniAllSet ? Icons.info : Icons.info_outlined,
+                ),
+                color: Colors.blue[700],
+                onPressed: () {
+                  // 画面中央の地名を表示
+                  _checkMuni();
+                },
+              ),
+              const Gap(4),
+            ]));
+  }
+
   // マークのタップを有効化
   Future<void> _enableSymbolTap() async {
     _controller.future.then((mapboxMap) {
@@ -608,6 +702,26 @@ s3Region=${configData.s3Region}
               _yourLocation!.longitude ?? _initialLong)));
         }
       });
+    }
+  }
+
+  // 近隣スポットを検索して一覧表示
+  void _searchNearSpot() async {
+    if (_supabaseClient == null || _yourLocation == null) {
+      return;
+    }
+    final LatLng position =
+        LatLng(_yourLocation!.latitude!, _yourLocation!.longitude!);
+    final List<SpotData> spotList =
+        await searchNearSpot(_supabaseClient!, position, 10000);
+    final latLng = await Navigator.of(navigatorKey.currentContext!).pushNamed(
+        '/searchNearSpot',
+        arguments: NearSpotList(spotList, _formatLabel));
+    if (latLng is LatLng) {
+      setState(() {
+        _gpsTracking = false;
+      });
+      await _moveCameraToDetailPoint(latLng);
     }
   }
 
@@ -935,9 +1049,9 @@ s3Region=${configData.s3Region}
   // 画面の中心を逆ジオコーディング
   Future<String> _getReverseGeo(LatLng position) async {
     final String latitude = position.latitude.toString();
-    final String longtitude = position.longitude.toString();
+    final String longitude = position.longitude.toString();
     return await http.read(Uri.parse(
-        'https://mreversegeocoder.gsi.go.jp/reverse-geocoder/LonLatToAddress?lat=$latitude&lon=$longtitude'));
+        'https://mreversegeocoder.gsi.go.jp/reverse-geocoder/LonLatToAddress?lat=$latitude&lon=$longitude'));
   }
 
   // 都道府県＋市区町村名を表示する

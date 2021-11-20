@@ -75,7 +75,7 @@ Future<int?> backupSymbolInfos(AmplifyClass amplify, String backupTitle) async {
     final String describe = record.symbolInfo.describe;
     final int dateTime = record.symbolInfo.dateTime.millisecondsSinceEpoch;
     final double latitude = record.latLng.latitude;
-    final double longtitude = record.latLng.longitude;
+    final double longitude = record.latLng.longitude;
     final String prefecture = record.symbolInfo.prefMuni.prefecture;
     final String municipalities = record.symbolInfo.prefMuni.municipalities;
     body += '{"backupTitle": ${jsonEncode(backupTitle)}'
@@ -83,7 +83,7 @@ Future<int?> backupSymbolInfos(AmplifyClass amplify, String backupTitle) async {
         ', "describe": ${jsonEncode(describe)}'
         ', "dateTime": ${jsonEncode(dateTime)}'
         ', "latitude": ${jsonEncode(latitude)}'
-        ', "longtitude": ${jsonEncode(longtitude)}'
+        ', "longtitude": ${jsonEncode(longitude)}'
         ', "prefecture": ${jsonEncode(prefecture)}'
         ', "municipalities": ${jsonEncode(municipalities)}'
         '}, ';

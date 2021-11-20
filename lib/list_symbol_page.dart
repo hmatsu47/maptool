@@ -67,7 +67,7 @@ class _ListSymbolPageState extends State<ListSymbolPage> {
   // 項目表示ウィジェット
   Widget _symbolInfoItem(SymbolInfoWithLatLng symbolInfoWithLatLng) {
     final String title =
-        _formatLabel!(symbolInfoWithLatLng.symbolInfo.title, 15);
+        _formatLabel!(symbolInfoWithLatLng.symbolInfo.title, 13);
     final String prefMuniText =
         '${symbolInfoWithLatLng.symbolInfo.prefMuni.prefecture}${symbolInfoWithLatLng.symbolInfo.prefMuni.municipalities}';
     final String dateTimeText =

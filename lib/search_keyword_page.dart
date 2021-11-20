@@ -79,7 +79,7 @@ class _SearchKeywordPageState extends State<SearchKeywordPage> {
 
   // 項目表示ウィジェット
   Widget _placeInfoItem(PlaceName placeName) {
-    final String title = _formatLabel!(placeName.title, 15);
+    final String title = _formatLabel!(placeName.title, 13);
     final String prefMuniText =
         '${placeName.prefMuni.prefecture}${placeName.prefMuni.municipalities}';
     return Card(

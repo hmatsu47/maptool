@@ -14,7 +14,7 @@ Future<void> createDatabase() async {
       '  describe TEXT NOT NULL,'
       '  date_time INTEGER NOT NULL,'
       '  latitude REAL NOT NULL,'
-      '  longtitude REAL NOT NULL,'
+      '  longitude REAL NOT NULL,'
       '  prefecture TEXT NOT NULL DEFAULT "",'
       '  municipalities TEXT NOT NULL DEFAULT ""'
       ')';
@@ -27,7 +27,7 @@ Future<void> createDatabase() async {
       '  cloud_path TEXT NOT NULL'
       ')';
   // DB テーブル作成
-  _database = await openDatabase('maptool.db', version: 6,
+  _database = await openDatabase('maptool.db', version: 7,
       onCreate: (db, version) async {
     await db.execute(
       createSymbolInfo,
@@ -50,6 +50,32 @@ Future<void> createDatabase() async {
       );
       // ignore: avoid_print
       print('alter table add column (symbol_info)');
+    }
+    if (oldVersion < 7) {
+      // await db.execute(
+      //   'BEGIN TRANSACTION',
+      // );
+      await db.execute(
+        'ALTER TABLE symbol_info RENAME TO symbol_info_temp',
+      );
+      await db.execute(
+        createSymbolInfo,
+      );
+      await db.execute(
+        'INSERT INTO '
+        '  symbol_info(id, title, describe, date_time, latitude, longitude, prefecture, municipalities) '
+        'SELECT'
+        '  id, title, describe, date_time, latitude, longtitude, prefecture, municipalities '
+        'FROM symbol_info_temp',
+      );
+      await db.execute(
+        'DROP TABLE symbol_info_temp',
+      );
+      // await db.execute(
+      //   'COMMIT',
+      // );
+      // ignore: avoid_print
+      print('alter table rename column (symbol_info)');
     }
   });
 }
@@ -75,7 +101,7 @@ Future<List<SymbolInfoWithLatLng>> fetchRecords() async {
       'describe',
       'date_time',
       'latitude',
-      'longtitude',
+      'longitude',
       'prefecture',
       'municipalities',
     ],
@@ -88,7 +114,7 @@ Future<List<SymbolInfoWithLatLng>> fetchRecords() async {
         map['describe'],
         DateTime.fromMillisecondsSinceEpoch(map['date_time'], isUtc: false),
         PrefMuni(map['prefecture'], map['municipalities']));
-    final LatLng latLng = LatLng(map['latitude'], map['longtitude']);
+    final LatLng latLng = LatLng(map['latitude'], map['longitude']);
     final SymbolInfoWithLatLng symbolInfoWithLatLng =
         SymbolInfoWithLatLng(map['id'], symbolInfo, latLng);
     symbolInfoWithLatLngs.add(symbolInfoWithLatLng);
@@ -124,7 +150,7 @@ Future<int> addRecord(SymbolInfoWithLatLng symbolInfoWithLatLng) async {
       'date_time':
           symbolInfoWithLatLng.symbolInfo.dateTime.millisecondsSinceEpoch,
       'latitude': symbolInfoWithLatLng.latLng.latitude,
-      'longtitude': symbolInfoWithLatLng.latLng.longitude,
+      'longitude': symbolInfoWithLatLng.latLng.longitude,
       'prefecture': symbolInfoWithLatLng.symbolInfo.prefMuni.prefecture,
       'municipalities': symbolInfoWithLatLng.symbolInfo.prefMuni.municipalities
     },
@@ -142,7 +168,7 @@ Future<int> addRecordWithId(SymbolInfoWithLatLng symbolInfoWithLatLng) async {
       'date_time':
           symbolInfoWithLatLng.symbolInfo.dateTime.millisecondsSinceEpoch,
       'latitude': symbolInfoWithLatLng.latLng.latitude,
-      'longtitude': symbolInfoWithLatLng.latLng.longitude,
+      'longitude': symbolInfoWithLatLng.latLng.longitude,
       'prefecture': symbolInfoWithLatLng.symbolInfo.prefMuni.prefecture,
       'municipalities': symbolInfoWithLatLng.symbolInfo.prefMuni.municipalities
     },

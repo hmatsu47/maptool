@@ -83,7 +83,7 @@ Future<int?> backupSymbolInfos(AmplifyClass amplify, String backupTitle) async {
         ', "describe": ${jsonEncode(describe)}'
         ', "dateTime": ${jsonEncode(dateTime)}'
         ', "latitude": ${jsonEncode(latitude)}'
-        ', "longtitude": ${jsonEncode(longitude)}'
+        ', "longitude": ${jsonEncode(longitude)}'
         ', "prefecture": ${jsonEncode(prefecture)}'
         ', "municipalities": ${jsonEncode(municipalities)}'
         '}, ';
@@ -269,8 +269,12 @@ Future<List<SymbolInfoWithLatLng>> _fetchBackupSymbolInfos(
         PrefMuni(
             item['prefecture'] as String, item['municipalities'] as String),
       );
+      // カラム名 Typo の吸収
+      final num longitude = (item.containsKey('longitude')
+          ? item['longitude'] as num
+          : item['longtitude'] as num);
       final LatLng latLng =
-          LatLng(item['latitude'] as double, item['longtitude'] as double);
+          LatLng((item['latitude'] as num).toDouble(), longitude.toDouble());
       final SymbolInfoWithLatLng infoLatLng =
           SymbolInfoWithLatLng(item['id'] as int, info, latLng);
       resultList.add(infoLatLng);

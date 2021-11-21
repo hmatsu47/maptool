@@ -15,8 +15,8 @@ Future<List<SpotData>> searchNearSpot(
     'point_longitude': latLng.longitude,
     'dist_limit': distLimit
   }).execute();
-  List<dynamic> items = selectResponse.data;
-  List<SpotData> resultList = [];
+  final List<dynamic> items = selectResponse.data;
+  final List<SpotData> resultList = [];
   for (dynamic item in items) {
     final SpotData spotData = SpotData(
         item['distance'] as num,

@@ -121,7 +121,7 @@ class _ListSymbolPageState extends State<ListSymbolPage> {
     if (_keyword == '') {
       return _infoList;
     }
-    List<SymbolInfoWithLatLng> filtered = [];
+    final List<SymbolInfoWithLatLng> filtered = [];
     for (int i = 0; i < _infoList.length; i++) {
       if (_infoList[i]
               .symbolInfo

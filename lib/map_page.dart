@@ -8,6 +8,7 @@ import 'package:amplify_flutter/amplify.dart';
 import 'package:connectivity/connectivity.dart';
 import 'package:cross_file/cross_file.dart';
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:gap/gap.dart';
 import 'package:http/http.dart' as http;
 import 'package:image_gallery_saver/image_gallery_saver.dart';
@@ -91,6 +92,9 @@ class _MapPageState extends State<MapPage> {
   bool _tapEnabled = false;
   // スポット検索時の「近隣」の範囲（m）
   final int _distLimit = 10000;
+  // スポット検索用の Symbol 情報一覧
+  final Map<String, SpotData> _nearSpotDataMap = {};
+  List<Symbol> _nearSpotSymbolList = [];
   // アイコンボタンの表示状態（0:非表示／1:追加）
   ButtonType _buttonType = ButtonType.invisible;
 
@@ -407,7 +411,7 @@ supabaseKey=$supabaseKey
       ListTile(
         title: Text('データバックアップ',
             style: TextStyle(
-                color: _symbolAllSet && !_backupNow
+                color: _symbolInfoMap.isNotEmpty && !_backupNow
                     ? Colors.orange[900]
                     : Colors.grey)),
         onTap: () {
@@ -419,11 +423,11 @@ supabaseKey=$supabaseKey
       ListTile(
         title: Text('データリストア',
             style: TextStyle(
-                color: _symbolInfoMap.isNotEmpty && !_backupNow
+                color: _symbolAllSet && !_backupNow
                     ? Colors.orange[900]
                     : Colors.grey)),
         onTap: () {
-          if (_symbolInfoMap.isNotEmpty && !_backupNow) {
+          if (_symbolAllSet && !_backupNow) {
             _restoreDataConfirm();
           }
         },
@@ -571,6 +575,20 @@ supabaseKey=$supabaseKey
               IconButton(
                 icon: Icon(
                   _supabaseClient != null
+                      ? (_nearSpotDataMap.isEmpty
+                          ? FontAwesomeIcons.mapMarkedAlt
+                          : FontAwesomeIcons.solidMap)
+                      : FontAwesomeIcons.map,
+                ),
+                color: Colors.blue[700],
+                onPressed: () {
+                  // 近隣スポットにマーク（ピン）を立てる
+                  _markNearSpot();
+                },
+              ),
+              IconButton(
+                icon: Icon(
+                  _supabaseClient != null
                       ? Icons.not_listed_location
                       : Icons.not_listed_location_outlined,
                 ),
@@ -637,7 +655,7 @@ supabaseKey=$supabaseKey
   // SymbolInfoWithLatLngs のリストから SymbolOptions のリストに変換
   List<SymbolOptions> _convertToSymbolOptions(
       List<SymbolInfoWithLatLng> infoList) {
-    List<SymbolOptions> optionsList = [];
+    final List<SymbolOptions> optionsList = [];
     for (SymbolInfoWithLatLng info in infoList) {
       final SymbolOptions options = SymbolOptions(
         geometry: LatLng(info.latLng.latitude, info.latLng.longitude),
@@ -676,6 +694,8 @@ supabaseKey=$supabaseKey
       _refreshMap = true;
       _refreshSymbols = true;
     });
+    _nearSpotDataMap.clear();
+    _nearSpotSymbolList.clear();
   }
 
   // ボタンの表示（非表示）入れ替え
@@ -721,6 +741,64 @@ supabaseKey=$supabaseKey
         }
       });
     }
+  }
+
+  // 近隣スポットにマーク（ピン）を立てる／消す
+  void _markNearSpot() async {
+    if (_supabaseClient == null ||
+        _yourLocation == null ||
+        !_symbolAllSet ||
+        _refreshMap ||
+        _refreshSymbols) {
+      return;
+    }
+    _controller.future.then((mapboxMap) async {
+      if (_nearSpotDataMap.isNotEmpty) {
+        // すでにマーク（ピン）が立っている場合は消す
+        await mapboxMap.removeSymbols(_nearSpotSymbolList);
+        setState(() {
+          _nearSpotDataMap.clear();
+          _nearSpotSymbolList.clear();
+        });
+        return;
+      }
+      // 近隣スポットを検索
+      final LatLng position =
+          LatLng(_yourLocation!.latitude!, _yourLocation!.longitude!);
+      final List<SpotData> spotList =
+          await searchNearSpot(_supabaseClient!, position, _distLimit);
+      if (spotList.isEmpty) {
+        return;
+      }
+      // マーク（ピン）を立てる
+      _nearSpotSymbolList =
+          await mapboxMap.addSymbols(_convertSpotToSymbolOptions(spotList));
+      setState(() {
+        for (int i = 0; i < _nearSpotSymbolList.length; i++) {
+          _nearSpotDataMap[_nearSpotSymbolList[i].id] = spotList[i];
+        }
+      });
+    });
+  }
+
+  // SpotData のリストから SymbolOptions のリストに変換
+  List<SymbolOptions> _convertSpotToSymbolOptions(List<SpotData> spotList) {
+    final List<SymbolOptions> optionsList = [];
+    for (SpotData spot in spotList) {
+      final SymbolOptions options = SymbolOptions(
+        geometry: LatLng(spot.latLng.latitude, spot.latLng.longitude),
+        textField: _formatLabel(spot.title, 5),
+        textAnchor: "top",
+        textColor: "#000",
+        textHaloColor: "#FFF",
+        textHaloWidth: 3,
+        textSize: 12.0,
+        iconImage: "mapbox-marker-icon-red",
+        iconSize: 1,
+      );
+      optionsList.add(options);
+    }
+    return optionsList;
   }
 
   // 近隣スポットを検索して一覧表示
@@ -877,7 +955,11 @@ supabaseKey=$supabaseKey
     if (_backupNow) {
       return;
     }
-    final int symbolId = _symbolInfoMap[symbol.id]!;
+    final int? symbolId = _symbolInfoMap[symbol.id];
+    if (symbolId == null) {
+      _dispNearSpotInfo(symbol);
+      return;
+    }
     final List<Picture> pictures =
         await fetchPictureRecords(symbol, _symbolInfoMap);
     final SymbolInfo symbolInfo = await fetchRecord(symbol, _symbolInfoMap);
@@ -896,6 +978,34 @@ supabaseKey=$supabaseKey
           _controller,
           pictures,
         ));
+  }
+
+  // 近隣スポットの情報を表示する
+  void _dispNearSpotInfo(Symbol symbol) async {
+    final SpotData? spotData = _nearSpotDataMap[symbol.id];
+    if (spotData == null) {
+      return;
+    }
+    showDialog(
+      context: context,
+      builder: (BuildContext context) => AlertDialog(
+        title: Text(spotData.title),
+        content: Text(
+          '''${spotData.categoryName}
+${spotData.describe}
+${spotData.prefMuni.prefecture}${spotData.prefMuni.municipalities}''',
+          textAlign: TextAlign.center,
+        ),
+        actions: <Widget>[
+          TextButton(
+            child: const Text('OK'),
+            onPressed: () {
+              Navigator.pop(context);
+            },
+          ),
+        ],
+      ),
+    );
   }
 
   // マーク（ピン）を削除する
@@ -950,7 +1060,7 @@ supabaseKey=$supabaseKey
 
   // ギャラリーで画像を選んでマーク（ピン）に追加する
   Future<List<Picture?>?> _addPicturesFromGarelly(int symbolId) async {
-    List<Picture> picList = [];
+    final List<Picture> picList = [];
     if (!_symbolAllSet) {
       return picList;
     }
@@ -1039,7 +1149,7 @@ supabaseKey=$supabaseKey
 
   // 先頭 n 文字を取得（n 文字以上なら先頭 (n-1) 文字＋「…」）
   String _formatLabel(String label, int len) {
-    int shortLen = len - 1;
+    final int shortLen = len - 1;
     return (label.length < (len + 1)
         ? label
         : '${label.substring(0, shortLen)}…');
@@ -1246,7 +1356,7 @@ $describe'''
 
   // AWS からデータリストア（確認画面）
   void _restoreDataConfirm() async {
-    List<BackupSet> backupSetList = await fetchBackupSets(_amplify);
+    final List<BackupSet> backupSetList = await fetchBackupSets(_amplify);
     if (backupSetList.isEmpty) {
       return;
     }

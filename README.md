@@ -465,7 +465,7 @@ RETURNS TABLE (
 ) AS $$
 BEGIN
   RETURN QUERY
-  SELECT ((ST_Transform(ST_SetSRID(ST_POINT(point_longitude, point_latitude), 4326), 2163) <-> ST_Transform(spot_opendata.location, 2163)) / 1000),
+  SELECT (ST_POINT(point_longitude, point_latitude)::geography <-> spot_opendata.location::geography) / 1000,
     category.category_name,
     spot_opendata.title,
     spot_opendata.describe,
@@ -476,7 +476,7 @@ BEGIN
   FROM spot_opendata
   INNER JOIN category ON spot_opendata.category_id = category.id
   WHERE
-    ST_Transform(ST_SetSRID(ST_POINT(point_longitude, point_latitude), 4326), 2163) <-> ST_Transform(spot_opendata.location, 2163) <= dist_limit;
+    (ST_POINT(point_longitude, point_latitude)::geography <-> spot_opendata.location::geography) <= dist_limit;
 END;
 $$ LANGUAGE plpgsql;
 ```

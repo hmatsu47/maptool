@@ -105,7 +105,7 @@ class _SearchKeywordPageState extends State<SearchKeywordPage> {
 
   // キーワードを変更して一覧を表示
   void _keywordChangeAndViewList(keyword) async {
-    List<PlaceName> placeList = await _searchPlaceName(keyword);
+    final List<PlaceName> placeList = await _searchPlaceName(keyword);
     setState(() {
       _placeList = placeList;
     });
@@ -113,7 +113,7 @@ class _SearchKeywordPageState extends State<SearchKeywordPage> {
 
   // 地名から緯度経度を取得
   Future<List<PlaceName>> _searchPlaceName(String keyword) async {
-    List<PlaceName> placeList = [];
+    final List<PlaceName> placeList = [];
     if (keyword == '') {
       return placeList;
     }

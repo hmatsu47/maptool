@@ -13,7 +13,7 @@ import 'package:maptool/db_access.dart';
 
 // Amplify
 void configureAmplify(AmplifyClass amplify) async {
-  AmplifyAPI apiPlugin = AmplifyAPI();
+  final AmplifyAPI apiPlugin = AmplifyAPI();
   await amplify.addPlugins([apiPlugin]);
 
   // Once Plugins are added, configure Amplify
@@ -216,7 +216,7 @@ _uploadS3(
 
 // バックアップ情報リストを AWS から取得
 Future<List<BackupSet>> fetchBackupSets(AmplifyClass amplify) async {
-  List<BackupSet> resultList = [];
+  final List<BackupSet> resultList = [];
   try {
     final RestOptions options = RestOptions(
         path: '/backupsets',
@@ -250,7 +250,7 @@ Future<void> restoreRecords(AmplifyClass amplify, String backupTitle) async {
 // Symbol 情報リストを AWS から取得
 Future<List<SymbolInfoWithLatLng>> _fetchBackupSymbolInfos(
     AmplifyClass amplify, String backupTitle) async {
-  List<SymbolInfoWithLatLng> resultList = [];
+  final List<SymbolInfoWithLatLng> resultList = [];
   try {
     final RestOptions options = RestOptions(
         path: '/backupsymbolinfos',
@@ -291,7 +291,7 @@ Future<List<SymbolInfoWithLatLng>> _fetchBackupSymbolInfos(
 // 画像情報リストを AWS から取得
 Future<List<Picture>> _fetchBackupPictures(
     AmplifyClass amplify, String backupTitle) async {
-  List<Picture> resultList = [];
+  final List<Picture> resultList = [];
   try {
     final RestOptions options = RestOptions(
         path: '/backuppictures',

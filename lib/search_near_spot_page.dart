@@ -119,7 +119,7 @@ class _SearchNearSpotPageState extends State<SearchNearSpotPage> {
     if (_keyword == '') {
       return _spotList;
     }
-    List<SpotData> filtered = [];
+    final List<SpotData> filtered = [];
     for (int i = 0; i < _spotList.length; i++) {
       if (_spotList[i].title.toLowerCase().contains(_keyword.toLowerCase()) ||
           _spotList[i].prefMuni.prefecture.contains(_keyword) ||

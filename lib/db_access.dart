@@ -107,7 +107,7 @@ Future<List<SymbolInfoWithLatLng>> fetchRecords() async {
     ],
     orderBy: 'id ASC',
   );
-  List<SymbolInfoWithLatLng> symbolInfoWithLatLngs = [];
+  final List<SymbolInfoWithLatLng> symbolInfoWithLatLngs = [];
   for (Map map in maps) {
     final SymbolInfo symbolInfo = SymbolInfo(
         map['title'],
@@ -132,7 +132,7 @@ Future<SymbolInfo> fetchRecord(
     where: 'id = ?',
     whereArgs: [id],
   );
-  Map map = maps.first;
+  final Map map = maps.first;
   return SymbolInfo(
       map['title'],
       map['describe'],
@@ -220,7 +220,7 @@ Future<List<Picture>> fetchAllPictureRecords() async {
     ],
     orderBy: 'id ASC',
   );
-  List<Picture> pictures = [];
+  final List<Picture> pictures = [];
   for (Map map in maps) {
     final Picture picture = Picture(
         map['id'],
@@ -251,7 +251,7 @@ Future<List<Picture>> fetchPictureRecords(
     where: 'symbol_id = ?',
     whereArgs: [id],
   );
-  List<Picture> pictures = [];
+  final List<Picture> pictures = [];
   for (Map map in maps) {
     final Picture picture = Picture(
         map['id'],

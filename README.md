@@ -29,6 +29,7 @@
 
  - Add external API call.（外部 API 呼び出し）
    - Search sightseeing spots etc.（近隣の観光スポット等検索）
+   - Mark sightseeing spots etc (on map).（地図上で近隣の観光スポット等のピン表示）
 
 ![画面例](map_image.png "画面例")
 

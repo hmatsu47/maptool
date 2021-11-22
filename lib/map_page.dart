@@ -665,8 +665,9 @@ supabaseKey=$supabaseKey
         textHaloColor: "#FFF",
         textHaloWidth: 3,
         textSize: 12.0,
-        iconImage: "mapbox-marker-icon-blue",
-        iconSize: 1,
+        textOffset: _styleNo != 1 ? const Offset(0, 0) : const Offset(0, 0.5),
+        iconImage: _styleNo != 1 ? "mapbox-marker-icon-blue" : "dot-11",
+        iconSize: _styleNo != 1 ? 1 : 2,
       );
       optionsList.add(options);
     }
@@ -793,8 +794,9 @@ supabaseKey=$supabaseKey
         textHaloColor: "#FFF",
         textHaloWidth: 3,
         textSize: 12.0,
-        iconImage: "mapbox-marker-icon-red",
-        iconSize: 1,
+        textOffset: _styleNo != 1 ? const Offset(0, 0) : const Offset(0, 0.5),
+        iconImage: _styleNo != 1 ? "mapbox-marker-icon-red" : "dot-9",
+        iconSize: _styleNo != 1 ? 1 : 2,
       );
       optionsList.add(options);
     }

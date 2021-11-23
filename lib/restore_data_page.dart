@@ -145,7 +145,7 @@ $describe''',
 のリストアが完了しました。'''),
         actions: <Widget>[
           TextButton(
-            child: const Text('OK'),
+            child: const Text('戻る'),
             onPressed: () {
               Navigator.popUntil(context, ModalRoute.withName('/'));
             },

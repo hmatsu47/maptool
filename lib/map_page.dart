@@ -764,8 +764,8 @@ supabaseKey=$supabaseKey
         return;
       }
       // 近隣スポットを検索
-      final LatLng position =
-          LatLng(_yourLocation!.latitude!, _yourLocation!.longitude!);
+      final CameraPosition? camera = mapboxMap.cameraPosition;
+      final LatLng position = camera!.target;
       final List<SpotData> spotList =
           await searchNearSpot(_supabaseClient!, position, _distLimit);
       if (spotList.isEmpty) {
@@ -808,40 +808,42 @@ supabaseKey=$supabaseKey
     if (_supabaseClient == null || _yourLocation == null) {
       return;
     }
-    final LatLng position =
-        LatLng(_yourLocation!.latitude!, _yourLocation!.longitude!);
-    final List<SpotData> spotList =
-        await searchNearSpot(_supabaseClient!, position, _distLimit);
-    if (spotList.isEmpty) {
-      showDialog(
-        context: context,
-        builder: (BuildContext context) => AlertDialog(
-          title: const Text('対象なし'),
-          content: const Text(
-            '近隣スポットが見つかりませんでした。',
-            textAlign: TextAlign.center,
-          ),
-          actions: <Widget>[
-            TextButton(
-              child: const Text('OK'),
-              onPressed: () {
-                Navigator.pop(context);
-              },
+    _controller.future.then((mapboxMap) async {
+      final CameraPosition? camera = mapboxMap.cameraPosition;
+      final LatLng position = camera!.target;
+      final List<SpotData> spotList =
+          await searchNearSpot(_supabaseClient!, position, _distLimit);
+      if (spotList.isEmpty) {
+        showDialog(
+          context: context,
+          builder: (BuildContext context) => AlertDialog(
+            title: const Text('対象なし'),
+            content: const Text(
+              '近隣スポットが見つかりませんでした。',
+              textAlign: TextAlign.center,
             ),
-          ],
-        ),
-      );
-      return;
-    }
-    final latLng = await Navigator.of(navigatorKey.currentContext!).pushNamed(
-        '/searchNearSpot',
-        arguments: NearSpotList(spotList, _formatLabel));
-    if (latLng is LatLng) {
-      setState(() {
-        _gpsTracking = false;
-      });
-      await _moveCameraToDetailPoint(latLng);
-    }
+            actions: <Widget>[
+              TextButton(
+                child: const Text('OK'),
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+              ),
+            ],
+          ),
+        );
+        return;
+      }
+      final latLng = await Navigator.of(navigatorKey.currentContext!).pushNamed(
+          '/searchNearSpot',
+          arguments: NearSpotList(spotList, _formatLabel));
+      if (latLng is LatLng) {
+        setState(() {
+          _gpsTracking = false;
+        });
+        await _moveCameraToDetailPoint(latLng);
+      }
+    });
   }
 
   // 全 Symbol 一覧を表示して選択した Symbol の位置へ移動
@@ -1005,9 +1007,41 @@ ${spotData.prefMuni.prefecture}${spotData.prefMuni.municipalities}''',
               Navigator.pop(context);
             },
           ),
+          TextButton(
+            child: const Text('ピンを立てる'),
+            onPressed: () {
+              _addMarkToMapSpot(spotData);
+            },
+          ),
         ],
       ),
     );
+  }
+
+  // 近隣スポットの情報を使ってマーク（ピン）を立てる
+  void _addMarkToMapSpot(SpotData spotData) async {
+    final PrefMuni prefMuni = await _getPrefMuni(spotData.latLng);
+    final symbolInfo =
+        await Navigator.of(navigatorKey.currentContext!).pushNamed(
+      '/editSymbol',
+      arguments: SymbolInfo(
+          spotData.title,
+          '${spotData.categoryName}／${spotData.describe}',
+          DateTime.now(),
+          prefMuni),
+    );
+    if (symbolInfo is SymbolInfo) {
+      // 詳細情報が入力されたらマーク（ピン）を立てる
+      await _addMarkToMap(spotData.latLng, symbolInfo);
+      await _controller.future.then((mapboxMap) async {
+        await mapboxMap.removeSymbols(_nearSpotSymbolList);
+        setState(() {
+          _nearSpotDataMap.clear();
+          _nearSpotSymbolList.clear();
+        });
+      });
+      Navigator.popUntil(context, ModalRoute.withName('/'));
+    }
   }
 
   // マーク（ピン）を削除する

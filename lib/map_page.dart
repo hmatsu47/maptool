@@ -824,7 +824,7 @@ supabaseKey=$supabaseKey
             ),
             actions: <Widget>[
               TextButton(
-                child: const Text('OK'),
+                child: const Text('戻る'),
                 onPressed: () {
                   Navigator.pop(context);
                 },
@@ -1002,7 +1002,7 @@ ${spotData.prefMuni.prefecture}${spotData.prefMuni.municipalities}''',
         ),
         actions: <Widget>[
           TextButton(
-            child: const Text('OK'),
+            child: const Text('戻る'),
             onPressed: () {
               Navigator.pop(context);
             },
@@ -1040,8 +1040,8 @@ ${spotData.prefMuni.prefecture}${spotData.prefMuni.municipalities}''',
           _nearSpotSymbolList.clear();
         });
       });
-      Navigator.popUntil(context, ModalRoute.withName('/'));
     }
+    Navigator.popUntil(context, ModalRoute.withName('/'));
   }
 
   // マーク（ピン）を削除する

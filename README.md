@@ -51,13 +51,13 @@ dependencies:
   location: ^4.3.0
   gap: ^2.0.0
   sqflite: ^2.0.0+4
-  image_picker: ^0.8.4+3
+  image_picker: ^0.8.4+4
   cross_file: ^0.3.2
   image_gallery_saver: ^1.7.1
-  path_provider: ^2.0.6
+  path_provider: ^2.0.7
   http: ^0.13.4
-  amplify_flutter: ^0.2.8
-  amplify_api: ^0.2.8
+  amplify_flutter: ^0.2.10
+  amplify_api: ^0.2.10
   minio: ^3.0.0
   font_awesome_flutter: ^9.2.0
   connectivity: ^3.0.6

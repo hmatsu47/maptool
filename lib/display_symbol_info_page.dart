@@ -15,18 +15,6 @@ class DisplaySymbolInfoPage extends StatefulWidget {
   _DisplaySymbolInfoPageState createState() => _DisplaySymbolInfoPageState();
 }
 
-// 画像の登録情報（画像保存先パス付き）
-class PictureInfo {
-  Picture picture;
-  Function modifyPicture;
-  Function removePicture;
-  Function localFile;
-  Function lookUpPicture;
-
-  PictureInfo(this.picture, this.modifyPicture, this.removePicture,
-      this.localFile, this.lookUpPicture);
-}
-
 class _DisplaySymbolInfoPageState extends State<DisplaySymbolInfoPage> {
   int _symbolId = 0;
   Symbol? _symbol;
@@ -42,6 +30,7 @@ class _DisplaySymbolInfoPageState extends State<DisplaySymbolInfoPage> {
   Function? _formatLabel;
   Function? _getPrefMuni;
   Function? _localFile;
+  Function? _localFilePath;
   Completer<MapboxMapController?>? _controller;
 
   // タイマ
@@ -64,6 +53,7 @@ class _DisplaySymbolInfoPageState extends State<DisplaySymbolInfoPage> {
     _formatLabel = args.formatLabel;
     _getPrefMuni = args.getPrefMuni;
     _localFile = args.localFile;
+    _localFilePath = args.localFilePath;
     _controller = args.controller;
 
     return Scaffold(
@@ -182,7 +172,7 @@ class _DisplaySymbolInfoPageState extends State<DisplaySymbolInfoPage> {
             _displayPictureInfo(
                 context,
                 PictureInfo(picture, _modifyPicture, _removePicture,
-                    _localFile!, _lookUpPicture));
+                    _localFile!, _localFilePath!, _lookUpPicture));
           },
         ),
       ),

@@ -979,6 +979,7 @@ supabaseKey=$supabaseKey
           _formatLabel,
           _getPrefMuni,
           _localFile,
+          _localFilePath,
           _controller,
           pictures,
         ));
@@ -1477,14 +1478,19 @@ $backupTitle'''
     );
   }
 
-  // 画像ファイル取得
-  File? _localFile(Picture picture) {
+  // 画像ファイルのパスを取得
+  String _localFilePath(Picture picture) {
     // filePath がパス付きの場合はファイル名のみを抽出
     final int pathIndexOf = picture.filePath.lastIndexOf('/');
     final String fileName = (pathIndexOf == -1
         ? picture.filePath
         : picture.filePath.substring(pathIndexOf + 1));
-    final String filePath = '$_imagePath/$fileName';
+    return '$_imagePath/$fileName';
+  }
+
+  // 画像ファイル取得
+  File? _localFile(Picture picture) {
+    final String filePath = _localFilePath(picture);
     try {
       if (File(filePath).existsSync()) {
         return File(filePath);

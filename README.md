@@ -30,6 +30,7 @@
  - Add external API call.（外部 API 呼び出し）
    - Search sightseeing spots etc.（近隣の観光スポット等検索）
    - Mark sightseeing spots etc (on map).（地図上で近隣の観光スポット等のピン表示）
+ - Share information of pictures and pins.（画像・ピン情報の共有機能）
 
 ![画面例](map_image.png "画面例")
 
@@ -62,6 +63,7 @@ dependencies:
   font_awesome_flutter: ^9.2.0
   connectivity: ^3.0.6
   supabase: ^0.2.9
+  share_plus: ^3.0.4
 ```
 
  - **Edit '`android/build.gradle`'** ( for Android / in `allprojects` -> `repositories` )

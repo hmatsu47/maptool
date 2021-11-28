@@ -3,9 +3,9 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:gap/gap.dart';
+import 'package:share_plus/share_plus.dart';
 
 import 'package:maptool/class_definition.dart';
-import 'package:maptool/display_symbol_info_page.dart';
 
 class DisplayPicturePage extends StatefulWidget {
   const DisplayPicturePage({Key? key}) : super(key: key);
@@ -19,6 +19,7 @@ class _DisplayPicturePageState extends State<DisplayPicturePage> {
   Function? _modifyPicture;
   Function? _removePicture;
   Function? _localFile;
+  Function? _localFilePath;
   Function? _lookUpPicture;
   String _comment = '';
 
@@ -29,6 +30,7 @@ class _DisplayPicturePageState extends State<DisplayPicturePage> {
     _modifyPicture = args.modifyPicture;
     _removePicture = args.removePicture;
     _localFile = args.localFile;
+    _localFilePath = args.localFilePath;
     _lookUpPicture = args.lookUpPicture;
     _comment = args.picture.comment;
 
@@ -72,6 +74,12 @@ class _DisplayPicturePageState extends State<DisplayPicturePage> {
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: <Widget>[
                     TextButton(
+                      child: const Text('共有'),
+                      onPressed: () {
+                        _sharePicture(context);
+                      },
+                    ),
+                    TextButton(
                       child: const Text('編集'),
                       onPressed: () {
                         _modifyPictureInfoDialog(context);
@@ -97,6 +105,15 @@ class _DisplayPicturePageState extends State<DisplayPicturePage> {
         ],
       ),
     );
+  }
+
+  // 共有
+  void _sharePicture(BuildContext contenxt) async {
+    List<String> imagePaths = [_localFilePath!(_picture!)];
+    final box = context.findRenderObject() as RenderBox?;
+    await Share.shareFiles(imagePaths,
+        text: _picture!.comment != '無題' ? _picture!.comment : '',
+        sharePositionOrigin: box!.localToGlobal(Offset.zero) & box.size);
   }
 
   // 画像情報変更（ダイアログ）

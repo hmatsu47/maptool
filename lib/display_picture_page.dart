@@ -110,10 +110,8 @@ class _DisplayPicturePageState extends State<DisplayPicturePage> {
   // 共有
   void _sharePicture(BuildContext contenxt) async {
     List<String> imagePaths = [_localFilePath!(_picture!)];
-    final box = context.findRenderObject() as RenderBox?;
     await Share.shareFiles(imagePaths,
-        text: _picture!.comment != '無題' ? _picture!.comment : '',
-        sharePositionOrigin: box!.localToGlobal(Offset.zero) & box.size);
+        text: _picture!.comment != '無題' ? _picture!.comment : '');
   }
 
   // 画像情報変更（ダイアログ）

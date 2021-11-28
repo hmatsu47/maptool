@@ -46,6 +46,19 @@ class Picture {
       this.cloudPath);
 }
 
+// 画像の登録情報（画像保存先パス付き）
+class PictureInfo {
+  Picture picture;
+  Function modifyPicture;
+  Function removePicture;
+  Function localFile;
+  Function localFilePath;
+  Function lookUpPicture;
+
+  PictureInfo(this.picture, this.modifyPicture, this.removePicture,
+      this.localFile, this.localFilePath, this.lookUpPicture);
+}
+
 // バックアップ情報
 class BackupSet {
   String title;
@@ -66,6 +79,7 @@ class FullSymbolInfo {
   Function formatLabel;
   Function getPrefMuni;
   Function localFile;
+  Function localFilePath;
   Completer<MapboxMapController> controller;
   List<Picture> pictures;
 
@@ -80,6 +94,7 @@ class FullSymbolInfo {
     this.formatLabel,
     this.getPrefMuni,
     this.localFile,
+    this.localFilePath,
     this.controller,
     this.pictures,
   );

@@ -76,7 +76,7 @@ class _DisplayPicturePageState extends State<DisplayPicturePage> {
                     TextButton(
                       child: const Text('共有'),
                       onPressed: () {
-                        _sharePicture(context);
+                        _sharePicture();
                       },
                     ),
                     TextButton(
@@ -108,7 +108,7 @@ class _DisplayPicturePageState extends State<DisplayPicturePage> {
   }
 
   // 共有
-  void _sharePicture(BuildContext contenxt) async {
+  void _sharePicture() async {
     List<String> imagePaths = [_localFilePath!(_picture!)];
     await Share.shareFiles(imagePaths,
         text: _picture!.comment != '無題' ? _picture!.comment : '');

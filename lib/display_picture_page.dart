@@ -39,6 +39,7 @@ class _DisplayPicturePageState extends State<DisplayPicturePage> {
         title: const Text('画像情報表示'),
       ),
       body: _makeDisplayForm(),
+      bottomNavigationBar: _makeBottomAppBar(),
     );
   }
 
@@ -74,12 +75,6 @@ class _DisplayPicturePageState extends State<DisplayPicturePage> {
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: <Widget>[
                     TextButton(
-                      child: const Text('共有'),
-                      onPressed: () {
-                        _sharePicture();
-                      },
-                    ),
-                    TextButton(
                       child: const Text('編集'),
                       onPressed: () {
                         _modifyPictureInfoDialog(context);
@@ -105,6 +100,25 @@ class _DisplayPicturePageState extends State<DisplayPicturePage> {
         ],
       ),
     );
+  }
+
+  // ボトムナビゲーションバー
+  BottomAppBar _makeBottomAppBar() {
+    return BottomAppBar(
+        child: Row(
+            mainAxisSize: MainAxisSize.max,
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: <Widget>[
+          IconButton(
+            icon: const Icon(Icons.share),
+            color: Colors.black87,
+            onPressed: () {
+              // 共有
+              _sharePicture();
+            },
+          ),
+          const Gap(4),
+        ]));
   }
 
   // 共有

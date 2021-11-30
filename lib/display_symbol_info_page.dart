@@ -61,6 +61,7 @@ class _DisplaySymbolInfoPageState extends State<DisplaySymbolInfoPage> {
         title: const Text('ピン情報表示'),
       ),
       body: _makeDisplayForm(),
+      bottomNavigationBar: _makeBottomAppBar(),
     );
   }
 
@@ -145,6 +146,25 @@ class _DisplaySymbolInfoPageState extends State<DisplaySymbolInfoPage> {
         ),
       ),
     );
+  }
+
+  // ボトムナビゲーションバー
+  BottomAppBar _makeBottomAppBar() {
+    return BottomAppBar(
+        child: Row(
+            mainAxisSize: MainAxisSize.max,
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: <Widget>[
+          IconButton(
+            icon: const Icon(Icons.share),
+            color: Colors.black87,
+            onPressed: () {
+              // 共有
+              _shareSymbolInfo();
+            },
+          ),
+          const Gap(4),
+        ]));
   }
 
   // 画像表示ウィジェット
@@ -301,4 +321,7 @@ class _DisplaySymbolInfoPageState extends State<DisplaySymbolInfoPage> {
       _pictures.remove(picture);
     });
   }
+
+  // 共有
+  void _shareSymbolInfo() {}
 }

@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 import 'package:mapbox_gl/mapbox_gl.dart';
+import 'package:share_plus/share_plus.dart';
 
 import 'package:maptool/class_definition.dart';
 import 'package:maptool/db_access.dart';
@@ -24,6 +25,7 @@ class _DisplaySymbolInfoPageState extends State<DisplaySymbolInfoPage> {
   String _describe = '';
   Map<String, int> _symbolInfoMap = {};
   List<Picture> _pictures = [];
+  final List<Picture> _checkedPictures = [];
   Function? _addPictureFromCamera;
   Function? _addPicturesFromGarelly;
   Function? _removeMark;
@@ -32,6 +34,7 @@ class _DisplaySymbolInfoPageState extends State<DisplaySymbolInfoPage> {
   Function? _localFile;
   Function? _localFilePath;
   Completer<MapboxMapController?>? _controller;
+  final List<bool> _flag = [];
 
   // タイマ
   Timer? _timer;
@@ -55,6 +58,14 @@ class _DisplaySymbolInfoPageState extends State<DisplaySymbolInfoPage> {
     _localFile = args.localFile;
     _localFilePath = args.localFilePath;
     _controller = args.controller;
+
+    if (_flag.isEmpty) {
+      setState(() {
+        for (int i = 0; i < _pictures.length; i++) {
+          _flag.add(false);
+        }
+      });
+    }
 
     return Scaffold(
       appBar: AppBar(
@@ -138,7 +149,7 @@ class _DisplaySymbolInfoPageState extends State<DisplaySymbolInfoPage> {
               child: ListView.builder(
                 itemCount: _pictures.length,
                 itemBuilder: (BuildContext context, int index) {
-                  return _pictureItem(_pictures[index]);
+                  return _pictureItem(_pictures[index], index);
                 },
               ),
             ),
@@ -168,9 +179,9 @@ class _DisplaySymbolInfoPageState extends State<DisplaySymbolInfoPage> {
   }
 
   // 画像表示ウィジェット
-  Widget _pictureItem(Picture picture) {
+  Widget _pictureItem(Picture picture, int index) {
     final File? file = _localFile!(picture);
-    final String title = _formatLabel!(picture.comment, 22);
+    final String title = _formatLabel!(picture.comment, 16);
     return Card(
       child: Container(
         decoration: BoxDecoration(
@@ -188,6 +199,18 @@ class _DisplaySymbolInfoPageState extends State<DisplaySymbolInfoPage> {
             (title != '' ? title : '無題'),
             textScaleFactor: 0.8,
           ),
+          trailing: Checkbox(
+            key: Key('picture-$index'),
+            value: _flag[index],
+            onChanged: (bool? newValue) {
+              setState(() {
+                _flag[index] = newValue!;
+              });
+              _handleCheckbox(newValue!, picture);
+            },
+            activeColor: Colors.blue,
+            visualDensity: VisualDensity.compact,
+          ),
           onTap: () {
             _displayPictureInfo(
                 context,
@@ -197,6 +220,15 @@ class _DisplaySymbolInfoPageState extends State<DisplaySymbolInfoPage> {
         ),
       ),
     );
+  }
+
+  // チェックボックス処理
+  void _handleCheckbox(bool flag, Picture picture) {
+    if (flag) {
+      _checkedPictures.add(picture);
+      return;
+    }
+    _checkedPictures.remove(picture);
   }
 
   // 撮影（写真追加）
@@ -323,5 +355,18 @@ class _DisplaySymbolInfoPageState extends State<DisplaySymbolInfoPage> {
   }
 
   // 共有
-  void _shareSymbolInfo() {}
+  void _shareSymbolInfo() async {
+    if (_checkedPictures.isEmpty) {
+      return;
+    }
+    List<String> imagePaths = [];
+    for (Picture picture in _checkedPictures) {
+      imagePaths.add(_localFilePath!(picture));
+    }
+    await Share.shareFiles(imagePaths,
+        text: _describe != ''
+            ? '''$_title
+$_describe'''
+            : _title);
+  }
 }

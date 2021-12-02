@@ -3,6 +3,7 @@ import 'package:gap/gap.dart';
 import 'package:mapbox_gl/mapbox_gl.dart';
 
 import 'package:maptool/class_definition.dart';
+import 'package:maptool/util.dart';
 
 class SearchNearSpotPage extends StatefulWidget {
   const SearchNearSpotPage({Key? key}) : super(key: key);
@@ -13,7 +14,6 @@ class SearchNearSpotPage extends StatefulWidget {
 
 class _SearchNearSpotPageState extends State<SearchNearSpotPage> {
   List<SpotData> _spotList = [];
-  Function? _formatLabel;
   String _keyword = '';
   List<SpotData> _filtered = [];
 
@@ -21,7 +21,6 @@ class _SearchNearSpotPageState extends State<SearchNearSpotPage> {
   Widget build(BuildContext context) {
     final args = ModalRoute.of(context)!.settings.arguments as NearSpotList;
     _spotList = args.spotList;
-    _formatLabel = args.formatLabel;
     _viewList();
 
     return Scaffold(
@@ -66,12 +65,12 @@ class _SearchNearSpotPageState extends State<SearchNearSpotPage> {
 
   // 項目表示ウィジェット
   Widget _spotInfoItem(SpotData spotData) {
-    final String title = _formatLabel!(spotData.title, 13);
+    final String title = formatLabel(spotData.title, 13);
     final num distance = (spotData.distance * 10).round() / 10;
     final String prefMuniText =
         '${spotData.prefMuni.prefecture}${spotData.prefMuni.municipalities}(${distance}km)';
     final String describe =
-        _formatLabel!('${spotData.categoryName}／${spotData.describe}', 14);
+        formatLabel('${spotData.categoryName}／${spotData.describe}', 14);
     return Card(
       child: Container(
         decoration: BoxDecoration(

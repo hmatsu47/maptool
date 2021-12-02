@@ -3,6 +3,7 @@ import 'package:gap/gap.dart';
 import 'package:mapbox_gl/mapbox_gl.dart';
 
 import 'package:maptool/class_definition.dart';
+import 'package:maptool/util.dart';
 
 class ListSymbolPage extends StatefulWidget {
   const ListSymbolPage({Key? key}) : super(key: key);
@@ -13,7 +14,6 @@ class ListSymbolPage extends StatefulWidget {
 
 class _ListSymbolPageState extends State<ListSymbolPage> {
   List<SymbolInfoWithLatLng> _infoList = [];
-  Function? _formatLabel;
   String _keyword = '';
   List<SymbolInfoWithLatLng> _filtered = [];
 
@@ -21,7 +21,6 @@ class _ListSymbolPageState extends State<ListSymbolPage> {
   Widget build(BuildContext context) {
     final args = ModalRoute.of(context)!.settings.arguments as FullSymbolList;
     _infoList = args.infoList;
-    _formatLabel = args.formatLabel;
     _viewList();
 
     return Scaffold(
@@ -66,8 +65,7 @@ class _ListSymbolPageState extends State<ListSymbolPage> {
 
   // 項目表示ウィジェット
   Widget _symbolInfoItem(SymbolInfoWithLatLng symbolInfoWithLatLng) {
-    final String title =
-        _formatLabel!(symbolInfoWithLatLng.symbolInfo.title, 13);
+    final String title = formatLabel(symbolInfoWithLatLng.symbolInfo.title, 13);
     final String prefMuniText =
         '${symbolInfoWithLatLng.symbolInfo.prefMuni.prefecture}${symbolInfoWithLatLng.symbolInfo.prefMuni.municipalities}';
     final String dateTimeText =

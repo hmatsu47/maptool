@@ -322,3 +322,9 @@ Future<int> removePictureRecord(Picture picture) async {
   return await _database
       .delete('pictures', where: 'id = ?', whereArgs: [picture.id]);
 }
+
+// DB 全行削除
+Future<void> removeAllTables() async {
+  await removeAllRecords();
+  await removeAllPictureRecords();
+}

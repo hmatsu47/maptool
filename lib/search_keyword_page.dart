@@ -6,6 +6,7 @@ import 'package:http/http.dart' as http;
 import 'package:mapbox_gl/mapbox_gl.dart';
 
 import 'package:maptool/class_definition.dart';
+import 'package:maptool/util.dart';
 
 class SearchKeywordPage extends StatefulWidget {
   const SearchKeywordPage({Key? key}) : super(key: key);
@@ -27,14 +28,12 @@ class PlaceName {
 class _SearchKeywordPageState extends State<SearchKeywordPage> {
   List<PlaceName> _placeList = [];
   Map<int, PrefMuni> _prefMuniMap = {};
-  Function? _formatLabel;
 
   @override
   Widget build(BuildContext context) {
     final args =
         ModalRoute.of(context)!.settings.arguments as FullSearchKeyword;
     _prefMuniMap = args.prefMuniMap;
-    _formatLabel = args.formatLabel;
 
     return Scaffold(
       appBar: AppBar(
@@ -79,7 +78,7 @@ class _SearchKeywordPageState extends State<SearchKeywordPage> {
 
   // 項目表示ウィジェット
   Widget _placeInfoItem(PlaceName placeName) {
-    final String title = _formatLabel!(placeName.title, 13);
+    final String title = formatLabel(placeName.title, 13);
     final String prefMuniText =
         '${placeName.prefMuni.prefecture}${placeName.prefMuni.municipalities}';
     return Card(

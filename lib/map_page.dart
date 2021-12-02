@@ -24,6 +24,7 @@ import 'package:maptool/aws_access.dart';
 import 'package:maptool/class_definition.dart';
 import 'package:maptool/db_access.dart';
 import 'package:maptool/supabase_access.dart';
+import 'package:maptool/util.dart';
 
 class MapPage extends StatefulWidget {
   const MapPage({Key? key}) : super(key: key);
@@ -659,7 +660,7 @@ supabaseKey=$supabaseKey
     for (SymbolInfoWithLatLng info in infoList) {
       final SymbolOptions options = SymbolOptions(
         geometry: LatLng(info.latLng.latitude, info.latLng.longitude),
-        textField: _formatLabel(info.symbolInfo.title, 5),
+        textField: formatLabel(info.symbolInfo.title, 5),
         textAnchor: "top",
         textColor: "#000",
         textHaloColor: "#FFF",
@@ -788,7 +789,7 @@ supabaseKey=$supabaseKey
     for (SpotData spot in spotList) {
       final SymbolOptions options = SymbolOptions(
         geometry: LatLng(spot.latLng.latitude, spot.latLng.longitude),
-        textField: _formatLabel(spot.title, 5),
+        textField: formatLabel(spot.title, 5),
         textAnchor: "top",
         textColor: "#000",
         textHaloColor: "#FFF",
@@ -834,9 +835,8 @@ supabaseKey=$supabaseKey
         );
         return;
       }
-      final latLng = await Navigator.of(navigatorKey.currentContext!).pushNamed(
-          '/searchNearSpot',
-          arguments: NearSpotList(spotList, _formatLabel));
+      final latLng = await Navigator.of(navigatorKey.currentContext!)
+          .pushNamed('/searchNearSpot', arguments: NearSpotList(spotList));
       if (latLng is LatLng) {
         setState(() {
           _gpsTracking = false;
@@ -852,9 +852,8 @@ supabaseKey=$supabaseKey
       return;
     }
     final List<SymbolInfoWithLatLng> infoList = await fetchRecords();
-    final latLng = await Navigator.of(navigatorKey.currentContext!).pushNamed(
-        '/listSymbol',
-        arguments: FullSymbolList(infoList, _formatLabel));
+    final latLng = await Navigator.of(navigatorKey.currentContext!)
+        .pushNamed('/listSymbol', arguments: FullSymbolList(infoList));
     if (latLng is LatLng) {
       setState(() {
         _gpsTracking = false;
@@ -929,7 +928,7 @@ supabaseKey=$supabaseKey
     await _controller.future.then((mapboxMap) async {
       final Symbol symbol = await mapboxMap.addSymbol(SymbolOptions(
         geometry: tapPoint,
-        textField: _formatLabel(symbolInfo.title, 5),
+        textField: formatLabel(symbolInfo.title, 5),
         textAnchor: "top",
         textColor: "#000",
         textHaloColor: "#FFF",
@@ -976,7 +975,6 @@ supabaseKey=$supabaseKey
           _addPictureFromCamera,
           _addPicturesFromGarelly,
           _removeMark,
-          _formatLabel,
           _getPrefMuni,
           _localFile,
           _localFilePath,
@@ -1184,14 +1182,6 @@ ${spotData.prefMuni.prefecture}${spotData.prefMuni.municipalities}''',
     });
   }
 
-  // 先頭 n 文字を取得（n 文字以上なら先頭 (n-1) 文字＋「…」）
-  String _formatLabel(String label, int len) {
-    final int shortLen = len - 1;
-    return (label.length < (len + 1)
-        ? label
-        : '${label.substring(0, shortLen)}…');
-  }
-
   // 逆ジオコーディング用の都道府県＋市区町村マップを生成
   void _makeMuniMap() async {
     final String muniJS = await _getMuniJS();
@@ -1291,7 +1281,7 @@ ${spotData.prefMuni.prefecture}${spotData.prefMuni.municipalities}''',
     if (_muniAllSet) {
       final latLng = await Navigator.of(navigatorKey.currentContext!).pushNamed(
           '/searchKeyword',
-          arguments: FullSearchKeyword(_prefMuniMap, _formatLabel));
+          arguments: FullSearchKeyword(_prefMuniMap));
       if (latLng is LatLng) {
         setState(() {
           _gpsTracking = false;
@@ -1341,7 +1331,7 @@ ${spotData.prefMuni.prefecture}${spotData.prefMuni.municipalities}''',
   }
 
   Future<void> _backupToAWS() async {
-    _showCircularProgressIndicator();
+    showCircularProgressIndicator(context);
     setState(() {
       _backupNow = true;
     });
@@ -1404,11 +1394,11 @@ $describe'''
 
   // AWS からデータリストア（実行）
   void _restoreData(String backupTitle) async {
-    _showCircularProgressIndicator();
+    showCircularProgressIndicator(context);
     if (_symbolInfoMap.isNotEmpty) {
       // 古いデータを消去
       await _clearSymbols();
-      await _removeAllTables();
+      await removeAllTables();
     }
     // AWS からバックアップデータを取得してリストア
     await restoreRecords(_amplify, backupTitle);
@@ -1429,15 +1419,9 @@ $describe'''
     });
   }
 
-  // DB 全行削除
-  Future<void> _removeAllTables() async {
-    await removeAllRecords();
-    await removeAllPictureRecords();
-  }
-
   // AWS バックアップデータを削除
   void _removeBackup(String backupTitle) async {
-    _showCircularProgressIndicator();
+    showCircularProgressIndicator(context);
     bool result = false;
     final bool removePictures =
         await removeBackupPictures(_amplify, backupTitle);
@@ -1499,20 +1483,5 @@ $backupTitle'''
     } catch (e) {
       return null;
     }
-  }
-
-  // 暗幕表示
-  void _showCircularProgressIndicator() {
-    showGeneralDialog(
-        context: context,
-        barrierDismissible: false,
-        transitionDuration: const Duration(milliseconds: 250),
-        barrierColor: Colors.black.withOpacity(0.5),
-        pageBuilder: (BuildContext context, Animation animation,
-            Animation secondaryAnimation) {
-          return const Center(
-            child: CircularProgressIndicator(),
-          );
-        });
   }
 }

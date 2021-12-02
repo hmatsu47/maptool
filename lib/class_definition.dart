@@ -76,7 +76,6 @@ class FullSymbolInfo {
   Function addPictureFromCamera;
   Function addPicturesFromGarelly;
   Function removeMark;
-  Function formatLabel;
   Function getPrefMuni;
   Function localFile;
   Function localFilePath;
@@ -91,7 +90,6 @@ class FullSymbolInfo {
     this.addPictureFromCamera,
     this.addPicturesFromGarelly,
     this.removeMark,
-    this.formatLabel,
     this.getPrefMuni,
     this.localFile,
     this.localFilePath,
@@ -103,17 +101,15 @@ class FullSymbolInfo {
 // Symbol 一覧表示画面に渡す内容一式
 class FullSymbolList {
   List<SymbolInfoWithLatLng> infoList;
-  Function formatLabel;
 
-  FullSymbolList(this.infoList, this.formatLabel);
+  FullSymbolList(this.infoList);
 }
 
 // 地名検索画面に渡す内容一式
 class FullSearchKeyword {
   Map<int, PrefMuni> prefMuniMap;
-  Function formatLabel;
 
-  FullSearchKeyword(this.prefMuniMap, this.formatLabel);
+  FullSearchKeyword(this.prefMuniMap);
 }
 
 // データリストア画面に渡す内容一式
@@ -174,7 +170,6 @@ class SpotData {
 // 近隣スポット一覧表示画面に渡す内容一式
 class NearSpotList {
   List<SpotData> spotList;
-  Function formatLabel;
 
-  NearSpotList(this.spotList, this.formatLabel);
+  NearSpotList(this.spotList);
 }

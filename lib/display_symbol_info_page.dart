@@ -8,6 +8,7 @@ import 'package:share_plus/share_plus.dart';
 
 import 'package:maptool/class_definition.dart';
 import 'package:maptool/db_access.dart';
+import 'package:maptool/util.dart';
 
 class DisplaySymbolInfoPage extends StatefulWidget {
   const DisplaySymbolInfoPage({Key? key}) : super(key: key);
@@ -29,7 +30,6 @@ class _DisplaySymbolInfoPageState extends State<DisplaySymbolInfoPage> {
   Function? _addPictureFromCamera;
   Function? _addPicturesFromGarelly;
   Function? _removeMark;
-  Function? _formatLabel;
   Function? _getPrefMuni;
   Function? _localFile;
   Function? _localFilePath;
@@ -53,7 +53,6 @@ class _DisplaySymbolInfoPageState extends State<DisplaySymbolInfoPage> {
     _addPictureFromCamera = args.addPictureFromCamera;
     _addPicturesFromGarelly = args.addPicturesFromGarelly;
     _removeMark = args.removeMark;
-    _formatLabel = args.formatLabel;
     _getPrefMuni = args.getPrefMuni;
     _localFile = args.localFile;
     _localFilePath = args.localFilePath;
@@ -181,7 +180,7 @@ class _DisplaySymbolInfoPageState extends State<DisplaySymbolInfoPage> {
   // 画像表示ウィジェット
   Widget _pictureItem(Picture picture, int index) {
     final File? file = _localFile!(picture);
-    final String title = _formatLabel!(picture.comment, 16);
+    final String title = formatLabel(picture.comment, 16);
     return Card(
       child: Container(
         decoration: BoxDecoration(
@@ -283,7 +282,7 @@ class _DisplaySymbolInfoPageState extends State<DisplaySymbolInfoPage> {
             _symbol!,
             SymbolOptions(
               geometry: _symbol!.options.geometry,
-              textField: _formatLabel!(symbolInfo.title, 5),
+              textField: formatLabel(symbolInfo.title, 5),
               textAnchor: "top",
               textColor: "#000",
               textHaloColor: "#FFF",

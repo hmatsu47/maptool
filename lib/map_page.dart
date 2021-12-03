@@ -224,7 +224,7 @@ s3Region=${configData.s3Region}
   }
 
   // 追加地図設定ファイル読み込み
-  Future<void> _configureExtStyles(localPath) async {
+  Future<void> _configureExtStyles(String localPath) async {
     File configFile = File('$localPath/$_configExtFileName');
     if (!configFile.existsSync()) {
       return;
@@ -259,7 +259,7 @@ supabaseKey=$supabaseKey
   }
 
   // Supabase 設定ファイル読み込み
-  Future<void> _configureSupabase(localPath) async {
+  Future<void> _configureSupabase(String localPath) async {
     File configFile = File('$localPath/$_configSupabaseFileName');
     if (!configFile.existsSync()) {
       return;

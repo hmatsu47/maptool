@@ -4,7 +4,8 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 import 'package:gap/gap.dart';
 
-import 'package:maptool/class_definition.dart';
+import 'class_definition.dart';
+import 'util_config.dart';
 
 class EditConfigSupabasePage extends StatefulWidget {
   const EditConfigSupabasePage({Key? key}) : super(key: key);
@@ -16,16 +17,16 @@ class EditConfigSupabasePage extends StatefulWidget {
 class _EditConfigSupabasePageState extends State<EditConfigSupabasePage> {
   String _supabaseUrl = '';
   String _supabaseKey = '';
-  Function? _configureSupabaseSave;
+  String _configSupabaseFileName = '';
   bool _hidePassword = true;
 
   @override
   Widget build(BuildContext context) {
     final args =
         ModalRoute.of(context)!.settings.arguments as FullConfigSupabaseData;
-    _supabaseUrl = args.supabaseUrl;
-    _supabaseKey = args.supabaseKey;
-    _configureSupabaseSave = args.configureSupabaseSave;
+    _supabaseUrl = args.configSupabaseData.supabaseUrl;
+    _supabaseKey = args.configSupabaseData.supabaseKey;
+    _configSupabaseFileName = args.configSupabaseFileName;
     return Scaffold(
       appBar: AppBar(
         title: const Text('Supabase設定管理'),
@@ -136,10 +137,8 @@ class _EditConfigSupabasePageState extends State<EditConfigSupabasePage> {
 
   // 保存
   void _saveConfig(BuildContext context) async {
-    await _configureSupabaseSave!(
-      _supabaseUrl,
-      _supabaseKey,
-    );
+    await configureSupabaseSave(ConfigSupabaseData(_supabaseUrl, _supabaseKey),
+        _configSupabaseFileName);
     Navigator.popUntil(context, ModalRoute.withName('/'));
   }
 }

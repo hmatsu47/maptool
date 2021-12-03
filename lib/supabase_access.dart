@@ -1,6 +1,7 @@
 import 'package:mapbox_gl/mapbox_gl.dart';
-import 'package:maptool/class_definition.dart';
 import 'package:supabase/supabase.dart';
+
+import 'class_definition.dart';
 
 // Supabase Client
 SupabaseClient getSupabaseClient(String supabaseUrl, String supabaseKey) {

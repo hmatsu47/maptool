@@ -6,9 +6,9 @@ import 'package:gap/gap.dart';
 import 'package:mapbox_gl/mapbox_gl.dart';
 import 'package:share_plus/share_plus.dart';
 
-import 'package:maptool/class_definition.dart';
-import 'package:maptool/db_access.dart';
-import 'package:maptool/util.dart';
+import 'class_definition.dart';
+import 'db_access.dart';
+import 'util_common.dart';
 
 class DisplaySymbolInfoPage extends StatefulWidget {
   const DisplaySymbolInfoPage({Key? key}) : super(key: key);

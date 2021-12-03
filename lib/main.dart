@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
 
-import 'package:maptool/edit_config_page.dart';
-import 'package:maptool/edit_config_supabase_page.dart';
-import 'package:maptool/edit_ext_style_config_page.dart';
-import 'package:maptool/edit_symbol_info_page.dart';
-import 'package:maptool/display_picture_page.dart';
-import 'package:maptool/display_symbol_info_page.dart';
-import 'package:maptool/list_symbol_page.dart';
-import 'package:maptool/map_page.dart';
-import 'package:maptool/restore_data_page.dart';
-import 'package:maptool/search_keyword_page.dart';
-import 'package:maptool/search_near_spot_page.dart';
+import 'edit_config_page.dart';
+import 'edit_config_supabase_page.dart';
+import 'edit_ext_style_config_page.dart';
+import 'edit_symbol_info_page.dart';
+import 'display_picture_page.dart';
+import 'display_symbol_info_page.dart';
+import 'list_symbol_page.dart';
+import 'map_page.dart';
+import 'restore_data_page.dart';
+import 'search_keyword_page.dart';
+import 'search_near_spot_page.dart';
 
 final navigatorKey = GlobalKey<NavigatorState>();
 

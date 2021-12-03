@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 import 'package:mapbox_gl/mapbox_gl.dart';
 
-import 'package:maptool/class_definition.dart';
-import 'package:maptool/util.dart';
+import 'class_definition.dart';
+import 'util_common.dart';
 
 class ListSymbolPage extends StatefulWidget {
   const ListSymbolPage({Key? key}) : super(key: key);

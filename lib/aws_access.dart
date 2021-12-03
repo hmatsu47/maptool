@@ -7,9 +7,9 @@ import 'package:mapbox_gl/mapbox_gl.dart';
 import 'package:minio/io.dart';
 import 'package:minio/minio.dart';
 
-import 'package:maptool/amplifyconfiguration.dart';
-import 'package:maptool/class_definition.dart';
-import 'package:maptool/db_access.dart';
+import 'amplifyconfiguration.dart';
+import 'class_definition.dart';
+import 'db_access.dart';
 
 // Amplify
 void configureAmplify(AmplifyClass amplify) async {

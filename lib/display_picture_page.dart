@@ -5,7 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:gap/gap.dart';
 import 'package:share_plus/share_plus.dart';
 
-import 'package:maptool/class_definition.dart';
+import 'class_definition.dart';
 
 class DisplayPicturePage extends StatefulWidget {
   const DisplayPicturePage({Key? key}) : super(key: key);

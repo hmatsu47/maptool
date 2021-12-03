@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'package:connectivity/connectivity.dart';
 
-import 'package:maptool/class_definition.dart';
+import 'class_definition.dart';
 
 class RestoreDataPage extends StatefulWidget {
   const RestoreDataPage({Key? key}) : super(key: key);

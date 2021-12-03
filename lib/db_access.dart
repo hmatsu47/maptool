@@ -1,7 +1,7 @@
 import 'package:mapbox_gl/mapbox_gl.dart';
 import 'package:sqflite/sqflite.dart';
 
-import 'package:maptool/class_definition.dart';
+import 'class_definition.dart';
 
 // DB
 late Database _database;

@@ -137,8 +137,9 @@ class _EditConfigSupabasePageState extends State<EditConfigSupabasePage> {
 
   // 保存
   void _saveConfig(BuildContext context) async {
-    await configureSupabaseSave(ConfigSupabaseData(_supabaseUrl, _supabaseKey),
-        _configSupabaseFileName);
+    await configureSupabaseSave(FullConfigSupabaseData(
+        ConfigSupabaseData(_supabaseUrl, _supabaseKey),
+        _configSupabaseFileName));
     Navigator.popUntil(context, ModalRoute.withName('/'));
   }
 }

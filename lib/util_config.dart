@@ -29,13 +29,15 @@ Future<List<String>> configureExtStyles(
 }
 
 // Supabase 設定ファイルに保存
-Future<void> configureSupabaseSave(
-    ConfigSupabaseData configData, String configFileName) async {
+Future<void> configureSupabaseSave(FullConfigSupabaseData configData) async {
   final localPath = (await getApplicationDocumentsDirectory()).path;
-  final File configFile = File('$localPath/$configFileName');
-  configFile.writeAsStringSync('''supabaseUrl=${configData.supabaseUrl}
-supabaseKey=${configData.supabaseKey}
-''', mode: FileMode.writeOnly);
+  final File configFile =
+      File('$localPath/${configData.configSupabaseFileName}');
+  configFile.writeAsStringSync(
+      '''supabaseUrl=${configData.configSupabaseData.supabaseUrl}
+supabaseKey=${configData.configSupabaseData.supabaseKey}
+''',
+      mode: FileMode.writeOnly);
 }
 
 // Supabase 設定ファイル読み込み

@@ -3,7 +3,8 @@ import 'package:flutter/services.dart';
 
 import 'package:gap/gap.dart';
 
-import 'package:maptool/class_definition.dart';
+import 'class_definition.dart';
+import 'util_config.dart';
 
 class EditExtStyleConfigPage extends StatefulWidget {
   const EditExtStyleConfigPage({Key? key}) : super(key: key);
@@ -14,14 +15,14 @@ class EditExtStyleConfigPage extends StatefulWidget {
 
 class _EditExtStyleConfigPageState extends State<EditExtStyleConfigPage> {
   String _extStyles = '';
-  Function? _configureExtStyleSave;
+  String _configExtFileName = '';
 
   @override
   Widget build(BuildContext context) {
     final args =
         ModalRoute.of(context)!.settings.arguments as FullConfigExtStyleData;
     _extStyles = args.extStyles;
-    _configureExtStyleSave = args.configureExtStyleSave;
+    _configExtFileName = args.configExtFileName;
     return Scaffold(
       appBar: AppBar(
         title: const Text('追加地図設定管理'),
@@ -108,7 +109,8 @@ class _EditExtStyleConfigPageState extends State<EditExtStyleConfigPage> {
 
   // 保存
   void _saveConfig(BuildContext context) async {
-    await _configureExtStyleSave!(_extStyles);
+    await configureExtStyleSave(
+        FullConfigExtStyleData(_extStyles, _configExtFileName));
     Navigator.popUntil(context, ModalRoute.withName('/'));
   }
 }

@@ -20,11 +20,12 @@ import 'package:path_provider/path_provider.dart';
 import 'package:supabase/supabase.dart';
 
 import 'main.dart';
-import 'package:maptool/aws_access.dart';
-import 'package:maptool/class_definition.dart';
-import 'package:maptool/db_access.dart';
-import 'package:maptool/supabase_access.dart';
-import 'package:maptool/util.dart';
+import 'aws_access.dart';
+import 'class_definition.dart';
+import 'db_access.dart';
+import 'supabase_access.dart';
+import 'util_common.dart';
+import 'util_config.dart';
 
 class MapPage extends StatefulWidget {
   const MapPage({Key? key}) : super(key: key);
@@ -175,8 +176,15 @@ s3Region=${configData.s3Region}
       }
     }
     // 追加設定ファイル
-    await _configureExtStyles(localPath);
-    await _configureSupabase(localPath);
+    List<String> addStyle =
+        await configureExtStyles(localPath, _configExtFileName);
+    if (addStyle.isNotEmpty) {
+      _style.addAll(addStyle);
+    }
+    final ConfigSupabaseData configSupabaseData =
+        await configureSupabase(localPath, _configSupabaseFileName);
+    _supabaseUrl = configSupabaseData.supabaseUrl;
+    _supabaseKey = configSupabaseData.supabaseKey;
     // 画像パス
     _imagePath = localPath;
     setState(() {
@@ -216,27 +224,6 @@ s3Region=${configData.s3Region}
             _s3Bucket, _s3Region, _configureSave));
   }
 
-  // 追加地図設定ファイルに保存
-  void _configureExtStyleSave(String extStyles) async {
-    final localPath = (await getApplicationDocumentsDirectory()).path;
-    final File configFile = File('$localPath/$_configExtFileName');
-    configFile.writeAsStringSync(extStyles, mode: FileMode.writeOnly);
-  }
-
-  // 追加地図設定ファイル読み込み
-  Future<void> _configureExtStyles(localPath) async {
-    File configFile = File('$localPath/$_configExtFileName');
-    if (!configFile.existsSync()) {
-      return;
-    }
-    final List<String> config = configFile.readAsLinesSync();
-    for (String line in config) {
-      if (line != '') {
-        _style.add(line);
-      }
-    }
-  }
-
   // 追加地図設定画面呼び出し
   _editExtConfigStylePage() async {
     final localPath = (await getApplicationDocumentsDirectory()).path;
@@ -246,40 +233,7 @@ s3Region=${configData.s3Region}
       extStyles = configFile.readAsStringSync();
     }
     await Navigator.of(navigatorKey.currentContext!).pushNamed('/editExtConfig',
-        arguments: FullConfigExtStyleData(extStyles, _configureExtStyleSave));
-  }
-
-  // Supabase 設定ファイルに保存
-  void _configureSupabaseSave(String supabaseUrl, String supabaseKey) async {
-    final localPath = (await getApplicationDocumentsDirectory()).path;
-    final File configFile = File('$localPath/$_configSupabaseFileName');
-    configFile.writeAsStringSync('''supabaseUrl=$supabaseUrl
-supabaseKey=$supabaseKey
-''', mode: FileMode.writeOnly);
-  }
-
-  // Supabase 設定ファイル読み込み
-  Future<void> _configureSupabase(localPath) async {
-    File configFile = File('$localPath/$_configSupabaseFileName');
-    if (!configFile.existsSync()) {
-      return;
-    }
-    final List<String> config = configFile.readAsLinesSync();
-    for (String line in config) {
-      final int position = line.indexOf('=');
-      if (position != -1) {
-        final String itemName = line.substring(0, position);
-        final String itemValue = line.substring(position + 1);
-        switch (itemName) {
-          case 'supabaseUrl':
-            _supabaseUrl = itemValue;
-            break;
-          case 'supabaseKey':
-            _supabaseKey = itemValue;
-            break;
-        }
-      }
-    }
+        arguments: FullConfigExtStyleData(extStyles, _configExtFileName));
   }
 
   // Supabase 設定画面呼び出し
@@ -287,7 +241,8 @@ supabaseKey=$supabaseKey
     await Navigator.of(navigatorKey.currentContext!).pushNamed(
         '/editConfigSupabase',
         arguments: FullConfigSupabaseData(
-            _supabaseUrl, _supabaseKey, _configureSupabaseSave));
+            ConfigSupabaseData(_supabaseUrl, _supabaseKey),
+            _configSupabaseFileName));
   }
 
   @override

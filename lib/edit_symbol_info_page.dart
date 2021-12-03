@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:gap/gap.dart';
 
-import 'package:maptool/class_definition.dart';
+import 'class_definition.dart';
 
 class EditSymbolInfoPage extends StatefulWidget {
   const EditSymbolInfoPage({Key? key}) : super(key: key);

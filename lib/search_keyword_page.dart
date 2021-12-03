@@ -5,8 +5,8 @@ import 'package:gap/gap.dart';
 import 'package:http/http.dart' as http;
 import 'package:mapbox_gl/mapbox_gl.dart';
 
-import 'package:maptool/class_definition.dart';
-import 'package:maptool/util.dart';
+import 'class_definition.dart';
+import 'util_common.dart';
 
 class SearchKeywordPage extends StatefulWidget {
   const SearchKeywordPage({Key? key}) : super(key: key);

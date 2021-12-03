@@ -4,7 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:gap/gap.dart';
 
-import 'package:maptool/class_definition.dart';
+import 'class_definition.dart';
 
 class EditConfigPage extends StatefulWidget {
   const EditConfigPage({Key? key}) : super(key: key);

@@ -1,8 +1,8 @@
-// マーク（ピン）の登録情報
 import 'dart:async';
 
 import 'package:mapbox_gl/mapbox_gl.dart';
 
+// マーク（ピン）の登録情報
 class SymbolInfo {
   String title;
   String describe;
@@ -139,19 +139,25 @@ class FullConfigData {
 // 追加地図設定管理画面に渡す内容一式
 class FullConfigExtStyleData {
   String extStyles;
-  Function configureExtStyleSave;
+  String configExtFileName;
 
-  FullConfigExtStyleData(this.extStyles, this.configureExtStyleSave);
+  FullConfigExtStyleData(this.extStyles, this.configExtFileName);
+}
+
+// Supabase 設定管理画面に渡す内容一式
+class ConfigSupabaseData {
+  String supabaseUrl;
+  String supabaseKey;
+
+  ConfigSupabaseData(this.supabaseUrl, this.supabaseKey);
 }
 
 // Supabase 設定管理画面に渡す内容一式
 class FullConfigSupabaseData {
-  String supabaseUrl;
-  String supabaseKey;
-  Function configureSupabaseSave;
+  ConfigSupabaseData configSupabaseData;
+  String configSupabaseFileName;
 
-  FullConfigSupabaseData(
-      this.supabaseUrl, this.supabaseKey, this.configureSupabaseSave);
+  FullConfigSupabaseData(this.configSupabaseData, this.configSupabaseFileName);
 }
 
 // Supabase get_spots の内容

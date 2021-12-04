@@ -125,56 +125,22 @@ class _MapPageState extends State<MapPage> {
     _configureApplication();
   }
 
-  // 設定ファイルに保存
-  void _configureSave(FullConfigData configData) async {
-    final localPath = (await getApplicationDocumentsDirectory()).path;
-    final File configFile = File('$localPath/$_configFileName');
-    configFile.writeAsStringSync('''style=${configData.style}
-s3AccessKey=${configData.s3AccessKey}
-s3SecretKey=${configData.s3SecretKey}
-s3Bucket=${configData.s3Bucket}
-s3Region=${configData.s3Region}
-''', mode: FileMode.writeOnly);
-  }
-
   // 設定ファイル読み込み
   void _configureApplication() async {
     final localPath = (await getApplicationDocumentsDirectory()).path;
     File configFile = File('$localPath/$_configFileName');
     if (!configFile.existsSync()) {
       _style.add('');
-      _styleNo = 0;
       await _editConfigPage();
       configFile = File('$localPath/$_configFileName');
     }
-    final List<String> config = configFile.readAsLinesSync();
-    for (String line in config) {
-      final int position = line.indexOf('=');
-      if (position != -1) {
-        final String itemName = line.substring(0, position);
-        final String itemValue = line.substring(position + 1);
-        switch (itemName) {
-          case 'style':
-            _style.add(itemValue);
-            // 渋滞状況マップはデフォルトで実装
-            _style.add(MapboxStyles.TRAFFIC_DAY);
-            _styleNo = 0;
-            break;
-          case 's3AccessKey':
-            _s3AccessKey = itemValue;
-            break;
-          case 's3SecretKey':
-            _s3SecretKey = itemValue;
-            break;
-          case 's3Bucket':
-            _s3Bucket = itemValue;
-            break;
-          case 's3Region':
-            _s3Region = itemValue;
-            break;
-        }
-      }
-    }
+    final ReadConfigData readConfigData = configureRead(configFile);
+    _style.clear();
+    _style.addAll(readConfigData.style);
+    _s3AccessKey = readConfigData.s3AccessKey;
+    _s3SecretKey = readConfigData.s3SecretKey;
+    _s3Bucket = readConfigData.s3Bucket;
+    _s3Region = readConfigData.s3Region;
     // 追加設定ファイル
     List<String> addStyle =
         await configureExtStyles(localPath, _configExtFileName);
@@ -221,7 +187,7 @@ s3Region=${configData.s3Region}
   _editConfigPage() async {
     await Navigator.of(navigatorKey.currentContext!).pushNamed('/editConfig',
         arguments: FullConfigData(_style[0], _s3AccessKey, _s3SecretKey,
-            _s3Bucket, _s3Region, _configureSave));
+            _s3Bucket, _s3Region, _configFileName));
   }
 
   // 追加地図設定画面呼び出し

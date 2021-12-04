@@ -5,6 +5,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:gap/gap.dart';
 
 import 'class_definition.dart';
+import 'util_config.dart';
 
 class EditConfigPage extends StatefulWidget {
   const EditConfigPage({Key? key}) : super(key: key);
@@ -19,7 +20,7 @@ class _EditConfigPageState extends State<EditConfigPage> {
   String _s3SecretKey = '';
   String _s3Bucket = '';
   String _s3Region = '';
-  Function? _configureSave;
+  String _configFileName = '';
 
   bool _isConfigChange = false;
   bool _isStyleError = false;
@@ -37,7 +38,7 @@ class _EditConfigPageState extends State<EditConfigPage> {
     _s3SecretKey = args.s3SecretKey;
     _s3Bucket = args.s3Bucket;
     _s3Region = args.s3Region;
-    _configureSave = args.configureSave;
+    _configFileName = args.configFileName;
     return Scaffold(
       appBar: AppBar(
         title: const Text('基本設定管理'),
@@ -260,8 +261,8 @@ class _EditConfigPageState extends State<EditConfigPage> {
   // 保存
   void _saveConfig(BuildContext context) async {
     final FullConfigData configData = FullConfigData(_style, _s3AccessKey,
-        _s3SecretKey, _s3Bucket, _s3Region, _configureSave!);
-    await _configureSave!(configData);
+        _s3SecretKey, _s3Bucket, _s3Region, _configFileName);
+    await configureSave(configData);
     if (!_isConfigChange) {
       Navigator.pop(context);
     } else {

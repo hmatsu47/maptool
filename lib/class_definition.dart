@@ -123,6 +123,18 @@ class FullRestoreData {
       this.backupSetList, this.symbolSet, this.restoreData, this.removeBackup);
 }
 
+// 設定ファイルから読み取った内容一式
+class ReadConfigData {
+  List<String> style;
+  String s3AccessKey;
+  String s3SecretKey;
+  String s3Bucket;
+  String s3Region;
+
+  ReadConfigData(this.style, this.s3AccessKey, this.s3SecretKey, this.s3Bucket,
+      this.s3Region);
+}
+
 // 設定管理画面に渡す内容一式
 class FullConfigData {
   String style;
@@ -130,10 +142,10 @@ class FullConfigData {
   String s3SecretKey;
   String s3Bucket;
   String s3Region;
-  Function configureSave;
+  String configFileName;
 
   FullConfigData(this.style, this.s3AccessKey, this.s3SecretKey, this.s3Bucket,
-      this.s3Region, this.configureSave);
+      this.s3Region, this.configFileName);
 }
 
 // 追加地図設定管理画面に渡す内容一式

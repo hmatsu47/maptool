@@ -468,7 +468,7 @@ RETURNS TABLE (
 ) AS $$
 BEGIN
   RETURN QUERY
-  SELECT (ST_POINT(point_longitude, point_latitude)::geography <-> spot_opendata.location::geography) / 1000,
+  SELECT ((ST_POINT(point_longitude, point_latitude)::geography <-> spot_opendata.location::geography) / 1000) AS distance,
     category.category_name,
     spot_opendata.title,
     spot_opendata.describe,
@@ -479,7 +479,8 @@ BEGIN
   FROM spot_opendata
   INNER JOIN category ON spot_opendata.category_id = category.id
   WHERE
-    (ST_POINT(point_longitude, point_latitude)::geography <-> spot_opendata.location::geography) <= dist_limit;
+    (ST_POINT(point_longitude, point_latitude)::geography <-> spot_opendata.location::geography) <= dist_limit
+  ORDER BY distance;
 END;
 $$ LANGUAGE plpgsql;
 ```

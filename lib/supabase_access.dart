@@ -29,6 +29,5 @@ Future<List<SpotData>> searchNearSpot(
         PrefMuni(item['prefecture'] as String, item['municipality'] as String));
     resultList.add(spotData);
   }
-  resultList.sort((a, b) => a.distance.compareTo(b.distance));
   return resultList;
 }

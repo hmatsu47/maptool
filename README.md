@@ -53,7 +53,6 @@ dependencies:
   gap: ^2.0.0
   sqflite: ^2.0.1
   image_picker: ^0.8.4+4
-  cross_file: ^0.3.2
   image_gallery_saver: ^1.7.1
   path_provider: ^2.0.7
   http: ^0.13.4

@@ -6,7 +6,6 @@ import 'dart:typed_data';
 
 import 'package:amplify_flutter/amplify.dart';
 import 'package:connectivity/connectivity.dart';
-import 'package:cross_file/cross_file.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:gap/gap.dart';

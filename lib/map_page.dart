@@ -690,6 +690,7 @@ class _MapPageState extends State<MapPage> {
       final List<SpotData> spotList =
           await searchNearSpot(_supabaseClient!, position, _distLimit);
       if (spotList.isEmpty) {
+        _noSpot();
         return;
       }
       // マーク（ピン）を立てる
@@ -735,24 +736,7 @@ class _MapPageState extends State<MapPage> {
       final List<SpotData> spotList =
           await searchNearSpot(_supabaseClient!, position, _distLimit);
       if (spotList.isEmpty) {
-        showDialog(
-          context: context,
-          builder: (BuildContext context) => AlertDialog(
-            title: const Text('対象なし'),
-            content: const Text(
-              '近隣スポットが見つかりませんでした。',
-              textAlign: TextAlign.center,
-            ),
-            actions: <Widget>[
-              TextButton(
-                child: const Text('戻る'),
-                onPressed: () {
-                  Navigator.pop(context);
-                },
-              ),
-            ],
-          ),
-        );
+        _noSpot();
         return;
       }
       final latLng = await Navigator.of(navigatorKey.currentContext!)
@@ -764,6 +748,28 @@ class _MapPageState extends State<MapPage> {
         await _moveCameraToDetailPoint(latLng);
       }
     });
+  }
+
+  // 近隣スポットなし
+  void _noSpot() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) => AlertDialog(
+        title: const Text('対象なし'),
+        content: const Text(
+          '近隣スポットが見つかりませんでした。',
+          textAlign: TextAlign.center,
+        ),
+        actions: <Widget>[
+          TextButton(
+            child: const Text('戻る'),
+            onPressed: () {
+              Navigator.pop(context);
+            },
+          ),
+        ],
+      ),
+    );
   }
 
   // 全 Symbol 一覧を表示して選択した Symbol の位置へ移動

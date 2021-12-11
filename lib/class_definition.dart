@@ -172,6 +172,14 @@ class FullConfigSupabaseData {
   FullConfigSupabaseData(this.configSupabaseData, this.configSupabaseFileName);
 }
 
+// Supabase category の内容
+class SpotCategory {
+  int id;
+  String name;
+
+  SpotCategory(this.id, this.name);
+}
+
 // Supabase get_spots の内容
 class SpotData {
   num distance;

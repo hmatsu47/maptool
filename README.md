@@ -454,7 +454,7 @@ CREATE INDEX spot_pref_muni_idx ON spot_opendata (pref_muni);
 
 ```sql:CREATE FUNCTION
 CREATE OR REPLACE 
- FUNCTION get_spots(point_latitude double precision, point_longitude double precision, dist_limit int)
+ FUNCTION get_spots(point_latitude double precision, point_longitude double precision, dist_limit int, category_id_number int)
 RETURNS TABLE (
   distance double precision,
   category_name text,
@@ -479,6 +479,8 @@ BEGIN
   INNER JOIN category ON spot_opendata.category_id = category.id
   WHERE
     (ST_POINT(point_longitude, point_latitude)::geography <-> spot_opendata.location::geography) <= dist_limit
+  AND
+    (CASE WHEN category_id_number = -1 THEN true ELSE category.id = category_id_number END)
   ORDER BY distance;
 END;
 $$ LANGUAGE plpgsql;

@@ -96,6 +96,7 @@ class _MapPageState extends State<MapPage> {
   // スポット検索用の Symbol 情報一覧
   final Map<String, SpotData> _nearSpotDataMap = {};
   List<Symbol> _nearSpotSymbolList = [];
+  int? _nearSpotCategory;
   // アイコンボタンの表示状態（0:非表示／1:追加）
   ButtonType _buttonType = ButtonType.invisible;
 
@@ -496,6 +497,17 @@ class _MapPageState extends State<MapPage> {
               IconButton(
                 icon: Icon(
                   _supabaseClient != null
+                      ? Icons.filter_alt
+                      : Icons.filter_alt_outlined,
+                ),
+                color: Colors.blue[700],
+                onPressed: () {
+                  _filterMarkedNearSpot();
+                },
+              ),
+              IconButton(
+                icon: Icon(
+                  _supabaseClient != null
                       ? (_nearSpotDataMap.isEmpty
                           ? FontAwesomeIcons.mapMarkedAlt
                           : FontAwesomeIcons.solidMap)
@@ -503,8 +515,15 @@ class _MapPageState extends State<MapPage> {
                 ),
                 color: Colors.blue[700],
                 onPressed: () {
-                  // 近隣スポットにマーク（ピン）を立てる
-                  _markNearSpot();
+                  // 近隣スポットにマーク（ピン）を立てる／消す
+                  if (_nearSpotDataMap.isEmpty) {
+                    setState(() {
+                      _nearSpotCategory = null;
+                    });
+                    _markNearSpot();
+                  } else {
+                    _clearMarkedNearSpot();
+                  }
                 },
               ),
               IconButton(
@@ -665,8 +684,8 @@ class _MapPageState extends State<MapPage> {
     }
   }
 
-  // 近隣スポットにマーク（ピン）を立てる／消す
-  void _markNearSpot() async {
+  // 近隣スポットにマーク（ピン）を立てる
+  Future<void> _markNearSpot() async {
     if (_supabaseClient == null ||
         _yourLocation == null ||
         !_symbolAllSet ||
@@ -675,20 +694,11 @@ class _MapPageState extends State<MapPage> {
       return;
     }
     _controller.future.then((mapboxMap) async {
-      if (_nearSpotDataMap.isNotEmpty) {
-        // すでにマーク（ピン）が立っている場合は消す
-        await mapboxMap.removeSymbols(_nearSpotSymbolList);
-        setState(() {
-          _nearSpotDataMap.clear();
-          _nearSpotSymbolList.clear();
-        });
-        return;
-      }
       // 近隣スポットを検索
       final CameraPosition? camera = mapboxMap.cameraPosition;
       final LatLng position = camera!.target;
-      final List<SpotData> spotList =
-          await searchNearSpot(_supabaseClient!, position, _distLimit);
+      final List<SpotData> spotList = await searchNearSpot(
+          _supabaseClient!, position, _distLimit, _nearSpotCategory);
       if (spotList.isEmpty) {
         _noSpot();
         return;
@@ -702,6 +712,79 @@ class _MapPageState extends State<MapPage> {
         }
       });
     });
+  }
+
+  // 近隣スポットのマーク（ピン）を消す
+  Future<void> _clearMarkedNearSpot() async {
+    if (_nearSpotDataMap.isEmpty) {
+      return;
+    }
+    // すでにマーク（ピン）が立っている場合は消す
+    _controller.future.then((mapboxMap) async {
+      await mapboxMap.removeSymbols(_nearSpotSymbolList);
+      setState(() {
+        _nearSpotDataMap.clear();
+        _nearSpotSymbolList.clear();
+      });
+    });
+  }
+
+  // 近隣スポットのカテゴリを絞り込む
+  void _filterMarkedNearSpot() async {
+    if (_supabaseClient == null ||
+        _yourLocation == null ||
+        !_symbolAllSet ||
+        _refreshMap ||
+        _refreshSymbols) {
+      return;
+    }
+    final List<SpotCategory> categoryList =
+        await searchSpotCategory(_supabaseClient!);
+    if (categoryList.isEmpty) {
+      return;
+    }
+    final int? category = await _selectSpotCategory(categoryList);
+    // 一旦マーク（ピン）を消す
+    await _clearMarkedNearSpot();
+    // 対象を絞り込んでマーク（ピン）を表示する
+    setState(() {
+      _nearSpotCategory = category;
+    });
+    await _markNearSpot();
+  }
+
+  // 近隣スポットのカテゴリ選択肢を表示
+  Future<int?> _selectSpotCategory(List<SpotCategory> categoryList) async {
+    return await showModalBottomSheet<int>(
+      context: context,
+      builder: (BuildContext context) {
+        return Column(
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            Flexible(
+              child: ListView.builder(
+                itemCount: categoryList.length,
+                itemBuilder: (BuildContext context, int index) {
+                  return _spotCategoryItem(
+                      categoryList[index],
+                      _nearSpotCategory != null &&
+                          categoryList[index].id == _nearSpotCategory);
+                },
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  // 近隣スポットのカテゴリ選択肢
+  Widget _spotCategoryItem(SpotCategory category, bool checked) {
+    final String categoryName = formatLabel(category.name, 12);
+    final String checkMark = (checked ? ' ✅' : '');
+    return ListTile(
+        title: Text('${category.id}. $categoryName$checkMark'),
+        onTap: () => Navigator.of(context).pop(category.id));
   }
 
   // SpotData のリストから SymbolOptions のリストに変換
@@ -734,8 +817,11 @@ class _MapPageState extends State<MapPage> {
       final CameraPosition? camera = mapboxMap.cameraPosition;
       final LatLng position = camera!.target;
       final List<SpotData> spotList =
-          await searchNearSpot(_supabaseClient!, position, _distLimit);
+          await searchNearSpot(_supabaseClient!, position, _distLimit, null);
       if (spotList.isEmpty) {
+        setState(() {
+          _nearSpotCategory = null;
+        });
         _noSpot();
         return;
       }

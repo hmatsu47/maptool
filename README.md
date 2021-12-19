@@ -54,11 +54,11 @@ dependencies:
   sqflite: ^2.0.1
   image_picker: ^0.8.4+4
   image_gallery_saver: ^1.7.1
-  path_provider: ^2.0.7
+  path_provider: ^2.0.8
   http: ^0.13.4
   amplify_flutter: ^0.2.10
   amplify_api: ^0.2.10
-  minio: ^3.0.0
+  minio: ^3.1.0
   font_awesome_flutter: ^9.2.0
   connectivity: ^3.0.6
   supabase: ^0.2.10

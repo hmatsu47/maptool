@@ -1094,6 +1094,7 @@ ${spotData.prefMuni.prefecture}${spotData.prefMuni.municipalities}''',
       // 写真を保存する
       return await _saveAndRecordPicture(photo, symbolId, true);
     });
+    return null;
   }
 
   // 写真を撮影する

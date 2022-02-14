@@ -4,7 +4,6 @@ import 'dart:io';
 import 'dart:math';
 import 'dart:typed_data';
 
-import 'package:amplify_flutter/amplify.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -103,9 +102,6 @@ class _MapPageState extends State<MapPage> {
   // 現在位置の監視状況
   StreamSubscription? _locationChangedListen;
 
-  // Amplify
-  final _amplify = Amplify;
-
   // Minio(S3)
   Minio? _minio;
 
@@ -158,7 +154,7 @@ class _MapPageState extends State<MapPage> {
     });
 
     // Amplify
-    configureAmplify(_amplify);
+    configureAmplify();
 
     // Minio
     _minio = configureMinio(_s3Region, _s3AccessKey, _s3SecretKey);
@@ -1351,13 +1347,13 @@ ${spotData.prefMuni.prefecture}${spotData.prefMuni.municipalities}''',
     bool result = false;
     String describe = '';
     final String backupTitle = DateTime.now().toString().substring(0, 19);
-    final int? countPicture = await backupPictures(
-        _amplify, _minio!, backupTitle, _imagePath, _s3Bucket);
+    final int? countPicture =
+        await backupPictures(_minio!, backupTitle, _imagePath, _s3Bucket);
     if (countPicture != null) {
-      final int? countSymbol = await backupSymbolInfos(_amplify, backupTitle);
+      final int? countSymbol = await backupSymbolInfos(backupTitle);
       if (countSymbol != null) {
         describe = '(ピン $countSymbol / 画像 $countPicture)';
-        result = await backupSet(_amplify, backupTitle, describe);
+        result = await backupSet(backupTitle, describe);
       }
     }
     setState(() {
@@ -1396,7 +1392,7 @@ $describe'''
 
   // AWS からデータリストア（確認画面）
   void _restoreDataConfirm() async {
-    final List<BackupSet> backupSetList = await fetchBackupSets(_amplify);
+    final List<BackupSet> backupSetList = await fetchBackupSets();
     if (backupSetList.isEmpty) {
       return;
     }
@@ -1414,9 +1410,9 @@ $describe'''
       await removeAllTables();
     }
     // AWS からバックアップデータを取得してリストア
-    await restoreRecords(_amplify, backupTitle);
+    await restoreRecords(backupTitle);
     await restorePictureRecords(
-        _amplify, _minio!, backupTitle, _imagePath, _s3Bucket, _localFile);
+        _minio!, backupTitle, _imagePath, _s3Bucket, _localFile);
     // リストアした DB から Symbol 情報を読み込んで地図に表示する
     await _addSymbols();
   }
@@ -1436,13 +1432,11 @@ $describe'''
   void _removeBackup(String backupTitle) async {
     showCircularProgressIndicator(context);
     bool result = false;
-    final bool removePictures =
-        await removeBackupPictures(_amplify, backupTitle);
+    final bool removePictures = await removeBackupPictures(backupTitle);
     if (removePictures) {
-      final bool removeSymbolInfos =
-          await removeBackupSymbolInfos(_amplify, backupTitle);
+      final bool removeSymbolInfos = await removeBackupSymbolInfos(backupTitle);
       if (removeSymbolInfos) {
-        result = await removeBackupSet(_amplify, backupTitle);
+        result = await removeBackupSet(backupTitle);
       }
     }
     _showRemoveBackupResult(backupTitle, result);

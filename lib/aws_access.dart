@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:amplify_api/amplify_api.dart';
-import 'package:amplify_flutter/amplify.dart';
+import 'package:amplify_flutter/amplify_flutter.dart';
 import 'package:mapbox_gl/mapbox_gl.dart';
 import 'package:minio/io.dart';
 import 'package:minio/minio.dart';
@@ -12,14 +12,14 @@ import 'class_definition.dart';
 import 'db_access.dart';
 
 // Amplify
-void configureAmplify(AmplifyClass amplify) async {
+void configureAmplify() async {
   final AmplifyAPI apiPlugin = AmplifyAPI();
-  await amplify.addPlugins([apiPlugin]);
+  await Amplify.addPlugins([apiPlugin]);
 
   // Once Plugins are added, configure Amplify
   // Note: Amplify can only be configured once.
   try {
-    await amplify.configure(amplifyconfig);
+    await Amplify.configure(amplifyconfig);
   } on AmplifyAlreadyConfiguredException {
     // ignore: avoid_print
     print(
@@ -43,8 +43,7 @@ Minio configureMinio(String s3Region, String s3AccessKey, String s3SecretKey) {
 }
 
 // バックアップ情報を登録
-Future<bool> backupSet(
-    AmplifyClass amplify, String backupTitle, String describe) async {
+Future<bool> backupSet(String backupTitle, String describe) async {
   try {
     final RestOptions options = RestOptions(
         path: '/backupsets',
@@ -53,7 +52,7 @@ Future<bool> backupSet(
                 ' {"title": ${jsonEncode(backupTitle)}'
                 ', "describe": ${jsonEncode(describe)}}'
                 ']}}')));
-    final RestOperation restOperation = amplify.API.post(restOptions: options);
+    final RestOperation restOperation = Amplify.API.post(restOptions: options);
     await restOperation.response;
     // ignore: avoid_print
     print('POST call (/backupsets) succeeded');
@@ -66,7 +65,7 @@ Future<bool> backupSet(
 }
 
 // Symbol 情報をバックアップ
-Future<int?> backupSymbolInfos(AmplifyClass amplify, String backupTitle) async {
+Future<int?> backupSymbolInfos(String backupTitle) async {
   final List<SymbolInfoWithLatLng> records = await fetchRecords();
   String body = '';
   for (SymbolInfoWithLatLng record in records) {
@@ -88,7 +87,7 @@ Future<int?> backupSymbolInfos(AmplifyClass amplify, String backupTitle) async {
         ', "municipalities": ${jsonEncode(municipalities)}'
         '}, ';
     if (body.length > 10000) {
-      final bool infoSave = await _backupSymbolInfoApi(amplify, body);
+      final bool infoSave = await _backupSymbolInfoApi(body);
       if (!infoSave) {
         return null;
       }
@@ -96,7 +95,7 @@ Future<int?> backupSymbolInfos(AmplifyClass amplify, String backupTitle) async {
     }
   }
   if (body != '') {
-    final bool infoSave = await _backupSymbolInfoApi(amplify, body);
+    final bool infoSave = await _backupSymbolInfoApi(body);
     if (!infoSave) {
       return null;
     }
@@ -105,7 +104,7 @@ Future<int?> backupSymbolInfos(AmplifyClass amplify, String backupTitle) async {
 }
 
 // Symbol 情報バックアップ API 呼び出し
-Future<bool> _backupSymbolInfoApi(AmplifyClass amplify, String body) async {
+Future<bool> _backupSymbolInfoApi(String body) async {
   final RestOptions options = RestOptions(
       path: '/backupsymbolinfos',
       body: const Utf8Encoder().convert('{"OperationType": "PUT"'
@@ -113,7 +112,7 @@ Future<bool> _backupSymbolInfoApi(AmplifyClass amplify, String body) async {
           (body.substring(0, body.length - 2)) +
           ']}}'));
   try {
-    final RestOperation restOperation = amplify.API.post(restOptions: options);
+    final RestOperation restOperation = Amplify.API.post(restOptions: options);
     await restOperation.response;
     // ignore: avoid_print
     print('POST call (/backupsymbolinfos) succeeded');
@@ -126,8 +125,8 @@ Future<bool> _backupSymbolInfoApi(AmplifyClass amplify, String body) async {
 }
 
 // 画像情報をバックアップ
-Future<int?> backupPictures(AmplifyClass amplify, Minio minio,
-    String backupTitle, String imagePath, String s3Bucket) async {
+Future<int?> backupPictures(
+    Minio minio, String backupTitle, String imagePath, String s3Bucket) async {
   final List<Picture> records = await fetchAllPictureRecords();
   String body = '';
   for (Picture record in records) {
@@ -157,7 +156,7 @@ Future<int?> backupPictures(AmplifyClass amplify, Minio minio,
         ', "cloudPath": ${jsonEncode(cloudPath)}'
         '}, ';
     if (body.length > 10000) {
-      final bool pictureSave = await _backupPictureApi(amplify, body);
+      final bool pictureSave = await _backupPictureApi(body);
       if (!pictureSave) {
         return null;
       }
@@ -165,7 +164,7 @@ Future<int?> backupPictures(AmplifyClass amplify, Minio minio,
     }
   }
   if (body != '') {
-    final bool pictureSave = await _backupPictureApi(amplify, body);
+    final bool pictureSave = await _backupPictureApi(body);
     if (!pictureSave) {
       return null;
     }
@@ -174,7 +173,7 @@ Future<int?> backupPictures(AmplifyClass amplify, Minio minio,
 }
 
 // 画像バックアップ API 呼び出し
-Future<bool> _backupPictureApi(AmplifyClass amplify, String body) async {
+Future<bool> _backupPictureApi(String body) async {
   final RestOptions options = RestOptions(
       path: '/backuppictures',
       body: const Utf8Encoder().convert('{"OperationType": "PUT"'
@@ -182,7 +181,7 @@ Future<bool> _backupPictureApi(AmplifyClass amplify, String body) async {
           (body.substring(0, body.length - 2)) +
           ']}}'));
   try {
-    final RestOperation restOperation = amplify.API.post(restOptions: options);
+    final RestOperation restOperation = Amplify.API.post(restOptions: options);
     await restOperation.response;
     // ignore: avoid_print
     print('POST call (/backuppictures) succeeded');
@@ -215,13 +214,13 @@ _uploadS3(
 }
 
 // バックアップ情報リストを AWS から取得
-Future<List<BackupSet>> fetchBackupSets(AmplifyClass amplify) async {
+Future<List<BackupSet>> fetchBackupSets() async {
   final List<BackupSet> resultList = [];
   try {
     final RestOptions options = RestOptions(
         path: '/backupsets',
         body: const Utf8Encoder().convert(('{"OperationType": "SCAN"}')));
-    final RestOperation restOperation = amplify.API.post(restOptions: options);
+    final RestOperation restOperation = Amplify.API.post(restOptions: options);
     final RestResponse response = await restOperation.response;
     final Map<String, dynamic> body = json.decode(response.body);
     final List<dynamic> items = body['Items'];
@@ -239,9 +238,9 @@ Future<List<BackupSet>> fetchBackupSets(AmplifyClass amplify) async {
 }
 
 // Symbol 情報をリストア
-Future<void> restoreRecords(AmplifyClass amplify, String backupTitle) async {
+Future<void> restoreRecords(String backupTitle) async {
   final List<SymbolInfoWithLatLng> restoreList =
-      await _fetchBackupSymbolInfos(amplify, backupTitle);
+      await _fetchBackupSymbolInfos(backupTitle);
   for (SymbolInfoWithLatLng infoLatLng in restoreList) {
     await addRecordWithId(infoLatLng);
   }
@@ -249,14 +248,14 @@ Future<void> restoreRecords(AmplifyClass amplify, String backupTitle) async {
 
 // Symbol 情報リストを AWS から取得
 Future<List<SymbolInfoWithLatLng>> _fetchBackupSymbolInfos(
-    AmplifyClass amplify, String backupTitle) async {
+    String backupTitle) async {
   final List<SymbolInfoWithLatLng> resultList = [];
   try {
     final RestOptions options = RestOptions(
         path: '/backupsymbolinfos',
         body: const Utf8Encoder().convert(('{"OperationType": "LIST"'
             ', "Keys": {"backupTitle": "$backupTitle"}}')));
-    final RestOperation restOperation = amplify.API.post(restOptions: options);
+    final RestOperation restOperation = Amplify.API.post(restOptions: options);
     final RestResponse response = await restOperation.response;
     final Map<String, dynamic> body = json.decode(response.body);
     final List<dynamic> items = body['Items'];
@@ -289,15 +288,14 @@ Future<List<SymbolInfoWithLatLng>> _fetchBackupSymbolInfos(
 }
 
 // 画像情報リストを AWS から取得
-Future<List<Picture>> _fetchBackupPictures(
-    AmplifyClass amplify, String backupTitle) async {
+Future<List<Picture>> _fetchBackupPictures(String backupTitle) async {
   final List<Picture> resultList = [];
   try {
     final RestOptions options = RestOptions(
         path: '/backuppictures',
         body: const Utf8Encoder().convert(('{"OperationType": "LIST"'
             ', "Keys": {"backupTitle": "$backupTitle"}}')));
-    final RestOperation restOperation = amplify.API.post(restOptions: options);
+    final RestOperation restOperation = Amplify.API.post(restOptions: options);
     final RestResponse response = await restOperation.response;
     final Map<String, dynamic> body = json.decode(response.body);
     final List<dynamic> items = body['Items'];
@@ -323,15 +321,9 @@ Future<List<Picture>> _fetchBackupPictures(
 }
 
 // 画像情報をリストア
-Future<void> restorePictureRecords(
-    AmplifyClass amplify,
-    Minio minio,
-    String backupTitle,
-    String imagePath,
-    String s3Bucket,
-    Function localFile) async {
-  final List<Picture> restoreList =
-      await _fetchBackupPictures(amplify, backupTitle);
+Future<void> restorePictureRecords(Minio minio, String backupTitle,
+    String imagePath, String s3Bucket, Function localFile) async {
+  final List<Picture> restoreList = await _fetchBackupPictures(backupTitle);
   for (Picture picture in restoreList) {
     await addPictureRecordWithId(picture);
     await _downloadS3(minio, picture, imagePath, s3Bucket, localFile);
@@ -364,14 +356,14 @@ Future<void> _downloadS3(Minio minio, Picture picture, String imagePath,
 }
 
 // AWS バックアップ情報を削除
-Future<bool> removeBackupSet(AmplifyClass amplify, backupTitle) async {
+Future<bool> removeBackupSet(backupTitle) async {
   try {
     final RestOptions options = RestOptions(
         path: '/backupsets',
         body: const Utf8Encoder().convert(('{"OperationType": "DELETE", "Keys":'
             ' {"title": ${jsonEncode(backupTitle)}'
             '}}')));
-    final RestOperation restOperation = amplify.API.post(restOptions: options);
+    final RestOperation restOperation = Amplify.API.post(restOptions: options);
     await restOperation.response;
     // ignore: avoid_print
     print('POST call (/backupsets) succeeded');
@@ -384,7 +376,7 @@ Future<bool> removeBackupSet(AmplifyClass amplify, backupTitle) async {
 }
 
 // AWS Symbol 情報を削除
-Future<bool> removeBackupSymbolInfos(AmplifyClass amplify, backupTitle) async {
+Future<bool> removeBackupSymbolInfos(backupTitle) async {
   try {
     final RestOptions options = RestOptions(
         path: '/backupsymbolinfos',
@@ -392,7 +384,7 @@ Future<bool> removeBackupSymbolInfos(AmplifyClass amplify, backupTitle) async {
             .convert(('{"OperationType": "DELETE_LIST", "Keys":'
                 ' {"backupTitle": ${jsonEncode(backupTitle)}'
                 '}}')));
-    final RestOperation restOperation = amplify.API.post(restOptions: options);
+    final RestOperation restOperation = Amplify.API.post(restOptions: options);
     await restOperation.response;
     // ignore: avoid_print
     print('POST call (/backupsymbolinfos) succeeded');
@@ -405,7 +397,7 @@ Future<bool> removeBackupSymbolInfos(AmplifyClass amplify, backupTitle) async {
 }
 
 // AWS 画像情報を削除（画像ファイルは削除しない）
-Future<bool> removeBackupPictures(AmplifyClass amplify, backupTitle) async {
+Future<bool> removeBackupPictures(backupTitle) async {
   try {
     final RestOptions options = RestOptions(
         path: '/backuppictures',
@@ -413,7 +405,7 @@ Future<bool> removeBackupPictures(AmplifyClass amplify, backupTitle) async {
             .convert(('{"OperationType": "DELETE_LIST", "Keys":'
                 ' {"backupTitle": ${jsonEncode(backupTitle)}'
                 '}}')));
-    final RestOperation restOperation = amplify.API.post(restOptions: options);
+    final RestOperation restOperation = Amplify.API.post(restOptions: options);
     await restOperation.response;
     // ignore: avoid_print
     print('POST call (/backuppictures) succeeded');

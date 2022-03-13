@@ -52,17 +52,17 @@ dependencies:
   location: ^4.3.0
   gap: ^2.0.0
   sqflite: ^2.0.2
-  image_picker: ^0.8.4+8
+  image_picker: ^0.8.4+11
   image_gallery_saver: ^1.7.1
   path_provider: ^2.0.9
   http: ^0.13.4
-  amplify_flutter: ^0.3.2
-  amplify_api: ^0.3.2
+  amplify_flutter: ^0.4.1
+  amplify_api: ^0.4.1
   minio: ^3.5.0
   font_awesome_flutter: ^9.2.0
-  connectivity_plus: ^2.2.0
-  supabase: ^0.2.14
-  share_plus: ^3.0.4
+  connectivity_plus: ^2.2.1
+  supabase: ^0.2.15
+  share_plus: ^3.1.0
 ```
 
  - **Edit '`android/build.gradle`'** ( for Android / in `allprojects` -> `repositories` )

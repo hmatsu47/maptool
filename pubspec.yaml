@@ -44,6 +44,7 @@ dependencies:
   connectivity_plus: ^2.2.1
   supabase: ^0.2.15
   share_plus: ^3.1.0
+  platform: ^3.1.0
   
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.

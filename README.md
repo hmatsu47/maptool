@@ -63,6 +63,7 @@ dependencies:
   connectivity_plus: ^2.2.1
   supabase: ^0.2.15
   share_plus: ^3.1.0
+  platform: ^3.1.0
 ```
 
  - **Edit '`android/build.gradle`'** ( for Android / in `allprojects` -> `repositories` )

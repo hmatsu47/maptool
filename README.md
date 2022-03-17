@@ -62,8 +62,14 @@ dependencies:
   font_awesome_flutter: ^9.2.0
   connectivity_plus: ^2.2.1
   supabase: ^0.2.15
-  share_plus: ^3.1.0
+  share_plus: ^4.0.1
   platform: ^3.1.0
+```
+
+ - **Edit '`android/build.gradle`'** ( for Android / in `buildscript` )
+
+```json:build.gradle
+    ext.kotlin_version = '1.6.10'
 ```
 
  - **Edit '`android/build.gradle`'** ( for Android / in `allprojects` -> `repositories` )
@@ -84,10 +90,17 @@ dependencies:
         }
 ```
 
+ - **Edit '`android/app/build.gradle`'** ( for Android / in `android` )
+
+```json:build.gradle
+    compileSdkVersion 31
+```
+
  - **Edit '`android/app/build.gradle`'** ( for Android / in `android` -> `defaultConfig` )
 
 ```json:build.gradle
-        minSdkVersion 21
+        minSdkVersion 23
+        targetSdkVersion 31
         multiDexEnabled true
 ```
 

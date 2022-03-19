@@ -505,7 +505,7 @@ class _MapPageState extends State<MapPage> {
                 icon: Icon(
                   _supabaseClient != null
                       ? (_nearSpotDataMap.isEmpty
-                          ? FontAwesomeIcons.mapMarkedAlt
+                          ? FontAwesomeIcons.mapLocationDot
                           : FontAwesomeIcons.solidMap)
                       : FontAwesomeIcons.map,
                 ),

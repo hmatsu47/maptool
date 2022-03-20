@@ -276,16 +276,12 @@ class _MapPageState extends State<MapPage> {
           ),
           IconButton(
             icon: Icon(
-              Platform.isIOS && _tapEnabled
-                  ? Icons.layers
-                  : Icons.layers_outlined,
+              _tapEnabled ? Icons.layers : Icons.layers_outlined,
             ),
             color: Colors.black87,
             onPressed: () {
-              // 地図の切り替え（iOSのみ）
-              if (Platform.isIOS && _tapEnabled) {
-                _changeStyle();
-              }
+              // 地図の切り替え
+              _changeStyle();
             },
           ),
           const Gap(4),
@@ -361,13 +357,14 @@ class _MapPageState extends State<MapPage> {
         child: CircularProgressIndicator(),
       );
     }
-    // if (Platform.isIOS && !_refreshMap && _refreshSymbols) {
     if (!_refreshMap && _refreshSymbols) {
-      setState(() {
-        _symbolAllSet = false;
-      });
-      _addSymbols();
-      _setLanguage();
+      if (Platform.isIOS) {
+        setState(() {
+          _symbolAllSet = false;
+        });
+        _addSymbols();
+        _setLanguage();
+      }
       setState(() {
         _refreshSymbols = false;
       });
@@ -631,8 +628,10 @@ class _MapPageState extends State<MapPage> {
       _refreshMap = true;
       _refreshSymbols = true;
     });
-    _nearSpotDataMap.clear();
-    _nearSpotSymbolList.clear();
+    if (Platform.isIOS) {
+      _nearSpotDataMap.clear();
+      _nearSpotSymbolList.clear();
+    }
   }
 
   // ボタンの表示（非表示）入れ替え

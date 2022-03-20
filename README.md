@@ -23,7 +23,7 @@
  - Restore data from AWS.（AWS からデータリストア）
  - Remove backup data on AWS.（不要バックアップデータ削除）
  - Improve configuration handling.（外部 API などの設定管理の改善）
- - Switch map styles. (for iOS only)（地図スタイル切り替え／Android では不安定なので iOS のみ）
+ - Switch map styles.（地図スタイル切り替え／Android は暫定対応）
  - Share information of pictures and pins.（画像・ピン情報の共有機能）
 
 **In development:**（開発中の機能など）

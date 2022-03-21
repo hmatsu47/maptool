@@ -23,8 +23,8 @@
  - Restore data from AWS.（AWS からデータリストア）
  - Remove backup data on AWS.（不要バックアップデータ削除）
  - Improve configuration handling.（外部 API などの設定管理の改善）
- - Switch map styles.（地図スタイル切り替え／Android は暫定対応）
- - Share information of pictures and pins.（画像・ピン情報の共有機能）
+ - Switch map styles.（地図スタイル切り替え）
+ - Share information of pictures and pins.（画像・ピン情報の共有機能／Android で地図に戻れないので調査中）
 
 **In development:**（開発中の機能など）
 
@@ -62,7 +62,7 @@ dependencies:
   font_awesome_flutter: ^10.0.0
   connectivity_plus: ^2.2.1
   supabase: ^0.2.15
-  share_plus: ^4.0.1
+  share_plus: ^4.0.2
   platform: ^3.1.0
 ```
 
@@ -99,7 +99,7 @@ dependencies:
  - **Edit '`android/app/build.gradle`'** ( for Android / in `android` -> `defaultConfig` )
 
 ```json:build.gradle
-        minSdkVersion 23
+        minSdkVersion 22
         targetSdkVersion 31
         multiDexEnabled true
 ```

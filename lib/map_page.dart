@@ -358,13 +358,11 @@ class _MapPageState extends State<MapPage> {
       );
     }
     if (!_refreshMap && _refreshSymbols) {
-      if (Platform.isIOS) {
-        setState(() {
-          _symbolAllSet = false;
-        });
-        _addSymbols();
-        _setLanguage();
-      }
+      setState(() {
+        _symbolAllSet = false;
+      });
+      _addSymbols();
+      _setLanguage();
       setState(() {
         _refreshSymbols = false;
       });
@@ -628,10 +626,13 @@ class _MapPageState extends State<MapPage> {
       _refreshMap = true;
       _refreshSymbols = true;
     });
-    if (Platform.isIOS) {
-      _nearSpotDataMap.clear();
-      _nearSpotSymbolList.clear();
+    if (Platform.isAndroid) {
+      _controller.future.then((mapboxMap) async {
+        mapboxMap.clearSymbols();
+      });
     }
+    _nearSpotDataMap.clear();
+    _nearSpotSymbolList.clear();
   }
 
   // ボタンの表示（非表示）入れ替え

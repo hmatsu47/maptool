@@ -113,8 +113,10 @@ class _DisplayPicturePageState extends State<DisplayPicturePage> {
             icon: const Icon(Icons.share),
             color: Colors.black87,
             onPressed: () {
-              // 共有
-              _sharePicture();
+              // 共有（一旦 Android では非作動）
+              if (Platform.isIOS) {
+                _sharePicture();
+              }
             },
           ),
           const Gap(4),

@@ -7,56 +7,56 @@ packages:
       name: amplify_analytics_plugin_interface
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.4.1"
+    version: "0.4.2"
   amplify_api:
     dependency: "direct main"
     description:
       name: amplify_api
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.4.1"
+    version: "0.4.2"
   amplify_api_plugin_interface:
     dependency: transitive
     description:
       name: amplify_api_plugin_interface
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.4.1"
+    version: "0.4.2"
   amplify_auth_plugin_interface:
     dependency: transitive
     description:
       name: amplify_auth_plugin_interface
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.4.1"
+    version: "0.4.2"
   amplify_core:
     dependency: transitive
     description:
       name: amplify_core
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.4.1"
+    version: "0.4.2"
   amplify_datastore_plugin_interface:
     dependency: transitive
     description:
       name: amplify_datastore_plugin_interface
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.4.1"
+    version: "0.4.2"
   amplify_flutter:
     dependency: "direct main"
     description:
       name: amplify_flutter
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.4.1"
+    version: "0.4.2"
   amplify_storage_plugin_interface:
     dependency: transitive
     description:
       name: amplify_storage_plugin_interface
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.4.1"
+    version: "0.4.2"
   archive:
     dependency: transitive
     description:
@@ -554,7 +554,7 @@ packages:
       name: share_plus
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "4.0.2"
+    version: "4.0.3"
   share_plus_linux:
     dependency: transitive
     description:
@@ -575,7 +575,7 @@ packages:
       name: share_plus_platform_interface
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "3.0.0"
+    version: "3.0.2"
   share_plus_web:
     dependency: transitive
     description:

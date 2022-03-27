@@ -56,13 +56,13 @@ dependencies:
   image_gallery_saver: ^1.7.1
   path_provider: ^2.0.9
   http: ^0.13.4
-  amplify_flutter: ^0.4.1
-  amplify_api: ^0.4.1
+  amplify_flutter: ^0.4.2
+  amplify_api: ^0.4.2
   minio: ^3.5.0
   font_awesome_flutter: ^10.1.0
   connectivity_plus: ^2.2.1
   supabase: ^0.2.15
-  share_plus: ^4.0.2
+  share_plus: ^4.0.3
   platform: ^3.1.0
 ```
 
@@ -99,7 +99,7 @@ dependencies:
  - **Edit '`android/app/build.gradle`'** ( for Android / in `android` -> `defaultConfig` )
 
 ```json:build.gradle
-        minSdkVersion 22
+        minSdkVersion 21
         targetSdkVersion 31
         multiDexEnabled true
 ```

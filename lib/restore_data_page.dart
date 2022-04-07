@@ -98,7 +98,7 @@ $describe''',
   }
 
   // 確認ダイアログ（既存データ上書き・モバイル通信でのリストア）
-  void _overwriteConfirmDialog(String backupTitle) async {
+  Future<void> _overwriteConfirmDialog(String backupTitle) async {
     final ConnectivityResult connectivityResult =
         await (Connectivity().checkConnectivity());
     final String message = (connectivityResult == ConnectivityResult.mobile
@@ -156,7 +156,7 @@ $describe''',
   }
 
   // 既存データ削除（確認ダイアログ）
-  void _deleteConfirmDialog(String backupTitle) async {
+  Future<void> _deleteConfirmDialog(String backupTitle) async {
     showDialog(
       context: context,
       builder: (BuildContext context) => AlertDialog(

@@ -110,7 +110,7 @@ class _EditConfigSupabasePageState extends State<EditConfigSupabasePage> {
   }
 
   // 保存（確認ダイアログ）
-  void _saveConfigDialog(BuildContext context) async {
+  Future<void> _saveConfigDialog(BuildContext context) async {
     showDialog(
       context: context,
       builder: (BuildContext context) => AlertDialog(
@@ -136,7 +136,7 @@ class _EditConfigSupabasePageState extends State<EditConfigSupabasePage> {
   }
 
   // 保存
-  void _saveConfig(BuildContext context) async {
+  Future<void> _saveConfig(BuildContext context) async {
     await configureSupabaseSave(FullConfigSupabaseData(
         ConfigSupabaseData(_supabaseUrl, _supabaseKey),
         _configSupabaseFileName));

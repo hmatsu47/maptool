@@ -199,7 +199,7 @@ class _EditConfigPageState extends State<EditConfigPage> {
   }
 
   // 保存（確認ダイアログ）
-  void _saveConfigDialog(BuildContext context) async {
+  Future<void> _saveConfigDialog(BuildContext context) async {
     // 入力チェック
     if (_style == '') {
       setState(() {
@@ -259,7 +259,7 @@ class _EditConfigPageState extends State<EditConfigPage> {
   }
 
   // 保存
-  void _saveConfig(BuildContext context) async {
+  Future<void> _saveConfig(BuildContext context) async {
     final FullConfigData configData = FullConfigData(_style, _s3AccessKey,
         _s3SecretKey, _s3Bucket, _s3Region, _configFileName);
     await configureSave(configData);

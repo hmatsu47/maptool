@@ -109,13 +109,13 @@ class _DisplaySymbolInfoPageState extends State<DisplaySymbolInfoPage> {
               children: <Widget>[
                 TextButton(
                   child: const Text('撮影'),
-                  onPressed: () {
+                  onPressed: () async {
                     _addPicture();
                   },
                 ),
                 TextButton(
                   child: const Text('選択'),
-                  onPressed: () {
+                  onPressed: () async {
                     _selectAndAddPictures();
                   },
                 ),
@@ -233,7 +233,7 @@ class _DisplaySymbolInfoPageState extends State<DisplaySymbolInfoPage> {
   }
 
   // 撮影（写真追加）
-  void _addPicture() async {
+  Future<void> _addPicture() async {
     Picture? picture = await _addPictureFromCamera!(_symbolId);
     while (picture != null) {
       setState(() {
@@ -262,7 +262,7 @@ class _DisplaySymbolInfoPageState extends State<DisplaySymbolInfoPage> {
   }
 
   // 画像追加（ギャラリーから）
-  void _selectAndAddPictures() async {
+  Future<void> _selectAndAddPictures() async {
     final List<Picture> pictures = await _addPicturesFromGarelly!(_symbolId);
     if (pictures.isNotEmpty) {
       setState(() {
@@ -272,7 +272,7 @@ class _DisplaySymbolInfoPageState extends State<DisplaySymbolInfoPage> {
   }
 
   // Symbol 情報変更
-  void _editSymbolPage(BuildContext context) async {
+  Future<void> _editSymbolPage(BuildContext context) async {
     final symbolInfo = await Navigator.of(context).pushNamed('/editSymbol',
         arguments: SymbolInfo(_title, _describe, _dateTime, _prefMuni!));
     if (symbolInfo is SymbolInfo) {
@@ -299,7 +299,7 @@ class _DisplaySymbolInfoPageState extends State<DisplaySymbolInfoPage> {
   }
 
   // Symbol 削除（確認ダイアログ）
-  void _removeSymbolDialog(BuildContext context) async {
+  Future<void> _removeSymbolDialog(BuildContext context) async {
     showDialog(
       context: context,
       builder: (BuildContext context) => AlertDialog(
@@ -335,7 +335,7 @@ class _DisplaySymbolInfoPageState extends State<DisplaySymbolInfoPage> {
   }
 
   // 画像の登録情報を編集
-  void _modifyPicture(int indexOf, Picture picture) async {
+  Future<void> _modifyPicture(int indexOf, Picture picture) async {
     await modifyPictureRecord(picture);
     setState(() {
       _pictures[indexOf] = picture;
@@ -343,7 +343,7 @@ class _DisplaySymbolInfoPageState extends State<DisplaySymbolInfoPage> {
   }
 
   // 画像を削除
-  void _removePicture(Picture picture) async {
+  Future<void> _removePicture(Picture picture) async {
     final File? file = _localFile!(picture);
     if (file != null) {
       file.deleteSync();
@@ -356,7 +356,7 @@ class _DisplaySymbolInfoPageState extends State<DisplaySymbolInfoPage> {
   }
 
   // 共有
-  void _shareSymbolInfo() async {
+  Future<void> _shareSymbolInfo() async {
     if (_checkedPictures.isEmpty) {
       return;
     }

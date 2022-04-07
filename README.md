@@ -11,7 +11,7 @@
 **In Addition to:**（追加した機能）
 
  - Modify the detail information about pin.（ピンの詳細情報変更）
- - Take photographs (related to pin).（ピンに関連する写真撮影）
+ - Take photographs (related to pin).（ピンに関連する写真撮影／Android で地図に戻れないので調査中）
  - List all pins.（ピン一覧）
  - Search pins (with keywords).（ピンのキーワード検索）
  - Reverse Geocoding.（逆ジオコーディング：画面の中心位置の地名表示・ピンの都道府県名＋市区町村名表示）
@@ -52,16 +52,16 @@ dependencies:
   location: ^4.3.0
   gap: ^2.0.0
   sqflite: ^2.0.2
-  image_picker: ^0.8.4+11
+  image_picker: ^0.8.5
   image_gallery_saver: ^1.7.1
   path_provider: ^2.0.9
   http: ^0.13.4
-  amplify_flutter: ^0.4.2
-  amplify_api: ^0.4.2
+  amplify_flutter: ^0.4.4
+  amplify_api: ^0.4.4
   minio: ^3.5.0
   font_awesome_flutter: ^10.1.0
   connectivity_plus: ^2.2.1
-  supabase: ^0.3.1
+  supabase: ^0.3.1+1
   share_plus: ^4.0.3
   platform: ^3.1.0
 ```

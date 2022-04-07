@@ -103,7 +103,7 @@ class _SearchKeywordPageState extends State<SearchKeywordPage> {
   }
 
   // キーワードを変更して一覧を表示
-  void _keywordChangeAndViewList(keyword) async {
+  Future<void> _keywordChangeAndViewList(keyword) async {
     final List<PlaceName> placeList = await _searchPlaceName(keyword);
     setState(() {
       _placeList = placeList;

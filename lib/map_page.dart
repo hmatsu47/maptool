@@ -650,7 +650,7 @@ class _MapPageState extends State<MapPage> {
   }
 
   // 現在位置を取得
-  void _getLocation() async {
+  Future<void> _getLocation() async {
     _yourLocation = await _locationService.getLocation();
   }
 
@@ -726,7 +726,7 @@ class _MapPageState extends State<MapPage> {
   }
 
   // 近隣スポットのカテゴリを絞り込む
-  void _filterMarkedNearSpot() async {
+  Future<void> _filterMarkedNearSpot() async {
     if (_supabaseClient == null ||
         _yourLocation == null ||
         !_symbolAllSet ||
@@ -805,7 +805,7 @@ class _MapPageState extends State<MapPage> {
   }
 
   // 近隣スポットを検索して一覧表示
-  void _searchNearSpot() async {
+  Future<void> _searchNearSpot() async {
     if (_supabaseClient == null || _yourLocation == null) {
       return;
     }
@@ -855,7 +855,7 @@ class _MapPageState extends State<MapPage> {
   }
 
   // 全 Symbol 一覧を表示して選択した Symbol の位置へ移動
-  void _moveToSymbolPosition() async {
+  Future<void> _moveToSymbolPosition() async {
     if (_symbolInfoMap.isEmpty || _backupNow) {
       return;
     }
@@ -914,7 +914,7 @@ class _MapPageState extends State<MapPage> {
   }
 
   // マーク（ピン）を立ててラベルを付ける
-  void _addMark(LatLng tapPoint) async {
+  Future<void> _addMark(LatLng tapPoint) async {
     if (!_symbolAllSet || _backupNow) {
       return;
     }
@@ -962,7 +962,7 @@ class _MapPageState extends State<MapPage> {
   }
 
   // Symbol の情報を表示する
-  void _dispSymbolInfo(Symbol symbol) async {
+  Future<void> _dispSymbolInfo(Symbol symbol) async {
     if (_backupNow) {
       return;
     }
@@ -992,7 +992,7 @@ class _MapPageState extends State<MapPage> {
   }
 
   // 近隣スポットの情報を表示する
-  void _dispNearSpotInfo(Symbol symbol) async {
+  Future<void> _dispNearSpotInfo(Symbol symbol) async {
     final SpotData? spotData = _nearSpotDataMap[symbol.id];
     if (spotData == null) {
       return;
@@ -1026,7 +1026,7 @@ ${spotData.prefMuni.prefecture}${spotData.prefMuni.municipalities}''',
   }
 
   // 近隣スポットの情報を使ってマーク（ピン）を立てる
-  void _addMarkToMapSpot(SpotData spotData) async {
+  Future<void> _addMarkToMapSpot(SpotData spotData) async {
     final PrefMuni prefMuni = await _getPrefMuni(spotData.latLng);
     final symbolInfo =
         await Navigator.of(navigatorKey.currentContext!).pushNamed(
@@ -1052,7 +1052,7 @@ ${spotData.prefMuni.prefecture}${spotData.prefMuni.municipalities}''',
   }
 
   // マーク（ピン）を削除する
-  void _removeMark(Symbol symbol) async {
+  Future<void> _removeMark(Symbol symbol) async {
     await _controller.future.then((mapboxMap) {
       mapboxMap.removeSymbol(symbol);
     });
@@ -1192,7 +1192,7 @@ ${spotData.prefMuni.prefecture}${spotData.prefMuni.municipalities}''',
   }
 
   // 逆ジオコーディング用の都道府県＋市区町村マップを生成
-  void _makeMuniMap() async {
+  Future<void> _makeMuniMap() async {
     final String muniJS = await _getMuniJS();
     final String muniJSUtf8 = utf8.decode(muniJS.runes.toList());
     final List<String> muniJSList = muniJSUtf8.split(';');
@@ -1286,7 +1286,7 @@ ${spotData.prefMuni.prefecture}${spotData.prefMuni.municipalities}''',
   }
 
   // 地名検索画面で選択した場所へ移動
-  void _searchPlaceName() async {
+  Future<void> _searchPlaceName() async {
     if (_muniAllSet) {
       final latLng = await Navigator.of(navigatorKey.currentContext!).pushNamed(
           '/searchKeyword',
@@ -1301,7 +1301,7 @@ ${spotData.prefMuni.prefecture}${spotData.prefMuni.municipalities}''',
   }
 
   // AWS にデータバックアップ
-  void _backupData() async {
+  Future<void> _backupData() async {
     if (_symbolInfoMap.isEmpty || _backupNow) {
       return;
     }
@@ -1391,7 +1391,7 @@ $describe'''
   }
 
   // AWS からデータリストア（確認画面）
-  void _restoreDataConfirm() async {
+  Future<void> _restoreDataConfirm() async {
     final List<BackupSet> backupSetList = await fetchBackupSets();
     if (backupSetList.isEmpty) {
       return;
@@ -1402,7 +1402,7 @@ $describe'''
   }
 
   // AWS からデータリストア（実行）
-  void _restoreData(String backupTitle) async {
+  Future<void> _restoreData(String backupTitle) async {
     showCircularProgressIndicator(context);
     if (_symbolInfoMap.isNotEmpty) {
       // 古いデータを消去
@@ -1429,7 +1429,7 @@ $describe'''
   }
 
   // AWS バックアップデータを削除
-  void _removeBackup(String backupTitle) async {
+  Future<void> _removeBackup(String backupTitle) async {
     showCircularProgressIndicator(context);
     bool result = false;
     final bool removePictures = await removeBackupPictures(backupTitle);

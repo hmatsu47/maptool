@@ -12,7 +12,7 @@ import 'class_definition.dart';
 import 'db_access.dart';
 
 // Amplify
-void configureAmplify() async {
+Future<void> configureAmplify() async {
   final AmplifyAPI apiPlugin = AmplifyAPI();
   await Amplify.addPlugins([apiPlugin]);
 

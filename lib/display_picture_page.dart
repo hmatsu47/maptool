@@ -124,7 +124,7 @@ class _DisplayPicturePageState extends State<DisplayPicturePage> {
   }
 
   // 共有
-  void _sharePicture() async {
+  Future<void> _sharePicture() async {
     List<String> imagePaths = [_localFilePath!(_picture!)];
     await Share.shareFiles(imagePaths,
         text: _picture!.comment != '無題' ? _picture!.comment : '');

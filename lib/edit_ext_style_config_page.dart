@@ -82,7 +82,7 @@ class _EditExtStyleConfigPageState extends State<EditExtStyleConfigPage> {
   }
 
   // 保存（確認ダイアログ）
-  void _saveConfigDialog(BuildContext context) async {
+  Future<void> _saveConfigDialog(BuildContext context) async {
     showDialog(
       context: context,
       builder: (BuildContext context) => AlertDialog(
@@ -108,7 +108,7 @@ class _EditExtStyleConfigPageState extends State<EditExtStyleConfigPage> {
   }
 
   // 保存
-  void _saveConfig(BuildContext context) async {
+  Future<void> _saveConfig(BuildContext context) async {
     await configureExtStyleSave(
         FullConfigExtStyleData(_extStyles, _configExtFileName));
     Navigator.popUntil(context, ModalRoute.withName('/'));

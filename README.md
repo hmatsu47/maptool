@@ -60,9 +60,9 @@ dependencies:
   amplify_api: ^0.4.4
   minio: ^3.5.0
   font_awesome_flutter: ^10.1.0
-  connectivity_plus: ^2.2.1
+  connectivity_plus: ^2.2.2
   supabase: ^0.3.1+1
-  share_plus: ^4.0.3
+  share_plus: ^4.0.4
   platform: ^3.1.0
 ```
 

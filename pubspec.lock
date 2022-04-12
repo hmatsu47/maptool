@@ -126,7 +126,7 @@ packages:
       name: connectivity_plus
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "2.2.2"
+    version: "2.3.0"
   connectivity_plus_linux:
     dependency: transitive
     description:
@@ -140,7 +140,7 @@ packages:
       name: connectivity_plus_macos
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "1.2.1"
+    version: "1.2.2"
   connectivity_plus_platform_interface:
     dependency: transitive
     description:
@@ -267,7 +267,7 @@ packages:
       name: functions_client
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.0.1-dev.3"
+    version: "0.0.1-dev.4"
   gap:
     dependency: "direct main"
     description:
@@ -554,7 +554,7 @@ packages:
       name: postgrest
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.1.9"
+    version: "0.1.10+1"
   process:
     dependency: transitive
     description:
@@ -671,7 +671,7 @@ packages:
       name: supabase
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.3.1+1"
+    version: "0.3.2"
   synchronized:
     dependency: transitive
     description:

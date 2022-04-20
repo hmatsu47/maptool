@@ -51,7 +51,7 @@ dependencies:
   mapbox_gl: ^0.15.0
   location: ^4.3.0
   gap: ^2.0.0
-  sqflite: ^2.0.2
+  sqflite: ^2.0.2+1
   image_picker: ^0.8.5
   image_gallery_saver: ^1.7.1
   path_provider: ^2.0.9

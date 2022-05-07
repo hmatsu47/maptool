@@ -61,7 +61,7 @@ dependencies:
   minio: ^3.5.0
   font_awesome_flutter: ^10.1.0
   connectivity_plus: ^2.3.0
-  supabase: ^0.3.2
+  supabase: ^0.3.3
   share_plus: ^4.0.4
   platform: ^3.1.0
 ```

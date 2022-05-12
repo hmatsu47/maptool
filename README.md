@@ -54,7 +54,7 @@ dependencies:
   sqflite: ^2.0.2+1
   image_picker: ^0.8.5
   image_gallery_saver: ^1.7.1
-  path_provider: ^2.0.9
+  path_provider: ^2.0.10
   http: ^0.13.4
   amplify_flutter: ^0.4.5
   amplify_api: ^0.4.5

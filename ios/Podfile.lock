@@ -2,7 +2,7 @@ PODS:
   - Amplify (1.23.0):
     - Amplify/Default (= 1.23.0)
   - Amplify/Default (1.23.0)
-  - amplify_api (0.0.1):
+  - amplify_api_ios (0.0.1):
     - Amplify (= 1.23.0)
     - amplify_core
     - AmplifyPlugins/AWSAPIPlugin (= 1.23.0)
@@ -13,7 +13,7 @@ PODS:
     - Flutter
     - SwiftFormat/CLI
     - SwiftLint
-  - amplify_flutter (0.0.1):
+  - amplify_flutter_ios (0.0.1):
     - Amplify (= 1.23.0)
     - amplify_core
     - AmplifyPlugins/AWSCognitoAuthPlugin (= 1.23.0)
@@ -34,19 +34,19 @@ PODS:
     - AWSPluginsCore (= 1.23.0)
   - AppSyncRealTimeClient (1.9.1):
     - Starscream (~> 4.0.4)
-  - AWSAuthCore (2.27.6):
-    - AWSCore (= 2.27.6)
-  - AWSCognitoIdentityProvider (2.27.6):
-    - AWSCognitoIdentityProviderASF (= 2.27.6)
-    - AWSCore (= 2.27.6)
-  - AWSCognitoIdentityProviderASF (2.27.6):
-    - AWSCore (= 2.27.6)
-  - AWSCore (2.27.6)
-  - AWSMobileClient (2.27.6):
-    - AWSAuthCore (= 2.27.6)
-    - AWSCognitoIdentityProvider (= 2.27.6)
-    - AWSCognitoIdentityProviderASF (= 2.27.6)
-    - AWSCore (= 2.27.6)
+  - AWSAuthCore (2.27.9):
+    - AWSCore (= 2.27.9)
+  - AWSCognitoIdentityProvider (2.27.9):
+    - AWSCognitoIdentityProviderASF (= 2.27.9)
+    - AWSCore (= 2.27.9)
+  - AWSCognitoIdentityProviderASF (2.27.9):
+    - AWSCore (= 2.27.9)
+  - AWSCore (2.27.9)
+  - AWSMobileClient (2.27.9):
+    - AWSAuthCore (= 2.27.9)
+    - AWSCognitoIdentityProvider (= 2.27.9)
+    - AWSCognitoIdentityProviderASF (= 2.27.9)
+    - AWSCore (= 2.27.9)
   - AWSPluginsCore (1.23.0):
     - Amplify (= 1.23.0)
     - AWSCore (~> 2.27.0)
@@ -81,15 +81,15 @@ PODS:
     - Flutter
     - FMDB (>= 2.7.5)
   - Starscream (4.0.4)
-  - SwiftFormat/CLI (0.49.7)
-  - SwiftLint (0.47.0)
+  - SwiftFormat/CLI (0.49.9)
+  - SwiftLint (0.47.1)
   - url_launcher (0.0.1):
     - Flutter
 
 DEPENDENCIES:
-  - amplify_api (from `.symlinks/plugins/amplify_api/ios`)
+  - amplify_api_ios (from `.symlinks/plugins/amplify_api_ios/ios`)
   - amplify_core (from `.symlinks/plugins/amplify_core/ios`)
-  - amplify_flutter (from `.symlinks/plugins/amplify_flutter/ios`)
+  - amplify_flutter_ios (from `.symlinks/plugins/amplify_flutter_ios/ios`)
   - connectivity_plus (from `.symlinks/plugins/connectivity_plus/ios`)
   - Flutter (from `Flutter`)
   - image_gallery_saver (from `.symlinks/plugins/image_gallery_saver/ios`)
@@ -122,12 +122,12 @@ SPEC REPOS:
     - SwiftLint
 
 EXTERNAL SOURCES:
-  amplify_api:
-    :path: ".symlinks/plugins/amplify_api/ios"
+  amplify_api_ios:
+    :path: ".symlinks/plugins/amplify_api_ios/ios"
   amplify_core:
     :path: ".symlinks/plugins/amplify_core/ios"
-  amplify_flutter:
-    :path: ".symlinks/plugins/amplify_flutter/ios"
+  amplify_flutter_ios:
+    :path: ".symlinks/plugins/amplify_flutter_ios/ios"
   connectivity_plus:
     :path: ".symlinks/plugins/connectivity_plus/ios"
   Flutter:
@@ -151,16 +151,16 @@ EXTERNAL SOURCES:
 
 SPEC CHECKSUMS:
   Amplify: 010d6a71db20812d9e3062db1fe827393d01e584
-  amplify_api: e002dc6c1abab0d50bd8e4fca5327eed2cab2eee
+  amplify_api_ios: df3f5e3ddd5ae4e0d2ce48dce18a23e787bac884
   amplify_core: e67fe0c53845db08aced670bfc7370b1329d2798
-  amplify_flutter: 0cfb67a9864be1605c6659635c2b98700fe8c34d
+  amplify_flutter_ios: a2cf41c13161ffefedab76055a29b2d4e78c91e8
   AmplifyPlugins: d939707cf36dfcd53c5fd6533e842e323a2287ab
   AppSyncRealTimeClient: cdee78ab78249cb87a71d975e1436e692813a606
-  AWSAuthCore: 09226ae8dfc63d1338f503f53a38af2d3156267e
-  AWSCognitoIdentityProvider: 9eb24a52488d32b75d8550e8a9d1be36229ae47d
-  AWSCognitoIdentityProviderASF: 60d466e143f8bbf9d47d39c1ad58de5044a111b6
-  AWSCore: 0b6fa020f5f343a211862d702ba7a067272a60f7
-  AWSMobileClient: e0ad3787f793d14c593379c2dba006e3bdad8bf1
+  AWSAuthCore: 5d43a450e93ff6c9a5218c90e1cdb1069cd1f3a4
+  AWSCognitoIdentityProvider: 7b4835e094cec4f35a988c5eabea5b8980fb7953
+  AWSCognitoIdentityProviderASF: 3adc532f5f7e3641ea954cd30adc2e7b5768488f
+  AWSCore: 3419bcaeec8d7809efa32f0e83f151ef8e93ad78
+  AWSMobileClient: f942269e300b23031fbd62892e5642d3cf35cb97
   AWSPluginsCore: 120cfa265293694921b6595fe00d1cb5ab558847
   connectivity_plus: 413a8857dd5d9f1c399a39130850d02fe0feaf7e
   Flutter: 50d75fe2f02b26cc09d224853bb45737f8b3214a
@@ -177,8 +177,8 @@ SPEC CHECKSUMS:
   share_plus: 056a1e8ac890df3e33cb503afffaf1e9b4fbae68
   sqflite: 6d358c025f5b867b29ed92fc697fd34924e11904
   Starscream: 5178aed56b316f13fa3bc55694e583d35dd414d9
-  SwiftFormat: b70e3c776a74c67ce8bd140425a8c86d4a843759
-  SwiftLint: d41cc46a2ae58ac6d9f26954bc89f1d72e71fdef
+  SwiftFormat: 016c15401d06959ef9f81d7956462e91f55b8ac5
+  SwiftLint: f80f1be7fa96d30e0aa68e58d45d4ea1ccaac519
   url_launcher: b6e016d912f04be9f5bf6e8e82dc599b7ba59649
 
 PODFILE CHECKSUM: cc1f88378b4bfcf93a6ce00d2c587857c6008d3b

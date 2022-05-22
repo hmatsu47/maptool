@@ -48,20 +48,20 @@
 dependencies:
   flutter:
     sdk: flutter
-  mapbox_gl: ^0.15.0
-  location: ^4.3.0
+  mapbox_gl: ^0.16.0
+  location: ^4.4.0
   gap: ^2.0.0
   sqflite: ^2.0.2+1
-  image_picker: ^0.8.5
+  image_picker: ^0.8.5+3
   image_gallery_saver: ^1.7.1
   path_provider: ^2.0.10
   http: ^0.13.4
-  amplify_flutter: ^0.4.5
-  amplify_api: ^0.4.5
+  amplify_flutter: ^0.5.0
+  amplify_api: ^0.5.0
   minio: ^3.5.0
   font_awesome_flutter: ^10.1.0
   connectivity_plus: ^2.3.0
-  supabase: ^0.3.3
+  supabase: ^0.3.4
   share_plus: ^4.0.4
   platform: ^3.1.0
 ```

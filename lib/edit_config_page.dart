@@ -11,10 +11,10 @@ class EditConfigPage extends StatefulWidget {
   const EditConfigPage({Key? key}) : super(key: key);
 
   @override
-  _EditConfigPageState createState() => _EditConfigPageState();
+  EditConfigPageState createState() => EditConfigPageState();
 }
 
-class _EditConfigPageState extends State<EditConfigPage> {
+class EditConfigPageState extends State<EditConfigPage> {
   String _style = '';
   String _s3AccessKey = '';
   String _s3SecretKey = '';
@@ -264,8 +264,10 @@ class _EditConfigPageState extends State<EditConfigPage> {
         _s3SecretKey, _s3Bucket, _s3Region, _configFileName);
     await configureSave(configData);
     if (!_isConfigChange) {
+      if (!mounted) return;
       Navigator.pop(context);
     } else {
+      if (!mounted) return;
       Navigator.popUntil(context, ModalRoute.withName('/'));
     }
   }

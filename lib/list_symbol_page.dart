@@ -9,10 +9,10 @@ class ListSymbolPage extends StatefulWidget {
   const ListSymbolPage({Key? key}) : super(key: key);
 
   @override
-  _ListSymbolPageState createState() => _ListSymbolPageState();
+  ListSymbolPageState createState() => ListSymbolPageState();
 }
 
-class _ListSymbolPageState extends State<ListSymbolPage> {
+class ListSymbolPageState extends State<ListSymbolPage> {
   List<SymbolInfoWithLatLng> _infoList = [];
   String _keyword = '';
   List<SymbolInfoWithLatLng> _filtered = [];
@@ -82,11 +82,11 @@ class _ListSymbolPageState extends State<ListSymbolPage> {
           )),
           title: Text(title),
           subtitle: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(prefMuniText),
               Text(dateTimeText),
             ],
-            crossAxisAlignment: CrossAxisAlignment.start,
           ),
           onTap: () {
             Navigator.pop(

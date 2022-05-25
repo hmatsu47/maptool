@@ -11,10 +11,10 @@ class EditConfigSupabasePage extends StatefulWidget {
   const EditConfigSupabasePage({Key? key}) : super(key: key);
 
   @override
-  _EditConfigSupabasePageState createState() => _EditConfigSupabasePageState();
+  EditConfigSupabasePageState createState() => EditConfigSupabasePageState();
 }
 
-class _EditConfigSupabasePageState extends State<EditConfigSupabasePage> {
+class EditConfigSupabasePageState extends State<EditConfigSupabasePage> {
   String _supabaseUrl = '';
   String _supabaseKey = '';
   String _configSupabaseFileName = '';
@@ -140,6 +140,7 @@ class _EditConfigSupabasePageState extends State<EditConfigSupabasePage> {
     await configureSupabaseSave(FullConfigSupabaseData(
         ConfigSupabaseData(_supabaseUrl, _supabaseKey),
         _configSupabaseFileName));
+    if (!mounted) return;
     Navigator.popUntil(context, ModalRoute.withName('/'));
   }
 }

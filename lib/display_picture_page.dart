@@ -11,10 +11,10 @@ class DisplayPicturePage extends StatefulWidget {
   const DisplayPicturePage({Key? key}) : super(key: key);
 
   @override
-  _DisplayPicturePageState createState() => _DisplayPicturePageState();
+  DisplayPicturePageState createState() => DisplayPicturePageState();
 }
 
-class _DisplayPicturePageState extends State<DisplayPicturePage> {
+class DisplayPicturePageState extends State<DisplayPicturePage> {
   Picture? _picture;
   Function? _modifyPicture;
   Function? _removePicture;

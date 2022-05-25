@@ -14,10 +14,10 @@ class DisplaySymbolInfoPage extends StatefulWidget {
   const DisplaySymbolInfoPage({Key? key}) : super(key: key);
 
   @override
-  _DisplaySymbolInfoPageState createState() => _DisplaySymbolInfoPageState();
+  DisplaySymbolInfoPageState createState() => DisplaySymbolInfoPageState();
 }
 
-class _DisplaySymbolInfoPageState extends State<DisplaySymbolInfoPage> {
+class DisplaySymbolInfoPageState extends State<DisplaySymbolInfoPage> {
   int _symbolId = 0;
   Symbol? _symbol;
   String _title = '';
@@ -110,19 +110,19 @@ class _DisplaySymbolInfoPageState extends State<DisplaySymbolInfoPage> {
                 TextButton(
                   child: const Text('撮影'),
                   onPressed: () async {
-                    _addPicture();
+                    await _addPicture();
                   },
                 ),
                 TextButton(
                   child: const Text('選択'),
                   onPressed: () async {
-                    _selectAndAddPictures();
+                    await _selectAndAddPictures();
                   },
                 ),
                 TextButton(
                   child: const Text('編集'),
                   onPressed: () async {
-                    _editSymbolPage(context);
+                    await _editSymbolPage(context);
                   },
                 ),
                 TextButton(
@@ -148,7 +148,11 @@ class _DisplaySymbolInfoPageState extends State<DisplaySymbolInfoPage> {
               child: ListView.builder(
                 itemCount: _pictures.length,
                 itemBuilder: (BuildContext context, int index) {
-                  return _pictureItem(_pictures[index], index);
+                  try {
+                    return _pictureItem(_pictures[index], index);
+                  } catch (e) {
+                    return const Gap(20);
+                  }
                 },
               ),
             ),
@@ -245,6 +249,7 @@ class _DisplaySymbolInfoPageState extends State<DisplaySymbolInfoPage> {
           builder: (BuildContext builderContext) {
             _timer = Timer(const Duration(seconds: 1), () async {
               picture = await _addPictureFromCamera!(_symbolId);
+              if (!mounted) return;
               Navigator.of(context).pop();
             });
             return AlertDialog(
@@ -293,6 +298,7 @@ class _DisplaySymbolInfoPageState extends State<DisplaySymbolInfoPage> {
               iconImage: "mapbox-marker-icon-blue",
               iconSize: 1,
             ));
+        if (!mounted) return;
         Navigator.pop(context);
       });
     }

@@ -8,10 +8,10 @@ class EditSymbolInfoPage extends StatefulWidget {
   const EditSymbolInfoPage({Key? key}) : super(key: key);
 
   @override
-  _EditSymbolInfoPageState createState() => _EditSymbolInfoPageState();
+  EditSymbolInfoPageState createState() => EditSymbolInfoPageState();
 }
 
-class _EditSymbolInfoPageState extends State<EditSymbolInfoPage> {
+class EditSymbolInfoPageState extends State<EditSymbolInfoPage> {
   String _title = '';
   PrefMuni? _prefMuni;
   String _describe = '';

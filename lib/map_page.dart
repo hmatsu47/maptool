@@ -29,13 +29,13 @@ class MapPage extends StatefulWidget {
   const MapPage({Key? key}) : super(key: key);
 
   @override
-  _MapPageState createState() => _MapPageState();
+  MapPageState createState() => MapPageState();
 }
 
 // ボタン表示のタイプ
 enum ButtonType { invisible, add }
 
-class _MapPageState extends State<MapPage> {
+class MapPageState extends State<MapPage> {
   final Completer<MapboxMapController> _controller = Completer();
   final Location _locationService = Location();
   // 設定ファイル名
@@ -293,15 +293,15 @@ class _MapPageState extends State<MapPage> {
     return Drawer(
         child: ListView(children: <Widget>[
       const DrawerHeader(
+        decoration: BoxDecoration(
+          color: Colors.blue,
+        ),
         child: Text(
           '設定・管理',
           style: TextStyle(
             fontSize: 18,
             color: Colors.white,
           ),
-        ),
-        decoration: BoxDecoration(
-          color: Colors.blue,
         ),
       ),
       ListTile(
@@ -413,6 +413,7 @@ class _MapPageState extends State<MapPage> {
   Widget _makeFloatingIcons() {
     return Column(mainAxisSize: MainAxisSize.min, children: [
       Visibility(
+        visible: _buttonType == ButtonType.add,
         child: FloatingActionButton(
           heroTag: 'addPictureFromCameraAndMark',
           backgroundColor: Colors.blue,
@@ -424,13 +425,13 @@ class _MapPageState extends State<MapPage> {
               ? Icons.camera_alt
               : Icons.camera_alt_outlined),
         ),
-        visible: _buttonType == ButtonType.add,
       ),
       Visibility(
+        visible: _buttonType == ButtonType.add,
         child: const Gap(12),
-        visible: _buttonType == ButtonType.add,
       ),
       Visibility(
+        visible: _buttonType == ButtonType.add,
         child: FloatingActionButton(
           heroTag: 'addSymbolOnCameraPosition',
           backgroundColor: Colors.blue,
@@ -442,11 +443,10 @@ class _MapPageState extends State<MapPage> {
               ? Icons.add_location
               : Icons.add_location_outlined),
         ),
-        visible: _buttonType == ButtonType.add,
       ),
       Visibility(
-        child: const Gap(20),
         visible: _buttonType != ButtonType.invisible,
+        child: const Gap(20),
       ),
       FloatingActionButton(
           heroTag: 'buttonToggle',
@@ -1048,6 +1048,7 @@ ${spotData.prefMuni.prefecture}${spotData.prefMuni.municipalities}''',
         });
       });
     }
+    if (!mounted) return;
     Navigator.popUntil(context, ModalRoute.withName('/'));
   }
 

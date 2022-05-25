@@ -10,10 +10,10 @@ class EditExtStyleConfigPage extends StatefulWidget {
   const EditExtStyleConfigPage({Key? key}) : super(key: key);
 
   @override
-  _EditExtStyleConfigPageState createState() => _EditExtStyleConfigPageState();
+  EditExtStyleConfigPageState createState() => EditExtStyleConfigPageState();
 }
 
-class _EditExtStyleConfigPageState extends State<EditExtStyleConfigPage> {
+class EditExtStyleConfigPageState extends State<EditExtStyleConfigPage> {
   String _extStyles = '';
   String _configExtFileName = '';
 
@@ -111,6 +111,7 @@ class _EditExtStyleConfigPageState extends State<EditExtStyleConfigPage> {
   Future<void> _saveConfig(BuildContext context) async {
     await configureExtStyleSave(
         FullConfigExtStyleData(_extStyles, _configExtFileName));
+    if (!mounted) return;
     Navigator.popUntil(context, ModalRoute.withName('/'));
   }
 }

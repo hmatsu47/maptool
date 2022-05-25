@@ -56,14 +56,19 @@ dependencies:
   image_gallery_saver: ^1.7.1
   path_provider: ^2.0.10
   http: ^0.13.4
-  amplify_flutter: ^0.5.0
-  amplify_api: ^0.5.0
+  amplify_flutter: ^0.5.1
+  amplify_api: ^0.5.1
   minio: ^3.5.0
   font_awesome_flutter: ^10.1.0
   connectivity_plus: ^2.3.0
   supabase: ^0.3.4
   share_plus: ^4.0.4
   platform: ^3.1.0
+```
+
+```yaml:pubspec.yaml
+dev_dependencies:
+  flutter_lints: ^2.0.1
 ```
 
  - **Edit '`android/build.gradle`'** ( for Android / in `buildscript` )

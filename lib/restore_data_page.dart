@@ -8,10 +8,10 @@ class RestoreDataPage extends StatefulWidget {
   const RestoreDataPage({Key? key}) : super(key: key);
 
   @override
-  _RestoreDataPageState createState() => _RestoreDataPageState();
+  RestoreDataPageState createState() => RestoreDataPageState();
 }
 
-class _RestoreDataPageState extends State<RestoreDataPage> {
+class RestoreDataPageState extends State<RestoreDataPage> {
   List<BackupSet> _backupSetList = [];
   bool _symbolSet = false;
   Function? _restoreData;

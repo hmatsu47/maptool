@@ -107,10 +107,8 @@ Future<int?> backupSymbolInfos(String backupTitle) async {
 Future<bool> _backupSymbolInfoApi(String body) async {
   final RestOptions options = RestOptions(
       path: '/backupsymbolinfos',
-      body: const Utf8Encoder().convert('{"OperationType": "PUT"'
-              ', "Keys": {"items": [' +
-          (body.substring(0, body.length - 2)) +
-          ']}}'));
+      body: const Utf8Encoder().convert(
+          '{"OperationType": "PUT", "Keys": {"items": [${body.substring(0, body.length - 2)}]}}'));
   try {
     final RestOperation restOperation = Amplify.API.post(restOptions: options);
     await restOperation.response;
@@ -176,10 +174,8 @@ Future<int?> backupPictures(
 Future<bool> _backupPictureApi(String body) async {
   final RestOptions options = RestOptions(
       path: '/backuppictures',
-      body: const Utf8Encoder().convert('{"OperationType": "PUT"'
-              ', "Keys": {"items": [' +
-          (body.substring(0, body.length - 2)) +
-          ']}}'));
+      body: const Utf8Encoder().convert(
+          '{"OperationType": "PUT", "Keys": {"items": [${body.substring(0, body.length - 2)}]}}'));
   try {
     final RestOperation restOperation = Amplify.API.post(restOptions: options);
     await restOperation.response;

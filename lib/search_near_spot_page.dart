@@ -9,10 +9,10 @@ class SearchNearSpotPage extends StatefulWidget {
   const SearchNearSpotPage({Key? key}) : super(key: key);
 
   @override
-  _SearchNearSpotPageState createState() => _SearchNearSpotPageState();
+  SearchNearSpotPageState createState() => SearchNearSpotPageState();
 }
 
-class _SearchNearSpotPageState extends State<SearchNearSpotPage> {
+class SearchNearSpotPageState extends State<SearchNearSpotPage> {
   List<SpotData> _spotList = [];
   String _keyword = '';
   List<SpotData> _filtered = [];
@@ -83,11 +83,11 @@ class _SearchNearSpotPageState extends State<SearchNearSpotPage> {
           )),
           title: Text(title),
           subtitle: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(prefMuniText),
               Text(describe),
             ],
-            crossAxisAlignment: CrossAxisAlignment.start,
           ),
           onTap: () {
             Navigator.pop(context,

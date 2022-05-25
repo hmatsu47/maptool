@@ -12,7 +12,7 @@ class SearchKeywordPage extends StatefulWidget {
   const SearchKeywordPage({Key? key}) : super(key: key);
 
   @override
-  _SearchKeywordPageState createState() => _SearchKeywordPageState();
+  SearchKeywordPageState createState() => SearchKeywordPageState();
 }
 
 // 地名
@@ -25,7 +25,7 @@ class PlaceName {
   PlaceName(this.title, this.titleLength, this.prefMuni, this.latLng);
 }
 
-class _SearchKeywordPageState extends State<SearchKeywordPage> {
+class SearchKeywordPageState extends State<SearchKeywordPage> {
   List<PlaceName> _placeList = [];
   Map<int, PrefMuni> _prefMuniMap = {};
 

@@ -54,16 +54,20 @@ dependencies:
   sqflite: ^2.0.2+1
   image_picker: ^0.8.5+3
   image_gallery_saver: ^1.7.1
-  path_provider: ^2.0.10
+  path_provider: ^2.0.11
   http: ^0.13.4
   amplify_flutter: ^0.5.1
   amplify_api: ^0.5.1
   minio: ^3.5.0
   font_awesome_flutter: ^10.1.0
-  connectivity_plus: ^2.3.0
-  supabase: ^0.3.4
-  share_plus: ^4.0.4
+  connectivity_plus: ^2.3.3
+  supabase: ^0.3.4+1
+  share_plus: ^4.0.7
   platform: ^3.1.0
+```
+
+```yaml:pubspec.yaml
+  cupertino_icons: ^1.0.5
 ```
 
 ```yaml:pubspec.yaml

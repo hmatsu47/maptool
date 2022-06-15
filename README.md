@@ -2,47 +2,47 @@
 
 ## Explanation（Blog / 説明記事）
 
- - https://qiita.com/hmatsu47/items/b98ef4c1a87cc0ec415d
- - https://zenn.dev/hmatsu47/articles/846c3186f5b4fe
- - https://zenn.dev/hmatsu47/articles/9102fb79a99a98
- - https://zenn.dev/hmatsu47/articles/e81bf3c2bf00f8
- - https://qiita.com/hmatsu47/items/e4f7e310e88376d54009
+- https://qiita.com/hmatsu47/items/b98ef4c1a87cc0ec415d
+- https://zenn.dev/hmatsu47/articles/846c3186f5b4fe
+- https://zenn.dev/hmatsu47/articles/9102fb79a99a98
+- https://zenn.dev/hmatsu47/articles/e81bf3c2bf00f8
+- https://qiita.com/hmatsu47/items/e4f7e310e88376d54009
 
 **In Addition to:**（追加した機能）
 
- - Modify the detail information about pin.（ピンの詳細情報変更）
- - Take photographs (related to pin).（ピンに関連する写真撮影／Android で地図に戻れないので調査中）
- - List all pins.（ピン一覧）
- - Search pins (with keywords).（ピンのキーワード検索）
- - Reverse Geocoding.（逆ジオコーディング：画面の中心位置の地名表示・ピンの都道府県名＋市区町村名表示）
- - Geocoding.（ジオコーディング：地名検索）
- - Add picture(s) from Image garelly.（ギャラリーからの写真・画像追加）
- - Backup data to AWS.（AWS へデータバックアップ）
-   - DB data to DynamoDB.（ピンの詳細情報）
-   - Photographs / Pictures to S3 Bucket.（写真・画像）
- - Restore data from AWS.（AWS からデータリストア）
- - Remove backup data on AWS.（不要バックアップデータ削除）
- - Improve configuration handling.（外部 API などの設定管理の改善）
- - Switch map styles.（地図スタイル切り替え）
- - Share information of pictures and pins.（画像・ピン情報の共有機能／Android で地図に戻れないので調査中）
+- Modify the detail information about pin.（ピンの詳細情報変更）
+- Take photographs (related to pin).（ピンに関連する写真撮影／Android で地図に戻れないので調査中）
+- List all pins.（ピン一覧）
+- Search pins (with keywords).（ピンのキーワード検索）
+- Reverse Geocoding.（逆ジオコーディング：画面の中心位置の地名表示・ピンの都道府県名＋市区町村名表示）
+- Geocoding.（ジオコーディング：地名検索）
+- Add picture(s) from Image garelly.（ギャラリーからの写真・画像追加）
+- Backup data to AWS.（AWS へデータバックアップ）
+  - DB data to DynamoDB.（ピンの詳細情報）
+  - Photographs / Pictures to S3 Bucket.（写真・画像）
+- Restore data from AWS.（AWS からデータリストア）
+- Remove backup data on AWS.（不要バックアップデータ削除）
+- Improve configuration handling.（外部 API などの設定管理の改善）
+- Switch map styles.（地図スタイル切り替え）
+- Share information of pictures and pins.（画像・ピン情報の共有機能／Android で地図に戻れないので調査中）
 
 **In development:**（開発中の機能など）
 
- - Add external API call.（外部 API 呼び出し）
-   - Search sightseeing spots etc.（近隣の観光スポット等検索）
-   - Mark sightseeing spots etc (on map).（地図上で近隣の観光スポット等のピン表示）
+- Add external API call.（外部 API 呼び出し）
+  - Search sightseeing spots etc.（近隣の観光スポット等検索）
+  - Mark sightseeing spots etc (on map).（地図上で近隣の観光スポット等のピン表示）
 
 ![画面例](map_image.png "画面例")
 
 ## Settings etc.（開発環境の設定情報など）
 
- - **Create Mapbox Style**
+- **Create Mapbox Style**
 
-   - https://studio.mapbox.com/
+  - https://studio.mapbox.com/
 
- - **Run '`flutter create maptool`'**
+- **Run '`flutter create maptool`'**
 
- - **Edit '`pubspec.yaml`'** ( Relevant part only )
+- **Edit '`pubspec.yaml`'** ( Relevant part only )
 
 ```yaml:pubspec.yaml
 dependencies:
@@ -60,9 +60,9 @@ dependencies:
   amplify_api: ^0.5.1
   minio: ^3.5.0
   font_awesome_flutter: ^10.1.0
-  connectivity_plus: ^2.3.3
+  connectivity_plus: ^2.3.4
   supabase: ^0.3.4+1
-  share_plus: ^4.0.7
+  share_plus: ^4.0.8
   platform: ^3.1.0
 ```
 
@@ -75,13 +75,13 @@ dev_dependencies:
   flutter_lints: ^2.0.1
 ```
 
- - **Edit '`android/build.gradle`'** ( for Android / in `buildscript` )
+- **Edit '`android/build.gradle`'** ( for Android / in `buildscript` )
 
 ```json:build.gradle
     ext.kotlin_version = '1.6.10'
 ```
 
- - **Edit '`android/build.gradle`'** ( for Android / in `allprojects` -> `repositories` )
+- **Edit '`android/build.gradle`'** ( for Android / in `allprojects` -> `repositories` )
 
 ```json:build.gradle
         maven {
@@ -91,7 +91,7 @@ dev_dependencies:
         }
         credentials {
             // Do not change the username below.
-            // This should always be `mapbox` (not your username). 
+            // This should always be `mapbox` (not your username).
             username = 'mapbox'
             // Use the secret token you stored in gradle.properties as the password
             password = project.properties['MAPBOX_DOWNLOADS_TOKEN'] ?: ""
@@ -99,13 +99,13 @@ dev_dependencies:
         }
 ```
 
- - **Edit '`android/app/build.gradle`'** ( for Android / in `android` )
+- **Edit '`android/app/build.gradle`'** ( for Android / in `android` )
 
 ```json:build.gradle
     compileSdkVersion 31
 ```
 
- - **Edit '`android/app/build.gradle`'** ( for Android / in `android` -> `defaultConfig` )
+- **Edit '`android/app/build.gradle`'** ( for Android / in `android` -> `defaultConfig` )
 
 ```json:build.gradle
         minSdkVersion 21
@@ -113,7 +113,7 @@ dev_dependencies:
         multiDexEnabled true
 ```
 
- - **Edit '`android/app/build.gradle`'** ( for Android / in `android` )
+- **Edit '`android/app/build.gradle`'** ( for Android / in `android` )
 
 ```json:build.gradle
     buildTypes {
@@ -126,7 +126,7 @@ dev_dependencies:
     }
 ```
 
- - **Edit '`android/app/src/AndroidManifest.xml`'** ( for Android / Relevant part only )
+- **Edit '`android/app/src/AndroidManifest.xml`'** ( for Android / Relevant part only )
 
 ```xml:AndroidManifest.xml
    <application
@@ -142,26 +142,26 @@ dev_dependencies:
             />
 ```
 
- - **Edit '`android/gradle.properties`'** ( for Android / Relevant part only )
+- **Edit '`android/gradle.properties`'** ( for Android / Relevant part only )
 
 ```text:gradle.properties
 MAPBOX_DOWNLOADS_TOKEN=[Mapbox Secret Token here]
 ```
 
- - **Add `Environment Variable(s)`** ( for Android )
+- **Add `Environment Variable(s)`** ( for Android )
 
 ```sh:.zshrc
 export SDK_REGISTRY_TOKEN="[Mapbox Secret Token here]"
 ```
 
- - **Edit '`ios/Podfile`'** ( for iOS / Relevant part only )
+- **Edit '`ios/Podfile`'** ( for iOS / Relevant part only )
 
 ```ruby:
 # Uncomment this line to define a global platform for your project
 platform :ios, '13.0'
 ```
 
- - **Edit '`ios/Runner/Info.plist`'** ( for iOS / Relevant part only )
+- **Edit '`ios/Runner/Info.plist`'** ( for iOS / Relevant part only )
 
 ```xml:
 	<key>NSLocationAlwaysUsageDescription</key>
@@ -182,7 +182,7 @@ platform :ios, '13.0'
 	<true/>
 ```
 
- - **Edit '`ios/Runner/Info.plist`'** ( for iOS Debug Environments / Relevant part only )
+- **Edit '`ios/Runner/Info.plist`'** ( for iOS Debug Environments / Relevant part only )
 
 ```xml:
 	<key>NSBonjourServices</key>
@@ -191,7 +191,7 @@ platform :ios, '13.0'
 	</array>
 ```
 
- - **Edit '`/Users/xxx/.netrc`'** ( Relevant part only )
+- **Edit '`/Users/xxx/.netrc`'** ( Relevant part only )
 
 ```sh:.netrc
 machine api.mapbox.com
@@ -199,7 +199,7 @@ login mapbox
 password [Mapbox Secret Token here]
 ```
 
- - **Set Amplify Flutter CLI config**
+- **Set Amplify Flutter CLI config**
 
 (See https://docs.amplify.aws/lib/project-setup/prereq/q/platform/flutter/ )
 
@@ -211,7 +211,7 @@ npm install -g @aws-amplify/cli
 amplify configure
 ```
 
- - **Run '`amplify init`' & '`flutter pub get`'**
+- **Run '`amplify init`' & '`flutter pub get`'**
 
 ```sh:
 amplify init
@@ -221,49 +221,49 @@ amplify init
 flutter pub get
 ```
 
- - **Create DynamoDB tables**
+- **Create DynamoDB tables**
 
 ```sh:
 amplify add storage
 ```
 
- - Add 3 tables
-   - backupSet (backupSet-maptool)
-     - title : String (Partition Key)
-   - backupSymbolInfo (backupSymbolInfo-maptool)
-     - backupTitle : String (Partition Key)
-     - id : Number (Sort Key)
-   - backupPicture (backupPicture-maptool)
-     - backupTitle : String (Partition Key)
-     - id : Number (Sort Key)
+- Add 3 tables
+  - backupSet (backupSet-maptool)
+    - title : String (Partition Key)
+  - backupSymbolInfo (backupSymbolInfo-maptool)
+    - backupTitle : String (Partition Key)
+    - id : Number (Sort Key)
+  - backupPicture (backupPicture-maptool)
+    - backupTitle : String (Partition Key)
+    - id : Number (Sort Key)
 
 ```sh:
 amplify push
 ```
 
- - After creation, change capacity mode to On-Demand.
+- After creation, change capacity mode to On-Demand.
 
- - **Create Lambda Functions**
+- **Create Lambda Functions**
 
 ```sh:
 amplify add function
 ```
 
- - Add 3 tables
-   - backupSet (backupSet-maptool)
-     - [amplify/backend/function/backupSet/src/index.py](amplify/backend/function/backupSet/src/index.py)
-   - backupSymbolInfo (backupSymbolInfo-maptool)
-     - [amplify/backend/function/backupSymbolInfo/src/index.py](amplify/backend/function/backupSymbolInfo/src/index.py)
-   - backupPicture (backupPicture-maptool)
-     - [amplify/backend/function/backupPicture/src/index.py](amplify/backend/function/backupPicture/src/index.py)
+- Add 3 tables
+  - backupSet (backupSet-maptool)
+    - [amplify/backend/function/backupSet/src/index.py](amplify/backend/function/backupSet/src/index.py)
+  - backupSymbolInfo (backupSymbolInfo-maptool)
+    - [amplify/backend/function/backupSymbolInfo/src/index.py](amplify/backend/function/backupSymbolInfo/src/index.py)
+  - backupPicture (backupPicture-maptool)
+    - [amplify/backend/function/backupPicture/src/index.py](amplify/backend/function/backupPicture/src/index.py)
 
 ```sh:
 amplify push
 ```
 
- - After creation, modify & adjust IAM Roles (Policies).
+- After creation, modify & adjust IAM Roles (Policies).
 
- - lambda-execution-policy(BackupSet)
+- lambda-execution-policy(BackupSet)
 
 ```json:lambda-execution-policy(BackupSet)
 {
@@ -298,7 +298,7 @@ amplify push
 }
 ```
 
- - lambda-execution-policy(BackupSymbolInfo)
+- lambda-execution-policy(BackupSymbolInfo)
 
 ```json:lambda-execution-policy(BackupSymbolInfo)
 {
@@ -334,7 +334,7 @@ amplify push
 }
 ```
 
- - lambda-execution-policy(BackupPicture)
+- lambda-execution-policy(BackupPicture)
 
 ```json:lambda-execution-policy(BackupPicture)
 {
@@ -369,34 +369,34 @@ amplify push
 }
 ```
 
- - **Create API Gateway (API & resource)**
+- **Create API Gateway (API & resource)**
 
-   - Create API
-     - maptool
-   - Create API Key
-     - maptool
-   - Create Usage Plan & Stage
-     - maptool / prod
-   - Create Resources
-     - /backupsets
-       - Lambda Function : backupSet-maptool
-     - /backupsymbolinfos
-       - Lambda Function : backupSymbolInfo-maptool
-     - /backuppictures
-       - Lambda Function : backupPicture-maptool
-   - Create Method (to each Resources)
-     - POST
-       - Authorization : NONE
-       - API Key Required : true
-   - Deploy API
+  - Create API
+    - maptool
+  - Create API Key
+    - maptool
+  - Create Usage Plan & Stage
+    - maptool / prod
+  - Create Resources
+    - /backupsets
+      - Lambda Function : backupSet-maptool
+    - /backupsymbolinfos
+      - Lambda Function : backupSymbolInfo-maptool
+    - /backuppictures
+      - Lambda Function : backupPicture-maptool
+  - Create Method (to each Resources)
+    - POST
+      - Authorization : NONE
+      - API Key Required : true
+  - Deploy API
 
- - **Create S3 bucket & IAM user (Access key / Secret access key)
+- \*\*Create S3 bucket & IAM user (Access key / Secret access key)
 
-   - Create S3 bucket
-     - Block all public access : Off
-   - Create IAM user
-     - AWS credential type : Access key - Programmatic access
-     - Attach Role (Policy)
+  - Create S3 bucket
+    - Block all public access : Off
+  - Create IAM user
+    - AWS credential type : Access key - Programmatic access
+    - Attach Role (Policy)
 
 ```json:Role(Policy)
 {
@@ -426,30 +426,32 @@ amplify push
 }
 ```
 
- - **Edit (Create) `.dart` Files**
+- **Edit (Create) `.dart` Files**
 
-   - [lib/main.dart](lib/main.dart)
-   - [lib/map_page.dart](lib/map_page.dart)
-   - [lib/display_symbol_info_page.dart](lib/display_symbol_info_page.dart)
-   - [lib/edit_symbol_info_page.dart](lib/edit_symbol_info_page.dart)
-   - [lib/display_picture_page.dart](lib/display_picture_page.dart)
-   - [lib/list_symbol_page.dart](lib/list_symbol_page.dart)
-   - [lib/search_keyword_page.dart](lib/search_keyword_page.dart)
-   - [lib/restore_data_page.dart](lib/restore_data_page.dart)
+  - [lib/main.dart](lib/main.dart)
+  - [lib/map_page.dart](lib/map_page.dart)
+  - [lib/display_symbol_info_page.dart](lib/display_symbol_info_page.dart)
+  - [lib/edit_symbol_info_page.dart](lib/edit_symbol_info_page.dart)
+  - [lib/display_picture_page.dart](lib/display_picture_page.dart)
+  - [lib/list_symbol_page.dart](lib/list_symbol_page.dart)
+  - [lib/search_keyword_page.dart](lib/search_keyword_page.dart)
+  - [lib/restore_data_page.dart](lib/restore_data_page.dart)
 
- - **Add Amplify application config**
-   - [lib/amplifyconfiguration.dart](lib/amplifyconfiguration.dart)
-     - Endpoint
-     - Stage
-     - API Gateway Key
+- **Add Amplify application config**
 
- - **Create Supabase account & Project**
-   - Project name : maptool
-   - Database Password
-   - Database Extensions
-     - PostGIS 
+  - [lib/amplifyconfiguration.dart](lib/amplifyconfiguration.dart)
+    - Endpoint
+    - Stage
+    - API Gateway Key
 
- - **Create Tables etc. on Supabase**
+- **Create Supabase account & Project**
+
+  - Project name : maptool
+  - Database Password
+  - Database Extensions
+    - PostGIS
+
+- **Create Tables etc. on Supabase**
 
 ```sql:CREATE_TABLES
  CREATE TABLE category (
@@ -476,7 +478,7 @@ CREATE INDEX spot_pref_muni_idx ON spot_opendata (pref_muni);
 ```
 
 ```sql:CREATE FUNCTION
-CREATE OR REPLACE 
+CREATE OR REPLACE
  FUNCTION get_spots(point_latitude double precision, point_longitude double precision, dist_limit int, category_id_number int)
 RETURNS TABLE (
   distance double precision,
@@ -509,11 +511,11 @@ END;
 $$ LANGUAGE plpgsql;
 ```
 
- - **Insert sample data to Supabase (PostgreSQL DB)**
+- **Insert sample data to Supabase (PostgreSQL DB)**
 
-   - [sampleData/supabase/insert_category.sql](sampleData/supabase/insert_category.sql)
-   - [sampleData/supabase/insert_spot_opendata.sql](sampleData/supabase/insert_spot_opendata.sql)
-   - Original data : '愛知県文化財マップ（ナビ愛知）' / Aichi prefecture / CC BY 2.1 JP
-     - このサンプルデータは、以下の著作物を改変して利用しています。 
-       - 愛知県文化財マップ（ナビ愛知）、愛知県、クリエイティブ・コモンズ・ライセンス 表示２.１日本
-       - https://www.pref.aichi.jp/soshiki/joho/0000069385.html
+  - [sampleData/supabase/insert_category.sql](sampleData/supabase/insert_category.sql)
+  - [sampleData/supabase/insert_spot_opendata.sql](sampleData/supabase/insert_spot_opendata.sql)
+  - Original data : '愛知県文化財マップ（ナビ愛知）' / Aichi prefecture / CC BY 2.1 JP
+    - このサンプルデータは、以下の著作物を改変して利用しています。
+      - 愛知県文化財マップ（ナビ愛知）、愛知県、クリエイティブ・コモンズ・ライセンス 表示２.１日本
+      - https://www.pref.aichi.jp/soshiki/joho/0000069385.html

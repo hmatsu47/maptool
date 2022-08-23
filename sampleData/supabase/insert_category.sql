@@ -4,3 +4,4 @@ INSERT INTO category (id, category_name) VALUES (3,'名勝');
 INSERT INTO category (id, category_name) VALUES (4,'名勝地');
 INSERT INTO category (id, category_name) VALUES (5,'天然記念物');
 INSERT INTO category (id, category_name) VALUES (6,'史跡');
+INSERT INTO category (id, category_name) VALUES (7,'文化施設');

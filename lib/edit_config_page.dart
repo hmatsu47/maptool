@@ -169,8 +169,7 @@ class EditConfigPageState extends State<EditConfigPage> {
                   children: <Widget>[
                     TextButton(
                       style: TextButton.styleFrom(
-                          primary:
-                              (_isConfigChange ? Colors.blue : Colors.grey)),
+                          foregroundColor: (_isConfigChange ? Colors.blue : Colors.grey)),
                       child: const Text('キャンセル'),
                       onPressed: () {
                         if (_isConfigChange) {

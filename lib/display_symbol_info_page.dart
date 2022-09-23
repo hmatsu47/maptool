@@ -127,8 +127,7 @@ class DisplaySymbolInfoPageState extends State<DisplaySymbolInfoPage> {
                 ),
                 TextButton(
                     style: TextButton.styleFrom(
-                        primary:
-                            (_pictures.isEmpty ? Colors.blue : Colors.grey)),
+                        foregroundColor: (_pictures.isEmpty ? Colors.blue : Colors.grey)),
                     child: const Text('削除'),
                     onPressed: () {
                       if (_pictures.isEmpty) {

@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:mapbox_gl/mapbox_gl.dart';
 import 'package:share_plus/share_plus.dart';
 
@@ -365,11 +366,11 @@ class DisplaySymbolInfoPageState extends State<DisplaySymbolInfoPage> {
     if (_checkedPictures.isEmpty) {
       return;
     }
-    List<String> imagePaths = [];
+    List<XFile> imagePaths = [];
     for (Picture picture in _checkedPictures) {
-      imagePaths.add(_localFilePath!(picture));
+      imagePaths.add(XFile(_localFilePath!(picture)));
     }
-    await Share.shareFiles(imagePaths,
+    await Share.shareXFiles(imagePaths,
         text: _describe != ''
             ? '''$_title
 $_describe'''

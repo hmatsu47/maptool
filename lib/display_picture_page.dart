@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:gap/gap.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:share_plus/share_plus.dart';
 
 import 'class_definition.dart';
@@ -125,8 +126,8 @@ class DisplayPicturePageState extends State<DisplayPicturePage> {
 
   // 共有
   Future<void> _sharePicture() async {
-    List<String> imagePaths = [_localFilePath!(_picture!)];
-    await Share.shareFiles(imagePaths,
+    List<XFile> imagePaths = [XFile(_localFilePath!(_picture!))];
+    await Share.shareXFiles(imagePaths,
         text: _picture!.comment != '無題' ? _picture!.comment : '');
   }
 

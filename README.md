@@ -126,7 +126,7 @@ dev_dependencies:
     }
 ```
 
-- **Edit '`android/app/src/AndroidManifest.xml`'** ( for Android / Relevant part only )
+- **Edit '`android/app/src/main/AndroidManifest.xml`'** ( for Android / Relevant part only )
 
 ```xml:AndroidManifest.xml
    <application

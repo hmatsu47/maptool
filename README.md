@@ -56,8 +56,8 @@ dependencies:
   image_gallery_saver: ^1.7.1
   path_provider: ^2.0.11
   http: ^0.13.5
-  amplify_flutter: ^0.6.8
-  amplify_api: ^0.6.8
+  amplify_flutter: ^0.6.9
+  amplify_api: ^0.6.9
   minio: ^3.5.0
   font_awesome_flutter: ^10.2.1
   connectivity_plus: ^2.3.9

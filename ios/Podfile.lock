@@ -81,7 +81,7 @@ PODS:
     - Flutter
     - FMDB (>= 2.7.5)
   - Starscream (4.0.4)
-  - SwiftFormat/CLI (0.50.2)
+  - SwiftFormat/CLI (0.50.3)
   - SwiftLint (0.48.0)
   - url_launcher_ios (0.0.1):
     - Flutter
@@ -177,7 +177,7 @@ SPEC CHECKSUMS:
   share_plus: 056a1e8ac890df3e33cb503afffaf1e9b4fbae68
   sqflite: 6d358c025f5b867b29ed92fc697fd34924e11904
   Starscream: 5178aed56b316f13fa3bc55694e583d35dd414d9
-  SwiftFormat: 710117321c55c82675c0dc03055128efbb13c38f
+  SwiftFormat: 61cda3819dc3a7d69795ce0430e1e1d53c4a4fb2
   SwiftLint: 284cea64b6187c5d6bd83e9a548a64104d546447
   url_launcher_ios: 839c58cdb4279282219f5e248c3321761ff3c4de
 

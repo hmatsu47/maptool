@@ -9,12 +9,8 @@ SupabaseClient getSupabaseClient(String supabaseUrl, String supabaseKey) {
 }
 
 Future<List<SpotCategory>> searchSpotCategory(SupabaseClient client) async {
-  final PostgrestResponse selectResponse = await client
-      .from('category')
-      .select()
-      .order('id', ascending: true)
-      .execute();
-  final List<dynamic> items = selectResponse.data;
+  final List<dynamic> items =
+      await client.from('category').select().order('id', ascending: true);
   final List<SpotCategory> resultList = [];
   for (dynamic item in items) {
     final SpotCategory category =
@@ -26,14 +22,13 @@ Future<List<SpotCategory>> searchSpotCategory(SupabaseClient client) async {
 
 Future<List<SpotData>> searchNearSpot(SupabaseClient client, LatLng latLng,
     int distLimit, int? categoryId) async {
-  final PostgrestResponse selectResponse =
+  final List<dynamic> items = 
       await client.rpc('get_spots', params: {
     'point_latitude': latLng.latitude,
     'point_longitude': latLng.longitude,
     'dist_limit': distLimit,
     'category_id_number': (categoryId ?? -1)
-  }).execute();
-  final List<dynamic> items = selectResponse.data;
+  });
   final List<SpotData> resultList = [];
   for (dynamic item in items) {
     final SpotData spotData = SpotData(

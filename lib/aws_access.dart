@@ -4,8 +4,8 @@ import 'dart:io';
 import 'package:amplify_api/amplify_api.dart';
 import 'package:amplify_flutter/amplify_flutter.dart';
 import 'package:mapbox_gl/mapbox_gl.dart';
-import 'package:minio/io.dart';
-import 'package:minio/minio.dart';
+import 'package:minio_new/io.dart';
+import 'package:minio_new/minio.dart';
 
 import 'amplifyconfiguration.dart';
 import 'class_definition.dart';

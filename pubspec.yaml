@@ -32,18 +32,20 @@ dependencies:
   mapbox_gl: ^0.16.0
   location: ^4.4.0
   gap: ^2.0.0
-  sqflite: ^2.2.0+2
+  sqflite: ^2.2.0+3
   image_picker: ^0.8.6
   image_gallery_saver: ^1.7.1
   path_provider: ^2.0.11
   http: ^0.13.5
   amplify_flutter: ^0.6.9
   amplify_api: ^0.6.9
-  minio: ^3.5.0
+  minio_new: ^1.0.1
   font_awesome_flutter: ^10.2.1
-  connectivity_plus: ^2.3.9
+  connectivity_plus: ^3.0.2
+  connectivity_plus_web: ^1.2.5
   supabase: ^1.0.1
-  share_plus: ^4.5.3
+  share_plus: ^6.2.0
+  share_plus_web: ^3.1.0
   platform: ^3.1.0
 
   # The following adds the Cupertino Icons font to your application.

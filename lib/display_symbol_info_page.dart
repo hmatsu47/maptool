@@ -3,7 +3,6 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:mapbox_gl/mapbox_gl.dart';
 import 'package:share_plus/share_plus.dart';
 

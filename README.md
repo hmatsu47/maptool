@@ -11,7 +11,7 @@
 **In Addition to:**（追加した機能）
 
 - Modify the detail information about pin.（ピンの詳細情報変更）
-- Take photographs (related to pin).（ピンに関連する写真撮影／Android で地図に戻れないので調査中）
+- Take photographs (related to pin).（ピンに関連する写真撮影）
 - List all pins.（ピン一覧）
 - Search pins (with keywords).（ピンのキーワード検索）
 - Reverse Geocoding.（逆ジオコーディング：画面の中心位置の地名表示・ピンの都道府県名＋市区町村名表示）
@@ -24,7 +24,7 @@
 - Remove backup data on AWS.（不要バックアップデータ削除）
 - Improve configuration handling.（外部 API などの設定管理の改善）
 - Switch map styles.（地図スタイル切り替え）
-- Share information of pictures and pins.（画像・ピン情報の共有機能／Android で地図に戻れないので調査中）
+- Share information of pictures and pins.（画像・ピン情報の共有機能）
 
 **In development:**（開発中の機能など）
 
@@ -104,7 +104,7 @@ dev_dependencies:
 - **Edit '`android/app/build.gradle`'** ( for Android / in `android` )
 
 ```json:build.gradle
-    compileSdkVersion 31
+    compileSdkVersion 33
 ```
 
 - **Edit '`android/app/build.gradle`'** ( for Android / in `android` -> `defaultConfig` )
@@ -135,6 +135,9 @@ dev_dependencies:
         android:label="maptool"
         android:icon="@mipmap/ic_launcher"
         android:requestLegacyExternalStorage="true">
+        <activity
+            android:name=".MainActivity"
+            android:exported="true"
 ```
 
 ```xml:AndroidManifest.xml

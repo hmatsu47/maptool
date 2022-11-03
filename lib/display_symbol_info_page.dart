@@ -172,10 +172,8 @@ class DisplaySymbolInfoPageState extends State<DisplaySymbolInfoPage> {
             icon: const Icon(Icons.share),
             color: Colors.black87,
             onPressed: () {
-              // 共有（一旦 Android では非作動）
-              if (Platform.isIOS) {
-                _shareSymbolInfo();
-              }
+              // 共有
+              _shareSymbolInfo();
             },
           ),
           const Gap(4),

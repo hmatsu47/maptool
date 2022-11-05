@@ -62,7 +62,7 @@ dependencies:
   font_awesome_flutter: ^10.2.1
   connectivity_plus: ^3.0.2
   connectivity_plus_web: ^1.2.5
-  supabase: ^1.0.1
+  supabase: ^1.1.0
   share_plus: ^6.2.0
   share_plus_web: ^3.1.0
   platform: ^3.1.0

@@ -127,7 +127,8 @@ class DisplaySymbolInfoPageState extends State<DisplaySymbolInfoPage> {
                 ),
                 TextButton(
                     style: TextButton.styleFrom(
-                        foregroundColor: (_pictures.isEmpty ? Colors.blue : Colors.grey)),
+                        foregroundColor:
+                            (_pictures.isEmpty ? Colors.blue : Colors.grey)),
                     child: const Text('削除'),
                     onPressed: () {
                       if (_pictures.isEmpty) {
@@ -144,15 +145,21 @@ class DisplaySymbolInfoPageState extends State<DisplaySymbolInfoPage> {
             ),
             const Gap(20),
             Flexible(
-              child: ListView.builder(
-                itemCount: _pictures.length,
-                itemBuilder: (BuildContext context, int index) {
-                  try {
-                    return _pictureItem(_pictures[index], index);
-                  } catch (e) {
-                    return const Gap(20);
-                  }
+              child: RefreshIndicator(
+                onRefresh: () async {
+                  await _refreshList();
                 },
+                child: ListView.builder(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  itemCount: _pictures.length,
+                  itemBuilder: (BuildContext context, int index) {
+                    try {
+                      return _pictureItem(_pictures[index], index);
+                    } catch (e) {
+                      return const Gap(20);
+                    }
+                  },
+                ),
               ),
             ),
           ],
@@ -271,6 +278,14 @@ class DisplaySymbolInfoPageState extends State<DisplaySymbolInfoPage> {
         _pictures.addAll(pictures);
       });
     }
+  }
+
+  // 画像一覧再読み込み
+  Future<void> _refreshList() async {
+    List<Picture> newPicutres = await fetchPictureRecords(_symbol!, _symbolInfoMap);
+    setState(() {
+      _pictures = newPicutres;
+    });
   }
 
   // Symbol 情報変更

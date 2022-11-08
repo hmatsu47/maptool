@@ -26,11 +26,12 @@ class SearchNearSpotPageState extends State<SearchNearSpotPage> {
     return Scaffold(
       appBar: AppBar(
         title: TextField(
-            style: const TextStyle(color: Colors.white),
             decoration: const InputDecoration(
-              prefixIcon: Icon(Icons.search, color: Colors.white),
+              prefixIcon: Icon(Icons.search),
               hintText: '近隣スポット検索',
-              hintStyle: TextStyle(color: Colors.white),
+              fillColor: Colors.white,
+              filled: true,
+              border: InputBorder.none,
             ),
             onChanged: (value) => {_keywordChangeAndViewList(value)}),
       ),

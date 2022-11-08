@@ -26,11 +26,12 @@ class ListSymbolPageState extends State<ListSymbolPage> {
     return Scaffold(
       appBar: AppBar(
         title: TextField(
-            style: const TextStyle(color: Colors.white),
             decoration: const InputDecoration(
-              prefixIcon: Icon(Icons.search, color: Colors.white),
+              prefixIcon: Icon(Icons.search),
               hintText: 'タイトル・地域検索',
-              hintStyle: TextStyle(color: Colors.white),
+              fillColor: Colors.white,
+              filled: true,
+              border: InputBorder.none,
             ),
             onChanged: (value) => {_keywordChangeAndViewList(value)}),
       ),

@@ -39,11 +39,12 @@ class SearchKeywordPageState extends State<SearchKeywordPage> {
       appBar: AppBar(
         title: TextField(
             autofocus: true,
-            style: const TextStyle(color: Colors.white),
             decoration: const InputDecoration(
-              prefixIcon: Icon(Icons.search, color: Colors.white),
+              prefixIcon: Icon(Icons.search),
               hintText: '地名検索',
-              hintStyle: TextStyle(color: Colors.white),
+              fillColor: Colors.white,
+              filled: true,
+              border: InputBorder.none,
             ),
             onSubmitted: (value) async => {_keywordChangeAndViewList(value)}),
       ),

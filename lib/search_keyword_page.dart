@@ -36,17 +36,20 @@ class SearchKeywordPageState extends State<SearchKeywordPage> {
     _prefMuniMap = args.prefMuniMap;
 
     return Scaffold(
-      appBar: AppBar(
-        title: TextField(
-            autofocus: true,
-            decoration: const InputDecoration(
-              prefixIcon: Icon(Icons.search),
-              hintText: '地名検索',
-              fillColor: Colors.white,
-              filled: true,
-              border: InputBorder.none,
-            ),
-            onSubmitted: (value) async => {_keywordChangeAndViewList(value)}),
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(60.0),
+        child: AppBar(
+          title: TextField(
+              autofocus: true,
+              decoration: const InputDecoration(
+                prefixIcon: Icon(Icons.search),
+                hintText: '地名検索',
+                fillColor: Colors.white,
+                filled: true,
+                border: InputBorder.none,
+              ),
+              onSubmitted: (value) async => {_keywordChangeAndViewList(value)}),
+        ),
       ),
       body: _makeDisplayForm(),
     );

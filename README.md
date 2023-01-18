@@ -51,13 +51,13 @@ dependencies:
   mapbox_gl: ^0.16.0
   location: ^4.4.0
   gap: ^2.0.1
-  sqflite: ^2.2.2
+  sqflite: ^2.2.3
   image_picker: ^0.8.6
   image_gallery_saver: ^1.7.1
   path_provider: ^2.0.11
   http: ^0.13.5
-  amplify_flutter: ^0.6.10
-  amplify_api: ^0.6.10
+  amplify_flutter: ^0.6.11
+  amplify_api: ^0.6.11
   minio_new: ^1.0.1
   font_awesome_flutter: ^10.3.0
   connectivity_plus: ^3.0.2

@@ -21,13 +21,14 @@ Future<List<SpotCategory>> searchSpotCategory(SupabaseClient client) async {
 }
 
 Future<List<SpotData>> searchNearSpot(SupabaseClient client, LatLng latLng,
-    int distLimit, int? categoryId) async {
+    int distLimit, int? categoryId, String? keywords) async {
   final List<dynamic> items = 
       await client.rpc('get_spots', params: {
     'point_latitude': latLng.latitude,
     'point_longitude': latLng.longitude,
     'dist_limit': distLimit,
-    'category_id_number': (categoryId ?? -1)
+    'category_id_number': (categoryId ?? -1),
+    'keywords': (keywords ?? '')
   });
   final List<SpotData> resultList = [];
   for (dynamic item in items) {

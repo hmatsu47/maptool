@@ -694,7 +694,7 @@ class MapPageState extends State<MapPage> {
       final CameraPosition? camera = mapboxMap.cameraPosition;
       final LatLng position = camera!.target;
       final List<SpotData> spotList = await searchNearSpot(
-          _supabaseClient!, position, _distLimit, _nearSpotCategory);
+          _supabaseClient!, position, _distLimit, _nearSpotCategory, null);
       if (spotList.isEmpty) {
         _noSpot();
         return;
@@ -813,7 +813,7 @@ class MapPageState extends State<MapPage> {
       final CameraPosition? camera = mapboxMap.cameraPosition;
       final LatLng position = camera!.target;
       final List<SpotData> spotList =
-          await searchNearSpot(_supabaseClient!, position, _distLimit, null);
+          await searchNearSpot(_supabaseClient!, position, _distLimit, null, null);
       if (spotList.isEmpty) {
         setState(() {
           _nearSpotCategory = null;

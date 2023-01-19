@@ -455,6 +455,7 @@ amplify push
   - Database Password
   - Database Extensions
     - PostGIS
+    - PGroonga
 
 - **Create Tables etc. on Supabase**
 
@@ -482,9 +483,17 @@ CREATE INDEX spot_muni_idx ON spot_opendata (municipality);
 CREATE INDEX spot_pref_muni_idx ON spot_opendata (pref_muni);
 ```
 
-```sql:CREATE FUNCTION
+```sql:ADD_COLUMN(for_full_text_search)
+ALTER TABLE spot_opendata ADD COLUMN ft_text text GENERATED ALWAYS AS (title || ',' || describe || ',' || prefecture || municipality) STORED;
+CREATE INDEX pgroonga_content_index
+          ON spot_opendata
+       USING pgroonga (ft_text)
+        WITH (tokenizer='TokenMecab');
+```
+
+```sql:CREATE_FUNCTION
 CREATE OR REPLACE
- FUNCTION get_spots(point_latitude double precision, point_longitude double precision, dist_limit int, category_id_number int)
+ FUNCTION get_spots(point_latitude double precision, point_longitude double precision, dist_limit int, category_id_number int, keywords text)
 RETURNS TABLE (
   distance double precision,
   category_name text,
@@ -508,9 +517,14 @@ BEGIN
   FROM spot_opendata
   INNER JOIN category ON spot_opendata.category_id = category.id
   WHERE
-    (ST_POINT(point_longitude, point_latitude)::geography <-> spot_opendata.location::geography) <= dist_limit
+    (CASE WHEN dist_limit = -1 THEN true
+      ELSE (ST_POINT(point_longitude, point_latitude)::geography <-> spot_opendata.location::geography) <= dist_limit END)
   AND
-    (CASE WHEN category_id_number = -1 THEN true ELSE category.id = category_id_number END)
+    (CASE WHEN category_id_number = -1 THEN true
+      ELSE category.id = category_id_number END)
+  AND
+    (CASE WHEN keywords = '' THEN true
+      ELSE ft_text &@~ keywords END)
   ORDER BY distance;
 END;
 $$ LANGUAGE plpgsql;

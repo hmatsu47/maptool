@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:mapbox_gl/mapbox_gl.dart';
+import 'package:supabase/supabase.dart';
 
 // マーク（ピン）の登録情報
 class SymbolInfo {
@@ -198,4 +199,12 @@ class NearSpotList {
   List<SpotData> spotList;
 
   NearSpotList(this.spotList);
+}
+
+// スポット一覧表示画面に渡す内容一式
+class FullSpotList {
+  SupabaseClient? client;
+  LatLng? latLng;
+
+  FullSpotList(this.client, this.latLng);
 }

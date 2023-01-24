@@ -486,6 +486,16 @@ class MapPageState extends State<MapPage> {
                 },
               ),
               IconButton(
+                icon: Icon(_supabaseClient != null
+                    ? Icons.find_in_page
+                    : Icons.find_in_page_outlined),
+                color: Colors.blue[700],
+                onPressed: () {
+                  // スポット一覧を表示して選択したスポットの位置へ移動
+                  _moveToSpotPosition();
+                },
+              ),
+              IconButton(
                 icon: Icon(
                   _supabaseClient != null
                       ? Icons.filter_alt
@@ -812,8 +822,8 @@ class MapPageState extends State<MapPage> {
     _controller.future.then((mapboxMap) async {
       final CameraPosition? camera = mapboxMap.cameraPosition;
       final LatLng position = camera!.target;
-      final List<SpotData> spotList =
-          await searchNearSpot(_supabaseClient!, position, _distLimit, null, null);
+      final List<SpotData> spotList = await searchNearSpot(
+          _supabaseClient!, position, _distLimit, null, null);
       if (spotList.isEmpty) {
         setState(() {
           _nearSpotCategory = null;
@@ -852,6 +862,27 @@ class MapPageState extends State<MapPage> {
         ],
       ),
     );
+  }
+
+  // 全スポット一覧を表示して選択したスポットの位置へ移動
+  Future<void> _moveToSpotPosition() async {
+    if (_supabaseClient == null || _yourLocation == null) {
+      return;
+    }
+    _controller.future.then((mapboxMap) async {
+      // 近隣スポットを検索
+      final CameraPosition? camera = mapboxMap.cameraPosition;
+      final LatLng position = camera!.target;
+      final latLng = await Navigator.of(navigatorKey.currentContext!).pushNamed(
+          '/searchSpot',
+          arguments: FullSpotList(_supabaseClient, position));
+      if (latLng is LatLng) {
+        setState(() {
+          _gpsTracking = false;
+        });
+        await _moveCameraToDetailPoint(latLng);
+      }
+    });
   }
 
   // 全 Symbol 一覧を表示して選択した Symbol の位置へ移動

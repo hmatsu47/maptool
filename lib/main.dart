@@ -11,6 +11,7 @@ import 'map_page.dart';
 import 'restore_data_page.dart';
 import 'search_keyword_page.dart';
 import 'search_near_spot_page.dart';
+import 'search_spot_page.dart';
 
 final navigatorKey = GlobalKey<NavigatorState>();
 
@@ -30,6 +31,7 @@ MaterialApp _materialApp() {
       '/listSymbol': (BuildContext context) => const ListSymbolPage(),
       '/searchKeyword': (BuildContext context) => const SearchKeywordPage(),
       '/searchNearSpot': (BuildContext context) => const SearchNearSpotPage(),
+      '/searchSpot': (BuildContext context) => const SearchSpotPage(),
       '/restoreData': (BuildContext context) => const RestoreDataPage(),
       '/editConfig': (BuildContext context) => const EditConfigPage(),
       '/editConfigSupabase': (BuildContext context) =>

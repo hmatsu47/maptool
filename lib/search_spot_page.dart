@@ -106,8 +106,8 @@ class SearchSpotPageState extends State<SearchSpotPage> {
 
   // 一覧を表示
   Future<void> _keywordChangeAndViewList(String keywords) async {
-    final List<SpotData> list =
-        await searchNearSpot(_client!, _latLng!, null, null, keywords);
+    final List<SpotData> list = (keywords == '' ? [] :
+        await searchNearSpot(_client!, _latLng!, null, null, keywords));
     setState(() {
       _spotList = list;
     });

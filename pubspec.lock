@@ -7,56 +7,56 @@ packages:
       name: amplify_api
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.6.11"
+    version: "0.6.12"
   amplify_api_android:
     dependency: transitive
     description:
       name: amplify_api_android
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.6.11"
+    version: "0.6.12"
   amplify_api_ios:
     dependency: transitive
     description:
       name: amplify_api_ios
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.6.11"
+    version: "0.6.12"
   amplify_core:
     dependency: transitive
     description:
       name: amplify_core
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.6.11"
+    version: "0.6.12"
   amplify_datastore_plugin_interface:
     dependency: transitive
     description:
       name: amplify_datastore_plugin_interface
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.6.11"
+    version: "0.6.12"
   amplify_flutter:
     dependency: "direct main"
     description:
       name: amplify_flutter
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.6.11"
+    version: "0.6.12"
   amplify_flutter_android:
     dependency: transitive
     description:
       name: amplify_flutter_android
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.6.11"
+    version: "0.6.12"
   amplify_flutter_ios:
     dependency: transitive
     description:
       name: amplify_flutter_ios
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.6.11"
+    version: "0.6.12"
   archive:
     dependency: transitive
     description:
@@ -239,7 +239,7 @@ packages:
       name: functions_client
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "1.0.0"
+    version: "1.0.2"
   gap:
     dependency: "direct main"
     description:
@@ -253,7 +253,7 @@ packages:
       name: gotrue
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "1.2.0"
+    version: "1.4.2"
   http:
     dependency: "direct main"
     description:
@@ -288,7 +288,7 @@ packages:
       name: image_picker
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.8.6"
+    version: "0.8.6+1"
   image_picker_android:
     dependency: transitive
     description:
@@ -526,7 +526,7 @@ packages:
       name: postgrest
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "1.1.1"
+    version: "1.2.2"
   process:
     dependency: transitive
     description:
@@ -540,7 +540,7 @@ packages:
       name: realtime_client
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "1.0.0"
+    version: "1.0.2"
   retry:
     dependency: transitive
     description:
@@ -554,7 +554,7 @@ packages:
       name: rxdart
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.27.5"
+    version: "0.27.7"
   share_plus:
     dependency: "direct main"
     description:
@@ -615,7 +615,7 @@ packages:
       name: storage_client
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "1.1.0"
+    version: "1.2.1"
   stream_channel:
     dependency: transitive
     description:
@@ -643,7 +643,7 @@ packages:
       name: supabase
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "1.2.0"
+    version: "1.4.0"
   synchronized:
     dependency: transitive
     description:
@@ -777,6 +777,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "6.1.0"
+  yet_another_json_isolate:
+    dependency: transitive
+    description:
+      name: yet_another_json_isolate
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "1.0.2"
 sdks:
   dart: ">=2.18.0 <3.0.0"
   flutter: ">=3.3.0"

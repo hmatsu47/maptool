@@ -491,6 +491,21 @@ CREATE INDEX pgroonga_content_index
         WITH (tokenizer='TokenMecab');
 ```
 
+```sql:CREATE_SYNONYMS_TABLE
+CREATE TABLE synonyms (
+  term text PRIMARY KEY,
+  synonyms text[]
+);
+
+CREATE INDEX synonyms_search ON synonyms USING pgroonga (term pgroonga_text_term_search_ops_v2);
+```
+
+```sql:INSERT_SYNONYMS_TABLE
+INSERT INTO synonyms (term, synonyms) VALUES ('美術館', ARRAY['美術館', 'ミュージアム']);
+INSERT INTO synonyms (term, synonyms) VALUES ('博物館', ARRAY['博物館', 'ミュージアム']);
+INSERT INTO synonyms (term, synonyms) VALUES ('ミュージアム', ARRAY['ミュージアム', '美術館', '博物館']);
+```
+
 ```sql:CREATE_FUNCTION
 CREATE OR REPLACE
  FUNCTION get_spots(point_latitude double precision, point_longitude double precision, dist_limit int, category_id_number int, keywords text)
@@ -517,6 +532,8 @@ BEGIN
   FROM spot_opendata
   INNER JOIN category ON spot_opendata.category_id = category.id
   WHERE
+    (CASE WHEN dist_limit = -1 AND keywords = '' THEN false ELSE true END)
+  AND
     (CASE WHEN dist_limit = -1 THEN true
       ELSE (ST_POINT(point_longitude, point_latitude)::geography <-> spot_opendata.location::geography) <= dist_limit END)
   AND
@@ -524,7 +541,7 @@ BEGIN
       ELSE category.id = category_id_number END)
   AND
     (CASE WHEN keywords = '' THEN true
-      ELSE ft_text &@~ keywords END)
+      ELSE ft_text &@~ pgroonga_query_expand('synonyms', 'term', 'synonyms', keywords) END)
   ORDER BY distance;
 END;
 $$ LANGUAGE plpgsql;

@@ -37,7 +37,7 @@ class SearchSpotPageState extends State<SearchSpotPage> {
                 filled: true,
                 border: InputBorder.none,
               ),
-              onChanged: (value) async => {_keywordChangeAndViewList(value)}),
+              onChanged: (value) => {_keywordChangeAndViewList(value)}),
         ),
       ),
       body: _makeDisplayForm(),
@@ -106,8 +106,7 @@ class SearchSpotPageState extends State<SearchSpotPage> {
 
   // 一覧を表示
   Future<void> _keywordChangeAndViewList(String keywords) async {
-    final List<SpotData> list = (keywords == '' ? [] :
-        await searchNearSpot(_client!, _latLng!, null, null, keywords));
+    final List<SpotData> list = await searchNearSpot(_client!, _latLng!, null, null, keywords);
     setState(() {
       _spotList = list;
     });

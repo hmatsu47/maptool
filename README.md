@@ -484,7 +484,9 @@ CREATE INDEX spot_pref_muni_idx ON spot_opendata (pref_muni);
 ```
 
 ```sql:ADD_COLUMN(for_full_text_search)
-ALTER TABLE spot_opendata ADD COLUMN ft_text text GENERATED ALWAYS AS (title || ',' || describe || ',' || prefecture || municipality) STORED;
+ALTER TABLE spot_opendata
+  ADD COLUMN ft_text text GENERATED ALWAYS AS
+    (REGEXP_REPLACE((title || ',' || describe || ',' || prefecture || municipality), '[の・]', '', 'g')) STORED;
 CREATE INDEX pgroonga_content_index
           ON spot_opendata
        USING pgroonga (ft_text)
@@ -541,7 +543,9 @@ BEGIN
       ELSE category.id = category_id_number END)
   AND
     (CASE WHEN keywords = '' THEN true
-      ELSE ft_text &@~ pgroonga_query_expand('synonyms', 'term', 'synonyms', keywords) END)
+      ELSE
+        ft_text &@~ pgroonga_query_expand('synonyms', 'term', 'synonyms', REGEXP_REPLACE(keywords, '[の・]', '', 'g'))
+      END)
   ORDER BY distance;
 END;
 $$ LANGUAGE plpgsql;

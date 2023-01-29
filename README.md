@@ -51,10 +51,10 @@ dependencies:
   mapbox_gl: ^0.16.0
   location: ^4.4.0
   gap: ^2.0.1
-  sqflite: ^2.2.3
+  sqflite: ^2.2.4+1
   image_picker: ^0.8.6+1
   image_gallery_saver: ^1.7.1
-  path_provider: ^2.0.11
+  path_provider: ^2.0.12
   http: ^0.13.5
   amplify_flutter: ^0.6.12
   amplify_api: ^0.6.12

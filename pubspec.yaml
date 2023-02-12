@@ -40,7 +40,7 @@ dependencies:
   amplify_flutter: ^0.6.12
   amplify_api: ^0.6.12
   minio_new: ^1.0.1
-  font_awesome_flutter: ^10.3.0
+  font_awesome_flutter: ^10.4.0
   connectivity_plus: ^3.0.3
   connectivity_plus_web: ^1.2.5
   supabase: ^1.5.1

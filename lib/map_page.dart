@@ -15,7 +15,7 @@ import 'package:location/location.dart';
 import 'package:mapbox_gl/mapbox_gl.dart';
 import 'package:minio_new/minio.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:supabase/supabase.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'main.dart';
 import 'aws_access.dart';

@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:mapbox_gl/mapbox_gl.dart';
-import 'package:supabase/supabase.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 // マーク（ピン）の登録情報
 class SymbolInfo {

@@ -32,6 +32,8 @@ PODS:
     - AWSCore (~> 2.28.0)
     - AWSMobileClient (~> 2.28.0)
     - AWSPluginsCore (= 1.28.3)
+  - app_links (0.0.1):
+    - Flutter
   - AppSyncRealTimeClient (2.1.1):
     - Starscream (~> 4.0.4)
   - AWSAuthCore (2.28.5):
@@ -91,6 +93,7 @@ DEPENDENCIES:
   - amplify_api_ios (from `.symlinks/plugins/amplify_api_ios/ios`)
   - amplify_core (from `.symlinks/plugins/amplify_core/ios`)
   - amplify_flutter_ios (from `.symlinks/plugins/amplify_flutter_ios/ios`)
+  - app_links (from `.symlinks/plugins/app_links/ios`)
   - connectivity_plus (from `.symlinks/plugins/connectivity_plus/ios`)
   - Flutter (from `Flutter`)
   - image_gallery_saver (from `.symlinks/plugins/image_gallery_saver/ios`)
@@ -129,6 +132,8 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/amplify_core/ios"
   amplify_flutter_ios:
     :path: ".symlinks/plugins/amplify_flutter_ios/ios"
+  app_links:
+    :path: ".symlinks/plugins/app_links/ios"
   connectivity_plus:
     :path: ".symlinks/plugins/connectivity_plus/ios"
   Flutter:
@@ -156,6 +161,7 @@ SPEC CHECKSUMS:
   amplify_core: 0876b2fbbcec7619f5b58b20c59ecc0118f65a47
   amplify_flutter_ios: 8943b5e5fb995a7aa3eb5c5238a6822756703584
   AmplifyPlugins: 98bcd23f2c13179f75c733b887e80dd06243be5e
+  app_links: ab4ba54d10a13d45825336bc9707b5eadee81191
   AppSyncRealTimeClient: 937360221f2b664c4c33ae142a60643e64f480cd
   AWSAuthCore: e728d73a2b4eed9e826506a1f0fcc58171537267
   AWSCognitoIdentityProvider: 261fac98d461e9e398bf3c1e18c3cd90578b33ca

@@ -243,6 +243,7 @@ class DisplaySymbolInfoPageState extends State<DisplaySymbolInfoPage> {
         _pictures.add(picture!);
       });
       File? file = _localFile!(picture!);
+      if (!mounted) return;
       await showDialog(
           context: context,
           builder: (BuildContext builderContext) {

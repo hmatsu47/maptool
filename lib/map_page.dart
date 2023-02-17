@@ -1344,6 +1344,7 @@ ${spotData.prefMuni.prefecture}${spotData.prefMuni.municipalities}''',
       return;
     }
     // モバイル接続中なら確認メッセージ表示
+    if (!mounted) return;
     showDialog(
       context: context,
       builder: (BuildContext context) => AlertDialog(

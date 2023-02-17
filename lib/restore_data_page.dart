@@ -106,6 +106,7 @@ $describe''',
 本当にリストアしますか？
 （既存データは上書きされます）'''
         : '既存データを上書きしてもよろしいですか？');
+    if (!mounted) return;
     showDialog(
       context: context,
       builder: (BuildContext context) => AlertDialog(

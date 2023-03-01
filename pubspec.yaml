@@ -33,7 +33,7 @@ dependencies:
   location: ^4.4.0
   gap: ^2.0.1
   sqflite: ^2.2.5
-  image_picker: ^0.8.6+3
+  image_picker: ^0.8.6+4
   image_gallery_saver: ^1.7.1
   path_provider: ^2.0.13
   http: ^0.13.5

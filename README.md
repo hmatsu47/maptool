@@ -506,6 +506,8 @@ CREATE INDEX synonyms_search ON synonyms USING pgroonga (term pgroonga_text_term
 INSERT INTO synonyms (term, synonyms) VALUES ('美術館', ARRAY['美術館', 'ミュージアム']);
 INSERT INTO synonyms (term, synonyms) VALUES ('博物館', ARRAY['博物館', 'ミュージアム']);
 INSERT INTO synonyms (term, synonyms) VALUES ('ミュージアム', ARRAY['ミュージアム', '美術館', '博物館']);
+INSERT INTO synonyms (term, synonyms) VALUES ('城址', ARRAY['城址', '城跡']);
+INSERT INTO synonyms (term, synonyms) VALUES ('城跡', ARRAY['城跡', '城址']);
 ```
 
 ```sql:CREATE_FUNCTION

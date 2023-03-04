@@ -508,6 +508,24 @@ INSERT INTO synonyms (term, synonyms) VALUES ('博物館', ARRAY['博物館', '�
 INSERT INTO synonyms (term, synonyms) VALUES ('ミュージアム', ARRAY['ミュージアム', '美術館', '博物館']);
 INSERT INTO synonyms (term, synonyms) VALUES ('城址', ARRAY['城址', '城跡']);
 INSERT INTO synonyms (term, synonyms) VALUES ('城跡', ARRAY['城跡', '城址']);
+INSERT INTO synonyms (term, synonyms) VALUES ('藤', ARRAY['藤', 'フジ']);
+INSERT INTO synonyms (term, synonyms) VALUES ('フジ', ARRAY['フジ', '藤']);
+INSERT INTO synonyms (term, synonyms) VALUES ('イチョウ', ARRAY['イチョウ', 'いちょう', '銀杏']);
+INSERT INTO synonyms (term, synonyms) VALUES ('いちょう', ARRAY['いちょう', 'イチョウ', '銀杏']);
+INSERT INTO synonyms (term, synonyms) VALUES ('銀杏', ARRAY['銀杏', 'いちょう', 'イチョウ']);
+INSERT INTO synonyms (term, synonyms) VALUES ('サクラ', ARRAY['サクラ', 'さくら', '桜']);
+INSERT INTO synonyms (term, synonyms) VALUES ('さくら', ARRAY['さくら', 'サクラ', '桜']);
+INSERT INTO synonyms (term, synonyms) VALUES ('桜', ARRAY['桜', 'サクラ', 'ザクラ', 'さくら', 'ざくら']);
+INSERT INTO synonyms (term, synonyms) VALUES ('ザクラ', ARRAY['ザクラ', 'ざくら', '桜']);
+INSERT INTO synonyms (term, synonyms) VALUES ('ざくら', ARRAY['ざくら', 'ザクラ', '桜']);
+INSERT INTO synonyms (term, synonyms) VALUES ('ウ', ARRAY['ウ', '鵜']);
+INSERT INTO synonyms (term, synonyms) VALUES ('鵜', ARRAY['鵜', 'ウ']);
+INSERT INTO synonyms (term, synonyms) VALUES ('シイ', ARRAY['シイ', '椎']);
+INSERT INTO synonyms (term, synonyms) VALUES ('椎', ARRAY['椎', 'シイ']);
+INSERT INTO synonyms (term, synonyms) VALUES ('クス', ARRAY['クス', '楠']);
+INSERT INTO synonyms (term, synonyms) VALUES ('楠', ARRAY['楠', 'クス']);
+INSERT INTO synonyms (term, synonyms) VALUES ('マツ', ARRAY['マツ', '松']);
+INSERT INTO synonyms (term, synonyms) VALUES ('松', ARRAY['松', 'マツ']);
 ```
 
 ```sql:CREATE_FUNCTION

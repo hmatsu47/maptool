@@ -284,10 +284,10 @@ packages:
     dependency: transitive
     description:
       name: functions_client
-      sha256: "7e8bb50b13bcf76405addc406a5987bb067a9ec3b49307eab44fc145c67105d1"
+      sha256: e82e7325c0fc04d751aca9aaaf7b9e9d599e1e5cf869e0cb7c762a5f53784c71
       url: "https://pub.dev"
     source: hosted
-    version: "1.0.2"
+    version: "1.1.1"
   gap:
     dependency: "direct main"
     description:
@@ -300,10 +300,10 @@ packages:
     dependency: transitive
     description:
       name: gotrue
-      sha256: aa7dfb77787445defa89b8bc04025bfa24c3a7693843a43f97a4d7cae1cc7182
+      sha256: fb4e0095c623aadec304af39a929aabb4f47729ae7f9286f38e90df2e521104b
       url: "https://pub.dev"
     source: hosted
-    version: "1.4.2"
+    version: "1.5.2"
   hive:
     dependency: transitive
     description:
@@ -356,10 +356,10 @@ packages:
     dependency: "direct main"
     description:
       name: image_picker
-      sha256: "715d68a53d6bcc2eae26005097dc74c375a04c0d7c0e657da84deebbbbbf51ed"
+      sha256: "64b21d9f0e065f9ab0e4dde458076226c97382cc0c6949144cb874c62bf8e9f8"
       url: "https://pub.dev"
     source: hosted
-    version: "0.8.6+4"
+    version: "0.8.7"
   image_picker_android:
     dependency: transitive
     description:
@@ -761,18 +761,18 @@ packages:
     dependency: transitive
     description:
       name: supabase
-      sha256: "14a36f512596abec7a59ea8ed63e4b98ea18db80299dcf9576fd53fea5f3e5b4"
+      sha256: "1196edbfacbecf7c311fd7129f9ccacc73010e78fa31424ddf40939dd8db71a1"
       url: "https://pub.dev"
     source: hosted
-    version: "1.5.1"
+    version: "1.6.0"
   supabase_flutter:
     dependency: "direct main"
     description:
       name: supabase_flutter
-      sha256: "1227c23886f9b3454a2fdbeeedaab0cdf0efa2c5bae5b85ea9e25dd6e060f1ef"
+      sha256: e2d801b50bef0f1ceec3a60a9faf1d3cb4a26fe978a8ab3c5ff1d0e327a9b9d5
       url: "https://pub.dev"
     source: hosted
-    version: "1.4.2"
+    version: "1.5.0"
   synchronized:
     dependency: transitive
     description:

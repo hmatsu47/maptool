@@ -52,7 +52,7 @@ dependencies:
   location: ^4.4.0
   gap: ^2.0.1
   sqflite: ^2.2.5
-  image_picker: ^0.8.6+4
+  image_picker: ^0.8.7
   image_gallery_saver: ^1.7.1
   path_provider: ^2.0.13
   http: ^0.13.5
@@ -62,7 +62,7 @@ dependencies:
   font_awesome_flutter: ^10.4.0
   connectivity_plus: ^3.0.3
   connectivity_plus_web: ^1.2.5
-  supabase_flutter: ^1.4.2
+  supabase_flutter: ^1.5.0
   share_plus: ^6.3.1
   share_plus_web: ^3.1.0
   platform: ^3.1.0

@@ -50,20 +50,20 @@ dependencies:
     sdk: flutter
   mapbox_gl: ^0.16.0
   location: ^4.4.0
-  gap: ^2.0.1
-  sqflite: ^2.2.5
-  image_picker: ^0.8.7
+  gap: ^3.0.0
+  sqflite: ^2.2.6
+  image_picker: ^0.8.7+3
   image_gallery_saver: ^1.7.1
-  path_provider: ^2.0.13
+  path_provider: ^2.0.14
   http: ^0.13.5
-  amplify_flutter: ^0.6.12
-  amplify_api: ^0.6.12
-  minio_new: ^1.0.1
+  amplify_flutter: ^0.6.13
+  amplify_api: ^0.6.13
+  minio_new: ^1.0.2
   font_awesome_flutter: ^10.4.0
-  connectivity_plus: ^3.0.3
+  connectivity_plus: ^3.0.4
   connectivity_plus_web: ^1.2.5
-  supabase_flutter: ^1.5.0
-  share_plus: ^6.3.1
+  supabase_flutter: ^1.7.0
+  share_plus: ^6.3.2
   share_plus_web: ^3.1.0
   platform: ^3.1.0
 ```
@@ -76,6 +76,21 @@ dependencies:
 dev_dependencies:
   flutter_lints: ^2.0.1
 ```
+
+---
+
+### Xcode 14.3 Archive error : workaround ( for iOS )
+
+- **Edit '`ios/Pods/Target Support Files/Pods-Runner/Pods-Runner-frameworks.sh`'** ( in `install_framework()` )
+
+```
+  if [ -L "${source}" ]; then
+    echo "Symlinked..."
+    source="$(readlink -f "${source}")"
+  fi
+```
+
+---
 
 - **Edit '`android/build.gradle`'** ( for Android / in `buildscript` )
 
